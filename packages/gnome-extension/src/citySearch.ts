@@ -1,4 +1,5 @@
 import GWeather from "gi://GWeather?version=4.0";
+import { isValidLocation } from "@sun-clock/core";
 
 export interface City {
   readonly name: string;
@@ -40,7 +41,7 @@ function collectCities(root: GWeather.Location | null): IndexedCity[] {
       const name = location.get_name() ?? "";
       const [latitude, longitude] = location.get_coords();
       // The database has a few entries with impossible coordinates; they would mislead.
-      if (Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180) {
+      if (isValidLocation({ latitude, longitude })) {
         cities.push({
           name,
           region: regionOf(location),

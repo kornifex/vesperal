@@ -5,6 +5,7 @@ import {
   type PhaseKind,
   type PresentationOptions,
   present,
+  presentError,
   presentLocationUnknown,
 } from "./index.ts";
 
@@ -62,7 +63,9 @@ const FRENCH_CATALOGUE: Readonly<Record<string, string>> = {
   "{minutes} min": "{minutes} min",
   Sunrise: "Lever du soleil",
   Sunset: "Coucher du soleil",
-  "{day} at {time}": "{day} à {time}",
+  "yesterday at {time}": "hier à {time}",
+  "tomorrow at {time}": "demain à {time}",
+  "{date} at {time}": "{date} à {time}",
   "Day length": "Durée du jour",
   "Night length": "Durée de la nuit",
   "Remaining time": "Temps restant",
@@ -78,6 +81,7 @@ const FRENCH_CATALOGUE: Readonly<Record<string, string>> = {
   "{days}d {hours}h": "{days} j {hours} h",
   "Location unknown": "Lieu inconnu",
   "Set a location manually…": "Définir un lieu manuellement…",
+  Error: "Erreur",
 };
 const FRENCH: PresentationOptions = {
   ...OPTIONS,
@@ -267,6 +271,19 @@ describe("present: Phase menu", () => {
       { label: "Lieu manuel", value: "0,181° S, 78,468° O" },
     ]);
   });
+
+  test("keeps the language of the messages when dates and times follow another locale", () => {
+    const snapshot = snapshotOf("night", NIGHT, "2026-06-21T21:00:00Z");
+
+    expect(rows(snapshot, { ...OPTIONS, locale: "fr-FR" })[1]).toEqual({
+      label: "Sunrise",
+      value: "tomorrow at 05:47",
+    });
+    expect(rows(snapshot, { ...FRENCH, locale: "en-GB" })[1]).toEqual({
+      label: "Lever du soleil",
+      value: "demain à 05:47",
+    });
+  });
 });
 
 describe("present: Polar day and Polar night", () => {
@@ -341,7 +358,7 @@ describe("present: Location unknown", () => {
   test("offers to set a Location manually in the menu, instead of the Phase details", () => {
     expect(presentLocationUnknown(OPTIONS.translate).menu).toEqual({
       rows: [],
-      setManualLocation: "Set a location manually…",
+      manualLocationEntry: "Set a location manually…",
     });
   });
 
@@ -349,6 +366,19 @@ describe("present: Location unknown", () => {
     const view = presentLocationUnknown(FRENCH.translate);
 
     expect(view.bar.text).toBe("Lieu inconnu");
-    expect(view.menu.setManualLocation).toBe("Définir un lieu manuellement…");
+    expect(view.menu.manualLocationEntry).toBe("Définir un lieu manuellement…");
+  });
+});
+
+describe("present: Error", () => {
+  test("replaces the Reading and the Phase details with the error state", () => {
+    expect(presentError(OPTIONS.translate)).toEqual({
+      bar: { arc: null, text: "Error" },
+      menu: { rows: [], manualLocationEntry: null },
+    });
+  });
+
+  test("speaks French", () => {
+    expect(presentError(FRENCH.translate).bar.text).toBe("Erreur");
   });
 });

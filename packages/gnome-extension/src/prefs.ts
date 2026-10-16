@@ -5,14 +5,13 @@ import {
   gettext as _,
   ExtensionPreferences,
 } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
-import { READINGS } from "@sun-clock/core";
+import { LOCATION_MODES, type NamedLocation, READINGS } from "@sun-clock/core";
 import { type City, CitySearch } from "./citySearch.ts";
 import {
-  LOCATION_MODES,
+  readLastKnownLocation,
   readLocationMode,
   readManualLocation,
   readReading,
-  type StoredLocation,
   writeLocationMode,
   writeManualLocation,
   writeReading,
@@ -87,6 +86,9 @@ function addLocationGroups(
   const manualRow = modes.rows.get("manual");
   const searchRow = new Adw.EntryRow({ title: _("Search for a city") });
   group.add(searchRow);
+  // With no Location to fall back on, the clock reads "Location unknown" and its menu leads
+  // here to set one: start on the city search.
+  if (!readManualLocation(settings) && !readLastKnownLocation(settings)) searchRow.grab_focus();
 
   const resultsGroup = new Adw.PreferencesGroup({ visible: false });
   page.add(resultsGroup);
@@ -127,7 +129,7 @@ function addLocationGroups(
     for (const row of [latitudeRow, longitudeRow]) row.remove_css_class("error");
   };
 
-  const chooseManualLocation = (location: StoredLocation): void => {
+  const chooseManualLocation = (location: NamedLocation): void => {
     writeManualLocation(settings, location);
     writeLocationMode(settings, "manual");
   };

@@ -41,6 +41,9 @@ _Avoid_: Endless night
 **Day length**:
 The duration of a Day.
 
+**Night length**:
+The duration of a Night.
+
 ## Reading the clock
 
 **Reading**:
@@ -80,5 +83,5 @@ A Location provided by the system's location service.
 A Location entered by the user.
 
 **Last known location**:
-The most recent Location successfully obtained, kept for when no Location is currently available.
+The most recent Automatic location successfully obtained, kept for when no Location is currently available.
 _Avoid_: Cached location

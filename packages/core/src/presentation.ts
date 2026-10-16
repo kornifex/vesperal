@@ -20,7 +20,10 @@ export interface PresentationOptions {
   readonly reading: Reading;
   /** IANA time zone in which Civil times are shown. */
   readonly timeZone: string;
-  /** BCP 47 locale in which Civil times are shown. */
+  /**
+   * BCP 47 locale in which Civil times and dates are shown; it may differ from the language
+   * of `translate`, as LC_TIME may from LC_MESSAGES.
+   */
   readonly locale: string;
   readonly translate: Translate;
   readonly location: LocationInUse;
@@ -56,7 +59,7 @@ export interface Menu {
    * The label of an entry leading to the Manual location settings, offered when no Location
    * is known; null otherwise.
    */
-  readonly setManualLocation: string | null;
+  readonly manualLocationEntry: string | null;
 }
 
 export interface ViewModel {
@@ -73,7 +76,7 @@ export function present(snapshot: ClockSnapshot, options: PresentationOptions): 
       },
       text: barText(snapshot, options),
     },
-    menu: { rows: menuRows(snapshot, options), setManualLocation: null },
+    menu: { rows: menuRows(snapshot, options), manualLocationEntry: null },
   };
 }
 
@@ -81,7 +84,16 @@ export function present(snapshot: ClockSnapshot, options: PresentationOptions): 
 export function presentLocationUnknown(translate: Translate): ViewModel {
   return {
     bar: { arc: null, text: translate("Location unknown") },
-    menu: { rows: [], setManualLocation: translate("Set a location manually…") },
+    menu: { rows: [], manualLocationEntry: translate("Set a location manually…") },
+  };
+}
+
+/** What to display when the clock failed to be read, rather than a stale or broken Reading. */
+export function presentError(translate: Translate): ViewModel {
+  return {
+    // Translators: shown in the top bar instead of the Reading when something went wrong.
+    bar: { arc: null, text: translate("Error") },
+    menu: { rows: [], manualLocationEntry: null },
   };
 }
 
@@ -124,7 +136,7 @@ function menuRows(snapshot: ClockSnapshot, options: PresentationOptions): MenuRo
       value: formatDuration(Math.round(snapshot.lastDayLength / MS_PER_MINUTE), translate),
     });
   }
-  rows.push(locationRow(options.location, options));
+  rows.push(locationRow(options));
   return rows;
 }
 
@@ -158,8 +170,8 @@ function readingLabel(reading: Reading, translate: Translate): string {
   }
 }
 
-function locationRow(location: LocationInUse, options: PresentationOptions): MenuRow {
-  const { translate } = options;
+function locationRow(options: PresentationOptions): MenuRow {
+  const { location, translate } = options;
   return {
     label: locationLabel(location.source, translate),
     value: location.name ?? formatCoordinates(location, options),
@@ -199,23 +211,34 @@ function formatCoordinates(location: Location, options: PresentationOptions): st
 /**
  * A Civil time, preceded by its day when that is not the day of `now`: "yesterday",
  * "tomorrow", or a date further away.
+ *
+ * "Yesterday" and "tomorrow" are messages, so they speak the language of the other messages;
+ * the time and the date follow `locale`, which may differ (see `PresentationOptions`).
  */
 function formatCivilTime(instant: Date, now: Date, options: PresentationOptions): string {
   const { locale, timeZone, translate } = options;
   const time = new Intl.DateTimeFormat(locale, { timeZone, timeStyle: "short" }).format(instant);
-  const days = civilDayNumber(instant, timeZone) - civilDayNumber(now, timeZone);
-  if (days === 0) return time;
-  const day =
-    Math.abs(days) === 1
-      ? new Intl.RelativeTimeFormat(locale, { numeric: "auto" }).format(days, "day")
-      : new Intl.DateTimeFormat(locale, {
-          timeZone,
-          weekday: "short",
-          day: "numeric",
-          month: "short",
-        }).format(instant);
-  // Translators: a Civil time on another day, e.g. "tomorrow at 05:47" or "Thu 18 Jun at 21:58".
-  return fill(translate("{day} at {time}"), { day, time });
+  switch (civilDayNumber(instant, timeZone) - civilDayNumber(now, timeZone)) {
+    case 0:
+      return time;
+    case -1:
+      // Translators: a Civil time on the day before today, e.g. "yesterday at 21:58".
+      return fill(translate("yesterday at {time}"), { time });
+    case 1:
+      // Translators: a Civil time on the day after today, e.g. "tomorrow at 05:47".
+      return fill(translate("tomorrow at {time}"), { time });
+    default: {
+      const date = new Intl.DateTimeFormat(locale, {
+        timeZone,
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+      }).format(instant);
+      // Translators: a Civil time further away than yesterday or tomorrow, e.g. "Thu 18 Jun at
+      // 21:58"; {date} follows the locale of dates and times.
+      return fill(translate("{date} at {time}"), { date, time });
+    }
+  }
 }
 
 /** Days since the epoch of the civil date of `instant` in `timeZone`. */

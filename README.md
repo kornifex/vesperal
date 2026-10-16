@@ -4,7 +4,7 @@ A clock that tells time relative to sunrise and sunset at your location. Working
 
 ## Packages
 
-- `packages/core`: solar computation and Phase model, free of any GNOME dependency.
+- `packages/core`: solar computation, Phase model and presentation (what the bar and menu show), free of any GNOME dependency.
 - `packages/gnome-extension`: GNOME Shell extension (GNOME 50).
 
 ## Development

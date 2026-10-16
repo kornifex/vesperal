@@ -2,7 +2,15 @@ import type Gio from "gi://Gio";
 import GnomeDesktop from "gi://GnomeDesktop";
 import { gettext as _, Extension } from "resource:///org/gnome/shell/extensions/extension.js";
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
-import { type LocationInUse, present, presentLocationUnknown, readClock } from "@sun-clock/core";
+import {
+  type LocationMode,
+  type NamedLocation,
+  present,
+  presentError,
+  presentLocationUnknown,
+  readClock,
+  resolveLocation,
+} from "@sun-clock/core";
 import { AutomaticLocation } from "./automaticLocation.ts";
 import { SunClockIndicator } from "./indicator.ts";
 import { civilTimeLocale } from "./locale.ts";
@@ -29,8 +37,8 @@ export default class SunClockExtension extends Extension {
   override enable(): void {
     this.#indicator = new SunClockIndicator(this.metadata.name, {
       preferences: { label: _("Preferences"), activate: () => this.openPreferences() },
-      // The Manual location settings are in the preferences.
-      setManualLocation: { activate: () => this.openPreferences() },
+      // The preferences open on the city search when no Location is known (see prefs.ts).
+      manualLocationEntry: { activate: () => this.openPreferences() },
     });
     Main.panel.addToStatusArea(this.uuid, this.#indicator.button, positionRightOfClock(), "center");
 
@@ -82,8 +90,8 @@ export default class SunClockExtension extends Extension {
       this.#update();
     } catch (error) {
       // Never leave a stale or broken Reading in the bar.
-      this.#indicator?.hide();
       this.getLogger().error(error);
+      this.#indicator?.show(presentError((message) => this.gettext(message)));
     }
   }
 
@@ -91,11 +99,11 @@ export default class SunClockExtension extends Extension {
     if (!this.#indicator || !this.#settings || !this.#wallClock) return;
 
     const translate = (message: string): string => this.gettext(message);
-    // The Location from the active mode, then the Last known location, then none.
-    const fromMode = this.#locationFromMode(this.#settings);
-    if (fromMode) writeLastKnownLocation(this.#settings, fromMode);
-    const lastKnown = fromMode ? null : readLastKnownLocation(this.#settings);
-    const location = fromMode ?? (lastKnown && { ...lastKnown, source: "last-known" as const });
+    const mode = readLocationMode(this.#settings);
+    const fromMode = this.#locationFromMode(mode, this.#settings);
+    // Only the Automatic location is remembered: the Manual location stays in its own key.
+    if (mode === "automatic" && fromMode) writeLastKnownLocation(this.#settings, fromMode);
+    const location = resolveLocation(mode, fromMode, readLastKnownLocation(this.#settings));
     this.#indicator.show(
       location
         ? present(readClock(location, new Date()), {
@@ -110,10 +118,9 @@ export default class SunClockExtension extends Extension {
   }
 
   /** The Location from the active mode, if it has one. */
-  #locationFromMode(settings: Gio.Settings): LocationInUse | null {
-    if (readLocationMode(settings) === "manual") return readManualLocation(settings);
-    const automatic = this.#automaticLocation?.location;
-    return automatic ? { ...automatic, source: "automatic" } : null;
+  #locationFromMode(mode: LocationMode, settings: Gio.Settings): NamedLocation | null {
+    if (mode === "manual") return readManualLocation(settings);
+    return this.#automaticLocation?.location ?? null;
   }
 }
 

@@ -1,7 +1,7 @@
 import Geoclue from "gi://Geoclue";
 import Gio from "gi://Gio";
 import GWeather from "gi://GWeather?version=4.0";
-import type { StoredLocation } from "./settings.ts";
+import type { NamedLocation } from "@sun-clock/core";
 
 // The extension runs inside GNOME Shell, so it asks GeoClue as the Shell, like its weather.
 const DESKTOP_ID = "org.gnome.Shell";
@@ -12,7 +12,7 @@ const DESKTOP_ID = "org.gnome.Shell";
  * construction and `destroy()`.
  */
 export class AutomaticLocation {
-  #location: StoredLocation | null = null;
+  #location: NamedLocation | null = null;
   readonly #changed: () => void;
   readonly #failed: (error: unknown) => void;
   readonly #locationServices = new Gio.Settings({ schema_id: "org.gnome.system.location" });
@@ -32,7 +32,7 @@ export class AutomaticLocation {
   }
 
   /** The latest Location from GeoClue, or null if there is none yet or no longer. */
-  get location(): StoredLocation | null {
+  get location(): NamedLocation | null {
     return this.#location;
   }
 

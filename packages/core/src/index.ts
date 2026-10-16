@@ -1,12 +1,22 @@
-// Solar computation and Phase model. Must never import GNOME libraries (see ADR 0001).
+// Solar computation and its presentation. Must never import GNOME libraries (see ADR 0001).
 export { type ClockSnapshot, type Phase, type PhaseKind, readClock } from "./clock.ts";
-export type { Location, LocationInUse, LocationSource } from "./location.ts";
+export {
+  isValidLocation,
+  LOCATION_MODES,
+  type Location,
+  type LocationInUse,
+  type LocationMode,
+  type LocationSource,
+  type NamedLocation,
+  resolveLocation,
+} from "./location.ts";
 export {
   type Bar,
   type Menu,
   type MenuRow,
   type PresentationOptions,
   present,
+  presentError,
   presentLocationUnknown,
   READINGS,
   type Reading,

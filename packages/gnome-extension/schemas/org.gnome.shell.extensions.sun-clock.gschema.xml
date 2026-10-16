@@ -22,7 +22,7 @@
     <key name="last-known-location" type="m(sdd)">
       <default>nothing</default>
       <summary>Last known location</summary>
-      <description>The most recent Location successfully obtained, used when the location mode provides none: name, then latitude and longitude in degrees (north and east positive).</description>
+      <description>The most recent Automatic location successfully obtained, used when the location mode provides none: name, then latitude and longitude in degrees (north and east positive).</description>
     </key>
     <key name="reading" enum="org.gnome.shell.extensions.sun-clock.Reading">
       <default>'remaining'</default>

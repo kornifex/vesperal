@@ -2,18 +2,14 @@
 
 import type Gio from "gi://Gio";
 import GLib from "gi://GLib";
-import { type Location, type LocationInUse, READINGS, type Reading } from "@sun-clock/core";
-
-/** Every location mode the user can choose, the default first. */
-export const LOCATION_MODES = ["automatic", "manual"] as const;
-
-/** Where the Location comes from, unless it falls back on the Last known location. */
-export type LocationMode = (typeof LOCATION_MODES)[number];
-
-/** A Location as stored in the settings, with its place name if one is known. */
-export interface StoredLocation extends Location {
-  readonly name: string | null;
-}
+import {
+  isValidLocation,
+  LOCATION_MODES,
+  type LocationMode,
+  type NamedLocation,
+  READINGS,
+  type Reading,
+} from "@sun-clock/core";
 
 export function readReading(settings: Gio.Settings): Reading {
   const nick = settings.get_string("reading");
@@ -33,21 +29,20 @@ export function writeLocationMode(settings: Gio.Settings, mode: LocationMode): v
   settings.set_string("location-mode", mode);
 }
 
-export function readManualLocation(settings: Gio.Settings): LocationInUse | null {
-  const location = readStoredLocation(settings, "manual-location");
-  return location && { ...location, source: "manual" };
+export function readManualLocation(settings: Gio.Settings): NamedLocation | null {
+  return readStoredLocation(settings, "manual-location");
 }
 
-export function writeManualLocation(settings: Gio.Settings, location: StoredLocation): void {
+export function writeManualLocation(settings: Gio.Settings, location: NamedLocation): void {
   writeStoredLocation(settings, "manual-location", location);
 }
 
-export function readLastKnownLocation(settings: Gio.Settings): StoredLocation | null {
+export function readLastKnownLocation(settings: Gio.Settings): NamedLocation | null {
   return readStoredLocation(settings, "last-known-location");
 }
 
 /** Remembers `location` as the Last known location, writing only when it has changed. */
-export function writeLastKnownLocation(settings: Gio.Settings, location: StoredLocation): void {
+export function writeLastKnownLocation(settings: Gio.Settings, location: NamedLocation): void {
   const lastKnown = readLastKnownLocation(settings);
   if (
     lastKnown?.name !== location.name ||
@@ -58,16 +53,16 @@ export function writeLastKnownLocation(settings: Gio.Settings, location: StoredL
   }
 }
 
-function readStoredLocation(settings: Gio.Settings, key: string): StoredLocation | null {
+function readStoredLocation(settings: Gio.Settings, key: string): NamedLocation | null {
   const value = settings.get_value(key).get_maybe();
   if (!value) return null;
   const [name, latitude, longitude] = value.deepUnpack() as [string, number, number];
   // The key can be set from the command line, bypassing the checks of the preferences.
-  if (!(Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180)) return null;
-  return { name: name || null, latitude, longitude };
+  const location = { name: name || null, latitude, longitude };
+  return isValidLocation(location) ? location : null;
 }
 
-function writeStoredLocation(settings: Gio.Settings, key: string, location: StoredLocation): void {
+function writeStoredLocation(settings: Gio.Settings, key: string, location: NamedLocation): void {
   settings.set_value(
     key,
     new GLib.Variant("m(sdd)", [location.name ?? "", location.latitude, location.longitude]),
