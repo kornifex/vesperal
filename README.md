@@ -17,7 +17,10 @@ pnpm check                               # lint + typecheck + tests (also runs a
 pnpm format                              # apply Biome formatting
 pnpm build                               # bundle the extension into packages/gnome-extension/dist
 pnpm --filter @sun-clock/gnome-extension install-extension   # build and install locally
+pnpm --filter @sun-clock/gnome-extension update-po           # refresh po/ after changing messages
 ```
+
+User-visible strings are written in English and translated with gettext (`packages/gnome-extension/po/`). `pnpm check` fails if a message lacks a French translation.
 
 ## License
 

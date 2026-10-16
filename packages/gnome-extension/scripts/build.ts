@@ -1,14 +1,12 @@
-// Bundles the extension (with @sun-clock/core inlined) and its compiled GSettings schema
-// into dist/.
+// Bundles the extension (with @sun-clock/core inlined), its compiled GSettings schema and its
+// compiled translations into dist/.
 // With --install, also copies dist/ into the user's GNOME Shell extensions directory.
-import { execFile } from "node:child_process";
 import { cp, mkdir, readFile, rm } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { promisify } from "node:util";
 import { build } from "esbuild";
+import { gettextDomain, languages, poDirectory, root, run } from "./i18n.ts";
 
-const root = join(import.meta.dirname, "..");
 const dist = join(root, "dist");
 
 await rm(dist, { recursive: true, force: true });
@@ -28,7 +26,18 @@ await build({
 await cp(join(root, "metadata.json"), join(dist, "metadata.json"));
 
 await cp(join(root, "schemas"), join(dist, "schemas"), { recursive: true });
-await promisify(execFile)("glib-compile-schemas", ["--strict", join(dist, "schemas")]);
+await run("glib-compile-schemas", ["--strict", join(dist, "schemas")]);
+
+const domain = await gettextDomain();
+for (const language of await languages()) {
+  const directory = join(dist, "locale", language, "LC_MESSAGES");
+  await mkdir(directory, { recursive: true });
+  await run("msgfmt", [
+    "--check",
+    `--output-file=${join(directory, `${domain}.mo`)}`,
+    join(poDirectory, `${language}.po`),
+  ]);
+}
 
 if (process.argv.includes("--install")) {
   const metadata: { uuid: string } = JSON.parse(

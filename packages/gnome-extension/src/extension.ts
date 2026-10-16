@@ -6,6 +6,7 @@ import { Extension } from "resource:///org/gnome/shell/extensions/extension.js";
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
 import * as PanelMenu from "resource:///org/gnome/shell/ui/panelMenu.js";
 import { type Location, present, readClock } from "@sun-clock/core";
+import { civilTimeLocale } from "./locale.ts";
 
 export default class SunClockExtension extends Extension {
   #indicator: PanelMenu.Button | null = null;
@@ -54,8 +55,8 @@ export default class SunClockExtension extends Extension {
     const view = present(readClock(location, new Date()), {
       reading: "remaining",
       timeZone: this.#wallClock.timezone.get_identifier(),
-      locale: Intl.DateTimeFormat().resolvedOptions().locale,
-      translate: (message) => message,
+      locale: civilTimeLocale(),
+      translate: (message) => this.gettext(message),
     });
     this.#label.text = view.bar.text;
     this.#indicator.show();

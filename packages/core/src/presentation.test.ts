@@ -24,9 +24,24 @@ function dayWithRemaining(remaining: number): ClockSnapshot {
   };
 }
 
-function barText(remaining: number): string {
-  return present(dayWithRemaining(remaining), OPTIONS).bar.text;
+function barText(remaining: number, options: PresentationOptions = OPTIONS): string {
+  return present(dayWithRemaining(remaining), options).bar.text;
 }
+
+// Stands in for gettext with a French catalogue; any message it lacks fails the test.
+const FRENCH_CATALOGUE: Readonly<Record<string, string>> = {
+  "{hours}h {minutes}m": "{hours} h {minutes}",
+  "{minutes} min": "{minutes} min",
+};
+const FRENCH: PresentationOptions = {
+  ...OPTIONS,
+  locale: "fr-FR",
+  translate: (message) => {
+    const translation = FRENCH_CATALOGUE[message];
+    if (translation === undefined) throw new Error(`No French translation for "${message}"`);
+    return translation;
+  },
+};
 
 describe("present: Remaining time in the bar", () => {
   test("shows hours and minutes over one hour", () => {
@@ -53,5 +68,13 @@ describe("present: Remaining time in the bar", () => {
     expect(barText(59 * MINUTE + 1)).toBe("1h 00m");
     expect(barText(HOUR)).toBe("1h 00m");
     expect(barText(2 * HOUR + 5 * MINUTE)).toBe("2h 05m");
+  });
+});
+
+describe("present: French", () => {
+  test("writes durations the French way", () => {
+    expect(barText(3 * HOUR + 15 * MINUTE, FRENCH)).toBe("3 h 15");
+    expect(barText(3 * HOUR + 5 * MINUTE, FRENCH)).toBe("3 h 05");
+    expect(barText(42 * MINUTE, FRENCH)).toBe("42 min");
   });
 });

@@ -36,11 +36,17 @@ export function present(snapshot: ClockSnapshot, options: PresentationOptions): 
 
 function formatDuration(totalMinutes: number, translate: Translate): string {
   if (totalMinutes < MINUTES_PER_HOUR) {
-    return translate("{minutes} min").replace("{minutes}", String(totalMinutes));
+    // Translators: a duration under one hour, e.g. "42 min".
+    return fill(translate("{minutes} min"), { minutes: String(totalMinutes) });
   }
-  const hours = Math.floor(totalMinutes / MINUTES_PER_HOUR);
-  const minutes = totalMinutes % MINUTES_PER_HOUR;
-  return translate("{hours}h {minutes}m")
-    .replace("{hours}", String(hours))
-    .replace("{minutes}", String(minutes).padStart(2, "0"));
+  // Translators: a duration over one hour, e.g. "3h 05m"; {minutes} always has two digits.
+  return fill(translate("{hours}h {minutes}m"), {
+    hours: String(Math.floor(totalMinutes / MINUTES_PER_HOUR)),
+    minutes: String(totalMinutes % MINUTES_PER_HOUR).padStart(2, "0"),
+  });
+}
+
+/** Replaces each `{name}` placeholder of a translated template. */
+function fill(template: string, values: Readonly<Record<string, string>>): string {
+  return template.replace(/\{(\w+)\}/g, (placeholder, name: string) => values[name] ?? placeholder);
 }
