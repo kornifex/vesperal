@@ -1,8 +1,11 @@
-// Bundles the extension (with @sun-clock/core inlined) into dist/.
+// Bundles the extension (with @sun-clock/core inlined) and its compiled GSettings schema
+// into dist/.
 // With --install, also copies dist/ into the user's GNOME Shell extensions directory.
+import { execFile } from "node:child_process";
 import { cp, mkdir, readFile, rm } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { promisify } from "node:util";
 import { build } from "esbuild";
 
 const root = join(import.meta.dirname, "..");
@@ -23,6 +26,9 @@ await build({
 });
 
 await cp(join(root, "metadata.json"), join(dist, "metadata.json"));
+
+await cp(join(root, "schemas"), join(dist, "schemas"), { recursive: true });
+await promisify(execFile)("glib-compile-schemas", ["--strict", join(dist, "schemas")]);
 
 if (process.argv.includes("--install")) {
   const metadata: { uuid: string } = JSON.parse(

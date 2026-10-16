@@ -3,5 +3,6 @@
   "name": "Sun Clock",
   "description": "Tells time relative to sunrise and sunset at your location.",
   "shell-version": ["50"],
-  "url": ""
+  "url": "",
+  "settings-schema": "org.gnome.shell.extensions.sun-clock"
 }
