@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { type ClockSnapshot, type PresentationOptions, present } from "./index.ts";
+import { type ClockSnapshot, type PhaseKind, type PresentationOptions, present } from "./index.ts";
 
 const SECOND = 1_000;
 const MINUTE = 60 * SECOND;
@@ -12,16 +12,21 @@ const OPTIONS: PresentationOptions = {
   translate: (message) => message,
 };
 
-// A Day from 06:00 to 20:00 UTC, read `remaining` milliseconds before Sunset.
-function dayWithRemaining(remaining: number): ClockSnapshot {
+// A Phase of the given kind from 06:00 to 20:00 UTC, read `remaining` milliseconds before
+// its end.
+function phaseWithRemaining(kind: PhaseKind, remaining: number): ClockSnapshot {
   const start = Date.parse("2026-06-21T06:00:00Z");
   const end = Date.parse("2026-06-21T20:00:00Z");
   return {
-    phase: { kind: "day", start: new Date(start), end: new Date(end) },
+    phase: { kind, start: new Date(start), end: new Date(end) },
     remaining,
     elapsed: end - start - remaining,
     progress: (end - start - remaining) / (end - start),
   };
+}
+
+function dayWithRemaining(remaining: number): ClockSnapshot {
+  return phaseWithRemaining("day", remaining);
 }
 
 function barText(remaining: number, options: PresentationOptions = OPTIONS): string {
@@ -76,5 +81,24 @@ describe("present: French", () => {
     expect(barText(3 * HOUR + 15 * MINUTE, FRENCH)).toBe("3 h 15");
     expect(barText(3 * HOUR + 5 * MINUTE, FRENCH)).toBe("3 h 05");
     expect(barText(42 * MINUTE, FRENCH)).toBe("42 min");
+  });
+});
+
+describe("present: Sun arc", () => {
+  test("puts the Sun on the arc during a Day, at the Progress of the Phase", () => {
+    const { arc } = present(phaseWithRemaining("day", 3.5 * HOUR), OPTIONS).bar;
+
+    expect(arc).toEqual({ body: "sun", progress: 0.75 });
+  });
+
+  test("puts the Moon on the arc during a Night", () => {
+    const { arc } = present(phaseWithRemaining("night", 7 * HOUR), OPTIONS).bar;
+
+    expect(arc).toEqual({ body: "moon", progress: 0.5 });
+  });
+
+  test("covers the whole Phase, from its very start to just before its end", () => {
+    expect(present(phaseWithRemaining("day", 14 * HOUR), OPTIONS).bar.arc.progress).toBe(0);
+    expect(present(phaseWithRemaining("day", 1), OPTIONS).bar.arc.progress).toBeCloseTo(1, 6);
   });
 });

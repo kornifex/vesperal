@@ -19,7 +19,15 @@ export interface PresentationOptions {
   readonly translate: Translate;
 }
 
+/** The Sun arc: the Sun (during a Day) or the Moon (during a Night) placed at the Progress. */
+export interface SunArc {
+  readonly body: "sun" | "moon";
+  /** From 0 (rising end of the arc) to 1 (setting end). */
+  readonly progress: number;
+}
+
 export interface Bar {
+  readonly arc: SunArc;
   /** The Reading, as a duration. */
   readonly text: string;
 }
@@ -31,7 +39,15 @@ export interface ViewModel {
 export function present(snapshot: ClockSnapshot, options: PresentationOptions): ViewModel {
   // Rounded up, so the clock never claims the Solar event has arrived before it has.
   const minutes = Math.ceil(snapshot.remaining / MS_PER_MINUTE);
-  return { bar: { text: formatDuration(minutes, options.translate) } };
+  return {
+    bar: {
+      arc: {
+        body: snapshot.phase.kind === "day" ? "sun" : "moon",
+        progress: snapshot.progress,
+      },
+      text: formatDuration(minutes, options.translate),
+    },
+  };
 }
 
 function formatDuration(totalMinutes: number, translate: Translate): string {

@@ -7,9 +7,11 @@ import * as Main from "resource:///org/gnome/shell/ui/main.js";
 import * as PanelMenu from "resource:///org/gnome/shell/ui/panelMenu.js";
 import { type Location, present, readClock } from "@sun-clock/core";
 import { civilTimeLocale } from "./locale.ts";
+import { SunArcIcon } from "./sunArcIcon.ts";
 
 export default class SunClockExtension extends Extension {
   #indicator: PanelMenu.Button | null = null;
+  #arcIcon: SunArcIcon | null = null;
   #label: St.Label | null = null;
   #settings: Gio.Settings | null = null;
   #settingsChangedId = 0;
@@ -19,9 +21,13 @@ export default class SunClockExtension extends Extension {
   #wallClockChangedId = 0;
 
   override enable(): void {
+    this.#arcIcon = new SunArcIcon();
     this.#label = new St.Label({ y_align: Clutter.ActorAlign.CENTER });
+    const box = new St.BoxLayout({ style_class: "sun-clock-indicator" });
+    box.add_child(this.#arcIcon.actor);
+    box.add_child(this.#label);
     this.#indicator = new PanelMenu.Button(0.5, this.metadata.name, true);
-    this.#indicator.add_child(this.#label);
+    this.#indicator.add_child(box);
     Main.panel.addToStatusArea(this.uuid, this.#indicator, positionRightOfClock(), "center");
 
     this.#settings = this.getSettings();
@@ -40,11 +46,14 @@ export default class SunClockExtension extends Extension {
     this.#settings = null;
     this.#indicator?.destroy();
     this.#indicator = null;
+    this.#arcIcon = null;
     this.#label = null;
   }
 
   #refresh(): void {
-    if (!this.#indicator || !this.#label || !this.#settings || !this.#wallClock) return;
+    if (!this.#indicator || !this.#arcIcon || !this.#label || !this.#settings || !this.#wallClock) {
+      return;
+    }
 
     const location = manualLocation(this.#settings);
     if (!location) {
@@ -58,6 +67,7 @@ export default class SunClockExtension extends Extension {
       locale: civilTimeLocale(),
       translate: (message) => this.gettext(message),
     });
+    this.#arcIcon.arc = view.bar.arc;
     this.#label.text = view.bar.text;
     this.#indicator.show();
   }

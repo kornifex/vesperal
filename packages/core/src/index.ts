@@ -6,6 +6,7 @@ export {
   type PresentationOptions,
   present,
   type Reading,
+  type SunArc,
   type Translate,
   type ViewModel,
 } from "./presentation.ts";

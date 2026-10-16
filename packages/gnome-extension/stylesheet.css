@@ -1,0 +1,9 @@
+.sun-clock-indicator {
+  /* biome-ignore lint/correctness/noUnknownProperty: St's own property for box layouts */
+  spacing: 6px;
+}
+
+.sun-clock-arc {
+  width: 24px;
+  height: 16px;
+}

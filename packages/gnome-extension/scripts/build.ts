@@ -24,6 +24,7 @@ await build({
 });
 
 await cp(join(root, "metadata.json"), join(dist, "metadata.json"));
+await cp(join(root, "stylesheet.css"), join(dist, "stylesheet.css"));
 
 await cp(join(root, "schemas"), join(dist, "schemas"), { recursive: true });
 await run("glib-compile-schemas", ["--strict", join(dist, "schemas")]);
