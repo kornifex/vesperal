@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: sun-clock\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-16 22:38+0200\n"
+"POT-Creation-Date: 2026-10-16 22:43+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,11 +18,35 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. Translators: a duration under one hour, e.g. "42 min".
-#: packages/core/src/presentation.ts:40
+#: packages/core/src/presentation.ts:68
 msgid "{minutes} min"
 msgstr ""
 
 #. Translators: a duration over one hour, e.g. "3h 05m"; {minutes} always has two digits.
-#: packages/core/src/presentation.ts:43
+#: packages/core/src/presentation.ts:71
 msgid "{hours}h {minutes}m"
+msgstr ""
+
+#: packages/gnome-extension/src/prefs.ts:17
+msgid "Reading"
+msgstr ""
+
+#: packages/gnome-extension/src/prefs.ts:18
+msgid "The duration shown in the top bar"
+msgstr ""
+
+#: packages/gnome-extension/src/prefs.ts:23
+msgid "Remaining time"
+msgstr ""
+
+#: packages/gnome-extension/src/prefs.ts:23
+msgid "Until the next sunrise or sunset"
+msgstr ""
+
+#: packages/gnome-extension/src/prefs.ts:24
+msgid "Elapsed time"
+msgstr ""
+
+#: packages/gnome-extension/src/prefs.ts:24
+msgid "Since the last sunrise or sunset"
 msgstr ""

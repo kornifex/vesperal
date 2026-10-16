@@ -76,6 +76,30 @@ describe("present: Remaining time in the bar", () => {
   });
 });
 
+describe("present: Elapsed time in the bar", () => {
+  const ELAPSED: PresentationOptions = { ...OPTIONS, reading: "elapsed" };
+  const PHASE_LENGTH = 14 * HOUR;
+
+  function elapsedText(elapsed: number): string {
+    return present(dayWithRemaining(PHASE_LENGTH - elapsed), ELAPSED).bar.text;
+  }
+
+  test("rounds down to the minute, so it never claims more time has passed", () => {
+    expect(elapsedText(3 * HOUR + 15 * MINUTE + 59 * SECOND)).toBe("3h 15m");
+    expect(elapsedText(42 * MINUTE + 59 * SECOND)).toBe("42 min");
+  });
+
+  test("shows minutes only under one hour, and hours once a full hour has passed", () => {
+    expect(elapsedText(59 * MINUTE + 59 * SECOND)).toBe("59 min");
+    expect(elapsedText(HOUR)).toBe("1h 00m");
+  });
+
+  test('shows "0 min" in the first minute of the Phase', () => {
+    expect(elapsedText(0)).toBe("0 min");
+    expect(elapsedText(59 * SECOND)).toBe("0 min");
+  });
+});
+
 describe("present: French", () => {
   test("writes durations the French way", () => {
     expect(barText(3 * HOUR + 15 * MINUTE, FRENCH)).toBe("3 h 15");

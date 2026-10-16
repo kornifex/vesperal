@@ -1,10 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
+  <enum id="org.gnome.shell.extensions.sun-clock.Reading">
+    <value nick="remaining" value="0"/>
+    <value nick="elapsed" value="1"/>
+  </enum>
   <schema id="org.gnome.shell.extensions.sun-clock" path="/org/gnome/shell/extensions/sun-clock/">
     <key name="manual-location" type="m(sdd)">
       <default>nothing</default>
       <summary>Manual location</summary>
       <description>The Location entered by the user: name, then latitude and longitude in degrees (north and east positive).</description>
+    </key>
+    <key name="reading" enum="org.gnome.shell.extensions.sun-clock.Reading">
+      <default>'remaining'</default>
+      <summary>Reading</summary>
+      <description>The duration shown in the top bar: the Remaining time until the next Solar event, or the Elapsed time since the last one.</description>
     </key>
   </schema>
 </schemalist>

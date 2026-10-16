@@ -13,7 +13,7 @@ await rm(dist, { recursive: true, force: true });
 await mkdir(dist);
 
 await build({
-  entryPoints: [join(root, "src/extension.ts")],
+  entryPoints: [join(root, "src/extension.ts"), join(root, "src/prefs.ts")],
   outdir: dist,
   bundle: true,
   format: "esm",

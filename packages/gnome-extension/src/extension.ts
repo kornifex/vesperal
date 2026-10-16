@@ -5,8 +5,9 @@ import St from "gi://St";
 import { Extension } from "resource:///org/gnome/shell/extensions/extension.js";
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
 import * as PanelMenu from "resource:///org/gnome/shell/ui/panelMenu.js";
-import { type Location, present, readClock } from "@sun-clock/core";
+import { present, readClock } from "@sun-clock/core";
 import { civilTimeLocale } from "./locale.ts";
+import { readManualLocation, readReading } from "./settings.ts";
 import { SunArcIcon } from "./sunArcIcon.ts";
 
 export default class SunClockExtension extends Extension {
@@ -55,14 +56,14 @@ export default class SunClockExtension extends Extension {
       return;
     }
 
-    const location = manualLocation(this.#settings);
+    const location = readManualLocation(this.#settings);
     if (!location) {
       this.#indicator.hide();
       return;
     }
 
     const view = present(readClock(location, new Date()), {
-      reading: "remaining",
+      reading: readReading(this.#settings),
       timeZone: this.#wallClock.timezone.get_identifier(),
       locale: civilTimeLocale(),
       translate: (message) => this.gettext(message),
@@ -71,13 +72,6 @@ export default class SunClockExtension extends Extension {
     this.#label.text = view.bar.text;
     this.#indicator.show();
   }
-}
-
-function manualLocation(settings: Gio.Settings): Location | null {
-  const value = settings.get_value("manual-location").get_maybe();
-  if (!value) return null;
-  const [, latitude, longitude] = value.deepUnpack() as [string, number, number];
-  return { latitude, longitude };
 }
 
 /** The index in the panel's centre box just after the GNOME clock. */

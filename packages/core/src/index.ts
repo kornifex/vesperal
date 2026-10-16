@@ -5,6 +5,7 @@ export {
   type Bar,
   type PresentationOptions,
   present,
+  READINGS,
   type Reading,
   type SunArc,
   type Translate,

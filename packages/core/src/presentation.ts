@@ -4,8 +4,11 @@ import type { ClockSnapshot } from "./clock.ts";
 const MINUTES_PER_HOUR = 60;
 const MS_PER_MINUTE = 60_000;
 
+/** Every Reading the user can choose, the default first. */
+export const READINGS = ["remaining", "elapsed"] as const;
+
 /** The duration the clock displays. */
-export type Reading = "remaining";
+export type Reading = (typeof READINGS)[number];
 
 /** Translates an English source message; front ends inject gettext or an equivalent. */
 export type Translate = (message: string) => string;
@@ -37,17 +40,26 @@ export interface ViewModel {
 }
 
 export function present(snapshot: ClockSnapshot, options: PresentationOptions): ViewModel {
-  // Rounded up, so the clock never claims the Solar event has arrived before it has.
-  const minutes = Math.ceil(snapshot.remaining / MS_PER_MINUTE);
   return {
     bar: {
       arc: {
         body: snapshot.phase.kind === "day" ? "sun" : "moon",
         progress: snapshot.progress,
       },
-      text: formatDuration(minutes, options.translate),
+      text: formatDuration(readingMinutes(snapshot, options.reading), options.translate),
     },
   };
+}
+
+/** The Reading in whole minutes, each rounding erring towards "less time". */
+function readingMinutes(snapshot: ClockSnapshot, reading: Reading): number {
+  switch (reading) {
+    case "remaining":
+      // Rounded up, so the clock never claims the Solar event has arrived before it has.
+      return Math.ceil(snapshot.remaining / MS_PER_MINUTE);
+    case "elapsed":
+      return Math.floor(snapshot.elapsed / MS_PER_MINUTE);
+  }
 }
 
 function formatDuration(totalMinutes: number, translate: Translate): string {

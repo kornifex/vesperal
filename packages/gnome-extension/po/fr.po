@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: sun-clock\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-16 22:38+0200\n"
+"POT-Creation-Date: 2026-10-16 22:43+0200\n"
 "PO-Revision-Date: 2026-10-16 22:38+0200\n"
 "Last-Translator: Julien Seren-Rosso\n"
 "Language-Team: none\n"
@@ -18,11 +18,35 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #. Translators: a duration under one hour, e.g. "42 min".
-#: packages/core/src/presentation.ts:40
+#: packages/core/src/presentation.ts:68
 msgid "{minutes} min"
 msgstr "{minutes} min"
 
 #. Translators: a duration over one hour, e.g. "3h 05m"; {minutes} always has two digits.
-#: packages/core/src/presentation.ts:43
+#: packages/core/src/presentation.ts:71
 msgid "{hours}h {minutes}m"
 msgstr "{hours} h {minutes}"
+
+#: packages/gnome-extension/src/prefs.ts:17
+msgid "Reading"
+msgstr "Durée affichée"
+
+#: packages/gnome-extension/src/prefs.ts:18
+msgid "The duration shown in the top bar"
+msgstr "Dans la barre supérieure"
+
+#: packages/gnome-extension/src/prefs.ts:23
+msgid "Remaining time"
+msgstr "Temps restant"
+
+#: packages/gnome-extension/src/prefs.ts:23
+msgid "Until the next sunrise or sunset"
+msgstr "Jusqu’au prochain lever ou coucher du soleil"
+
+#: packages/gnome-extension/src/prefs.ts:24
+msgid "Elapsed time"
+msgstr "Temps écoulé"
+
+#: packages/gnome-extension/src/prefs.ts:24
+msgid "Since the last sunrise or sunset"
+msgstr "Depuis le dernier lever ou coucher du soleil"
