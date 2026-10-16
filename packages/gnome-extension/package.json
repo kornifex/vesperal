@@ -16,6 +16,7 @@
   "devDependencies": {
     "@girs/gjs": "^5.5.0",
     "@girs/gnome-shell": "^50.0.4",
+    "@girs/gweather-4.0": "^4.9.0",
     "esbuild": "^0.28.2"
   }
 }

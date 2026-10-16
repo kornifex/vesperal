@@ -1,6 +1,7 @@
 // Typed access to the extension's GSettings keys, shared by the extension and its preferences.
 
 import type Gio from "gi://Gio";
+import GLib from "gi://GLib";
 import { type LocationInUse, READINGS, type Reading } from "@sun-clock/core";
 
 export function readReading(settings: Gio.Settings): Reading {
@@ -17,4 +18,14 @@ export function readManualLocation(settings: Gio.Settings): LocationInUse | null
   if (!value) return null;
   const [name, latitude, longitude] = value.deepUnpack() as [string, number, number];
   return { name: name || null, latitude, longitude, source: "manual" };
+}
+
+export function writeManualLocation(
+  settings: Gio.Settings,
+  location: { name: string | null; latitude: number; longitude: number },
+): void {
+  settings.set_value(
+    "manual-location",
+    new GLib.Variant("m(sdd)", [location.name ?? "", location.latitude, location.longitude]),
+  );
 }

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: sun-clock\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-16 22:47+0200\n"
+"POT-Creation-Date: 2026-10-16 22:49+0200\n"
 "PO-Revision-Date: 2026-10-16 22:38+0200\n"
 "Last-Translator: Julien Seren-Rosso\n"
 "Language-Team: none\n"
@@ -34,12 +34,12 @@ msgid "Night length"
 msgstr "Durée de la nuit"
 
 #: packages/core/src/presentation.ts:130
-#: packages/gnome-extension/src/prefs.ts:23
+#: packages/gnome-extension/src/prefs.ts:40
 msgid "Remaining time"
 msgstr "Temps restant"
 
 #: packages/core/src/presentation.ts:132
-#: packages/gnome-extension/src/prefs.ts:24
+#: packages/gnome-extension/src/prefs.ts:41
 msgid "Elapsed time"
 msgstr "Temps écoulé"
 
@@ -48,6 +48,7 @@ msgid "Automatic location"
 msgstr "Lieu automatique"
 
 #: packages/core/src/presentation.ts:140
+#: packages/gnome-extension/src/prefs.ts:76
 msgid "Manual location"
 msgstr "Lieu manuel"
 
@@ -86,18 +87,50 @@ msgstr "{hours} h {minutes}"
 msgid "Preferences"
 msgstr "Préférences"
 
-#: packages/gnome-extension/src/prefs.ts:17
+#: packages/gnome-extension/src/prefs.ts:34
 msgid "Reading"
 msgstr "Durée affichée"
 
-#: packages/gnome-extension/src/prefs.ts:18
+#: packages/gnome-extension/src/prefs.ts:35
 msgid "The duration shown in the top bar"
 msgstr "Dans la barre supérieure"
 
-#: packages/gnome-extension/src/prefs.ts:23
+#: packages/gnome-extension/src/prefs.ts:40
 msgid "Until the next sunrise or sunset"
 msgstr "Jusqu’au prochain lever ou coucher du soleil"
 
-#: packages/gnome-extension/src/prefs.ts:24
+#: packages/gnome-extension/src/prefs.ts:41
 msgid "Since the last sunrise or sunset"
 msgstr "Depuis le dernier lever ou coucher du soleil"
+
+#: packages/gnome-extension/src/prefs.ts:81
+msgid "Search for a city"
+msgstr "Rechercher une ville"
+
+#: packages/gnome-extension/src/prefs.ts:89
+msgid "Coordinates"
+msgstr "Coordonnées"
+
+#: packages/gnome-extension/src/prefs.ts:90
+msgid "For any point on Earth, in decimal degrees"
+msgstr "Pour n’importe quel point du globe, en degrés décimaux"
+
+#: packages/gnome-extension/src/prefs.ts:94
+msgid "Latitude (north positive)"
+msgstr "Latitude (positive au nord)"
+
+#: packages/gnome-extension/src/prefs.ts:99
+msgid "Longitude (east positive)"
+msgstr "Longitude (positive à l’est)"
+
+#: packages/gnome-extension/src/prefs.ts:110
+msgid "No location set"
+msgstr "Aucun lieu défini"
+
+#: packages/gnome-extension/src/prefs.ts:144
+msgid "Latitude must be between −90 and 90"
+msgstr "La latitude doit être comprise entre −90 et 90"
+
+#: packages/gnome-extension/src/prefs.ts:147
+msgid "Longitude must be between −180 and 180"
+msgstr "La longitude doit être comprise entre −180 et 180"

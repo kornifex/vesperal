@@ -196,6 +196,9 @@ importers:
       '@girs/gnome-shell':
         specifier: ^50.0.4
         version: 50.0.4
+      '@girs/gweather-4.0':
+        specifier: ^4.9.0
+        version: 4.9.0
       esbuild:
         specifier: ^0.28.2
         version: 0.28.2
@@ -516,6 +519,9 @@ packages:
 
   '@girs/gvc-1.0@4.9.0':
     resolution: {integrity: sha512-3MUHf6ECC1zYQtfY013Yt+Qm7qlHZe0HvO3ldVaY9b2D0IE8467+suy62LjVheUNNOzwvWiCWLkzh24kTVSyVA==}
+
+  '@girs/gweather-4.0@4.9.0':
+    resolution: {integrity: sha512-zqRwN26FdeiTZ0xNpBfhaV+ILtsfHbJ5xfQl+Tszf8PDVBUzo7k+RZil4ybqMLYRjZnJ864VCf9ApVQcE37sPA==}
 
   '@girs/harfbuzz-0.0@4.9.0':
     resolution: {integrity: sha512-7DoBhKUSynQxc/E76KZ1yWBd777NU/JPrBtvv5mBnkfBqxz0LwFFuDcn0iYFTKJ51GgyOfJv6dY5AEEP15n/Kg==}
@@ -1497,6 +1503,14 @@ snapshots:
       '@girs/pangocairo-1.0': 4.9.0
 
   '@girs/gvc-1.0@4.9.0':
+    dependencies:
+      '@girs/gio-2.0': 4.9.0
+      '@girs/gjs': 4.9.0
+      '@girs/glib-2.0': 4.9.0
+      '@girs/gmodule-2.0': 4.9.0
+      '@girs/gobject-2.0': 4.9.0
+
+  '@girs/gweather-4.0@4.9.0':
     dependencies:
       '@girs/gio-2.0': 4.9.0
       '@girs/gjs': 4.9.0
