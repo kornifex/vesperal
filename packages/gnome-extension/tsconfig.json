@@ -1,0 +1,7 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["@girs/gjs", "@girs/gnome-shell/ambient", "@girs/gnome-shell/extensions/global"]
+  },
+  "include": ["src"]
+}

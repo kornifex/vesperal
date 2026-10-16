@@ -1,0 +1,8 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // No ambient globals: core must run unchanged under both GJS and Node.
+    "types": []
+  },
+  "include": ["src"]
+}

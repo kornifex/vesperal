@@ -1,0 +1,19 @@
+{
+  "name": "@sun-clock/gnome-extension",
+  "private": true,
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.ts",
+    "install-extension": "node scripts/build.ts --install",
+    "typecheck": "tsc -p . && tsc -p tsconfig.scripts.json"
+  },
+  "dependencies": {
+    "@sun-clock/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@girs/gjs": "^5.5.0",
+    "@girs/gnome-shell": "^50.0.4",
+    "esbuild": "^0.28.2"
+  }
+}

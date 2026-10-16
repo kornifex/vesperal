@@ -1,0 +1,7 @@
+{
+  "uuid": "sun-clock@local",
+  "name": "Sun Clock",
+  "description": "Tells time relative to sunrise and sunset at your location.",
+  "shell-version": ["50"],
+  "url": ""
+}
