@@ -1,19 +1,14 @@
-import Clutter from "gi://Clutter";
 import type Gio from "gi://Gio";
 import GnomeDesktop from "gi://GnomeDesktop";
-import St from "gi://St";
-import { Extension } from "resource:///org/gnome/shell/extensions/extension.js";
+import { gettext as _, Extension } from "resource:///org/gnome/shell/extensions/extension.js";
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
-import * as PanelMenu from "resource:///org/gnome/shell/ui/panelMenu.js";
 import { present, readClock } from "@sun-clock/core";
+import { SunClockIndicator } from "./indicator.ts";
 import { civilTimeLocale } from "./locale.ts";
 import { readManualLocation, readReading } from "./settings.ts";
-import { SunArcIcon } from "./sunArcIcon.ts";
 
 export default class SunClockExtension extends Extension {
-  #indicator: PanelMenu.Button | null = null;
-  #arcIcon: SunArcIcon | null = null;
-  #label: St.Label | null = null;
+  #indicator: SunClockIndicator | null = null;
   #settings: Gio.Settings | null = null;
   #settingsChangedId = 0;
   // GNOME's WallClock notifies on each minute boundary and after suspend/resume, time-zone
@@ -22,14 +17,10 @@ export default class SunClockExtension extends Extension {
   #wallClockChangedId = 0;
 
   override enable(): void {
-    this.#arcIcon = new SunArcIcon();
-    this.#label = new St.Label({ y_align: Clutter.ActorAlign.CENTER });
-    const box = new St.BoxLayout({ style_class: "sun-clock-indicator" });
-    box.add_child(this.#arcIcon.actor);
-    box.add_child(this.#label);
-    this.#indicator = new PanelMenu.Button(0.5, this.metadata.name, true);
-    this.#indicator.add_child(box);
-    Main.panel.addToStatusArea(this.uuid, this.#indicator, positionRightOfClock(), "center");
+    this.#indicator = new SunClockIndicator(this.metadata.name, {
+      preferences: { label: _("Preferences"), activate: () => this.openPreferences() },
+    });
+    Main.panel.addToStatusArea(this.uuid, this.#indicator.button, positionRightOfClock(), "center");
 
     this.#settings = this.getSettings();
     this.#settingsChangedId = this.#settings.connect("changed", () => this.#refresh());
@@ -47,14 +38,10 @@ export default class SunClockExtension extends Extension {
     this.#settings = null;
     this.#indicator?.destroy();
     this.#indicator = null;
-    this.#arcIcon = null;
-    this.#label = null;
   }
 
   #refresh(): void {
-    if (!this.#indicator || !this.#arcIcon || !this.#label || !this.#settings || !this.#wallClock) {
-      return;
-    }
+    if (!this.#indicator || !this.#settings || !this.#wallClock) return;
 
     const location = readManualLocation(this.#settings);
     if (!location) {
@@ -62,15 +49,15 @@ export default class SunClockExtension extends Extension {
       return;
     }
 
-    const view = present(readClock(location, new Date()), {
-      reading: readReading(this.#settings),
-      timeZone: this.#wallClock.timezone.get_identifier(),
-      locale: civilTimeLocale(),
-      translate: (message) => this.gettext(message),
-    });
-    this.#arcIcon.arc = view.bar.arc;
-    this.#label.text = view.bar.text;
-    this.#indicator.show();
+    this.#indicator.show(
+      present(readClock(location, new Date()), {
+        reading: readReading(this.#settings),
+        timeZone: this.#wallClock.timezone.get_identifier(),
+        locale: civilTimeLocale(),
+        translate: (message) => this.gettext(message),
+        location,
+      }),
+    );
   }
 }
 

@@ -7,3 +7,13 @@
   width: 24px;
   height: 16px;
 }
+
+.sun-clock-menu-label {
+  font-weight: normal;
+}
+
+.sun-clock-menu-value {
+  font-weight: bold;
+  padding-left: 24px;
+  font-feature-settings: "tnum";
+}

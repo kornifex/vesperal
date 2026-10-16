@@ -109,6 +109,31 @@ describe("readClock", () => {
     expectDurationNear(snapshot.remaining, 6, 35);
   });
 
+  // Each end of a Day length is within the tolerance, so the length is within twice that.
+  test("during a Day, the Day length is the length of the current Day", () => {
+    const snapshot = readClock(PARIS, new Date("2026-06-21T12:00:00Z"));
+
+    // 03:47 → 19:58
+    expect(Math.abs(snapshot.lastDayLength - (16 * 60 + 11) * 60_000)).toBeLessThanOrEqual(
+      2 * TOLERANCE_MS,
+    );
+  });
+
+  test("during a Night, the Day length is the length of the Day that just ended", () => {
+    const snapshot = readClock(SYDNEY, new Date("2026-01-15T12:00:00Z"));
+
+    // 14 January 18:59 → 15 January 09:09
+    expect(Math.abs(snapshot.lastDayLength - (14 * 60 + 10) * 60_000)).toBeLessThanOrEqual(
+      2 * TOLERANCE_MS,
+    );
+  });
+
+  test("records the instant it was read at", () => {
+    const instant = new Date("2026-06-21T12:00:00Z");
+
+    expect(readClock(PARIS, instant).instant).toEqual(instant);
+  });
+
   test("exactly at a Solar event, the next Phase has just begun", () => {
     const day = readClock(PARIS, new Date("2026-06-21T12:00:00Z"));
     const sunset = day.phase.end;
