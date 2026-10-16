@@ -7,6 +7,7 @@ export {
   type MenuRow,
   type PresentationOptions,
   present,
+  presentLocationUnknown,
   READINGS,
   type Reading,
   type SunArc,

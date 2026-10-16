@@ -190,6 +190,9 @@ importers:
         specifier: workspace:*
         version: link:../core
     devDependencies:
+      '@girs/geoclue-2.0':
+        specifier: ^4.9.0
+        version: 4.9.0
       '@girs/gjs':
         specifier: ^5.5.0
         version: 5.5.0
@@ -459,6 +462,9 @@ packages:
 
   '@girs/gdm-1.0@4.9.0':
     resolution: {integrity: sha512-ID75rAR7ND7ngpaXn8CwqoPOGJVsvqTTgMhavN3Uzq/46y3WU/GdXAD4r/zEp8NhPn7p0vcbNF+KRKbkcU6Y4A==}
+
+  '@girs/geoclue-2.0@4.9.0':
+    resolution: {integrity: sha512-BpeRHVK819tH8tF6YoflQAU/2MMU5Kwh/RFdoge23mBe3ivLXLjBHRlcvaK0AD/KTFmebKdvHRTLTmYfMfsN3Q==}
 
   '@girs/gio-2.0@4.9.0':
     resolution: {integrity: sha512-3n39vbeOmX1CggTz4vTn+xKpa9wpVe39/gLwoBY6kaXE40OLy6xmNQMB6Nhyutj00acb22fDUx81q6UgQ9gvVg==}
@@ -1321,6 +1327,14 @@ snapshots:
       '@girs/gobject-2.0': 4.9.0
 
   '@girs/gdm-1.0@4.9.0':
+    dependencies:
+      '@girs/gio-2.0': 4.9.0
+      '@girs/gjs': 4.9.0
+      '@girs/glib-2.0': 4.9.0
+      '@girs/gmodule-2.0': 4.9.0
+      '@girs/gobject-2.0': 4.9.0
+
+  '@girs/geoclue-2.0@4.9.0':
     dependencies:
       '@girs/gio-2.0': 4.9.0
       '@girs/gjs': 4.9.0

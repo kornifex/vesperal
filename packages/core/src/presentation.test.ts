@@ -5,6 +5,7 @@ import {
   type PhaseKind,
   type PresentationOptions,
   present,
+  presentLocationUnknown,
 } from "./index.ts";
 
 const SECOND = 1_000;
@@ -75,6 +76,8 @@ const FRENCH_CATALOGUE: Readonly<Record<string, string>> = {
   "Polar day": "Jour polaire",
   "Polar night": "Nuit polaire",
   "{days}d {hours}h": "{days} j {hours} h",
+  "Location unknown": "Lieu inconnu",
+  "Set a location manually…": "Définir un lieu manuellement…",
 };
 const FRENCH: PresentationOptions = {
   ...OPTIONS,
@@ -160,8 +163,8 @@ describe("present: Sun arc", () => {
   });
 
   test("covers the whole Phase, from its very start to just before its end", () => {
-    expect(present(phaseWithRemaining("day", 14 * HOUR), OPTIONS).bar.arc.progress).toBe(0);
-    expect(present(phaseWithRemaining("day", 1), OPTIONS).bar.arc.progress).toBeCloseTo(1, 6);
+    expect(present(phaseWithRemaining("day", 14 * HOUR), OPTIONS).bar.arc?.progress).toBe(0);
+    expect(present(phaseWithRemaining("day", 1), OPTIONS).bar.arc?.progress).toBeCloseTo(1, 6);
   });
 });
 
@@ -241,6 +244,16 @@ describe("present: Phase menu", () => {
     });
   });
 
+  test("says when it falls back on the Last known location", () => {
+    const snapshot = snapshotOf("night", NIGHT, "2026-06-21T21:00:00Z");
+    const location = { ...PARIS, source: "last-known" } as const;
+
+    expect(rows(snapshot, { ...OPTIONS, location }).at(-1)).toEqual({
+      label: "Last known location",
+      value: "Paris",
+    });
+  });
+
   test("speaks French", () => {
     const snapshot = snapshotOf("night", NIGHT, "2026-06-21T21:00:00Z", 16 * HOUR + 11 * MINUTE);
     const quito = { name: null, latitude: -0.1807, longitude: -78.4678, source: "manual" } as const;
@@ -314,5 +327,28 @@ describe("present: Polar day and Polar night", () => {
     const rows = polarDayRemaining(30 * DAY + 2 * HOUR, FRENCH).menu.rows;
 
     expect(rows[2]).toEqual({ label: "Durée du jour", value: "68 j 23 h" });
+  });
+});
+
+describe("present: Location unknown", () => {
+  test("shows the state in the bar, with no Sun arc", () => {
+    expect(presentLocationUnknown(OPTIONS.translate).bar).toEqual({
+      arc: null,
+      text: "Location unknown",
+    });
+  });
+
+  test("offers to set a Location manually in the menu, instead of the Phase details", () => {
+    expect(presentLocationUnknown(OPTIONS.translate).menu).toEqual({
+      rows: [],
+      setManualLocation: "Set a location manually…",
+    });
+  });
+
+  test("speaks French", () => {
+    const view = presentLocationUnknown(FRENCH.translate);
+
+    expect(view.bar.text).toBe("Lieu inconnu");
+    expect(view.menu.setManualLocation).toBe("Définir un lieu manuellement…");
   });
 });

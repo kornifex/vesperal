@@ -1,6 +1,6 @@
 // Seam 2: turning a clock snapshot into what the front ends display.
 import type { ClockSnapshot } from "./clock.ts";
-import type { Location, LocationInUse } from "./location.ts";
+import type { Location, LocationInUse, LocationSource } from "./location.ts";
 
 const MINUTES_PER_HOUR = 60;
 const MINUTES_PER_DAY = 24 * MINUTES_PER_HOUR;
@@ -34,8 +34,12 @@ export interface SunArc {
 }
 
 export interface Bar {
-  readonly arc: SunArc;
-  /** The Reading as a duration, or the polar state once that duration exceeds 24 hours. */
+  /** The Sun arc, or null when no Location is known. */
+  readonly arc: SunArc | null;
+  /**
+   * The Reading as a duration, the polar state once that duration exceeds 24 hours, or the
+   * "Location unknown" state.
+   */
   readonly text: string;
 }
 
@@ -48,6 +52,11 @@ export interface MenuRow {
 /** The details of the current Phase, shown when the indicator is clicked. */
 export interface Menu {
   readonly rows: readonly MenuRow[];
+  /**
+   * The label of an entry leading to the Manual location settings, offered when no Location
+   * is known; null otherwise.
+   */
+  readonly setManualLocation: string | null;
 }
 
 export interface ViewModel {
@@ -64,7 +73,15 @@ export function present(snapshot: ClockSnapshot, options: PresentationOptions): 
       },
       text: barText(snapshot, options),
     },
-    menu: { rows: menuRows(snapshot, options) },
+    menu: { rows: menuRows(snapshot, options), setManualLocation: null },
+  };
+}
+
+/** What to display when no Location is known, so the clock cannot be read. */
+export function presentLocationUnknown(translate: Translate): ViewModel {
+  return {
+    bar: { arc: null, text: translate("Location unknown") },
+    menu: { rows: [], setManualLocation: translate("Set a location manually…") },
   };
 }
 
@@ -144,10 +161,20 @@ function readingLabel(reading: Reading, translate: Translate): string {
 function locationRow(location: LocationInUse, options: PresentationOptions): MenuRow {
   const { translate } = options;
   return {
-    label:
-      location.source === "manual" ? translate("Manual location") : translate("Automatic location"),
+    label: locationLabel(location.source, translate),
     value: location.name ?? formatCoordinates(location, options),
   };
+}
+
+function locationLabel(source: LocationSource, translate: Translate): string {
+  switch (source) {
+    case "automatic":
+      return translate("Automatic location");
+    case "manual":
+      return translate("Manual location");
+    case "last-known":
+      return translate("Last known location");
+  }
 }
 
 function formatCoordinates(location: Location, options: PresentationOptions): string {

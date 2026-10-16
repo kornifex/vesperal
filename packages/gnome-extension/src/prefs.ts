@@ -1,13 +1,22 @@
 import Adw from "gi://Adw";
-import type Gio from "gi://Gio";
+import Gio from "gi://Gio";
 import Gtk from "gi://Gtk";
 import {
   gettext as _,
   ExtensionPreferences,
 } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
-import { READINGS, type Reading } from "@sun-clock/core";
+import { READINGS } from "@sun-clock/core";
 import { type City, CitySearch } from "./citySearch.ts";
-import { readManualLocation, readReading, writeManualLocation, writeReading } from "./settings.ts";
+import {
+  LOCATION_MODES,
+  readLocationMode,
+  readManualLocation,
+  readReading,
+  type StoredLocation,
+  writeLocationMode,
+  writeManualLocation,
+  writeReading,
+} from "./settings.ts";
 
 const MAX_SEARCH_RESULTS = 8;
 
@@ -19,7 +28,7 @@ export default class SunClockPreferences extends ExtensionPreferences {
 
     const disconnects = [
       addReadingGroup(page, settings),
-      addManualLocationGroups(page, settings, window),
+      addLocationGroups(page, settings, window),
     ];
     window.connect("close-request", () => {
       for (const disconnect of disconnects) disconnect();
@@ -36,47 +45,46 @@ function addReadingGroup(page: Adw.PreferencesPage, settings: Gio.Settings): () 
   });
   page.add(group);
 
-  const choices: Record<Reading, { title: string; subtitle: string }> = {
-    remaining: { title: _("Remaining time"), subtitle: _("Until the next sunrise or sunset") },
-    elapsed: { title: _("Elapsed time"), subtitle: _("Since the last sunrise or sunset") },
-  };
-  const buttons = new Map<Reading, Gtk.CheckButton>();
-  let firstButton: Gtk.CheckButton | undefined;
-  for (const reading of READINGS) {
-    const button = new Gtk.CheckButton({ valign: Gtk.Align.CENTER });
-    if (firstButton) button.group = firstButton;
-    else firstButton = button;
-    button.connect("toggled", () => {
-      if (button.active) writeReading(settings, reading);
-    });
-    const row = new Adw.ActionRow({ ...choices[reading], activatable_widget: button });
-    row.add_prefix(button);
-    group.add(row);
-    buttons.set(reading, button);
-  }
-
-  const show = (): void => {
-    const button = buttons.get(readReading(settings));
-    if (button) button.active = true;
-  };
-  show();
-  const changedId = settings.connect("changed::reading", show);
-  return () => settings.disconnect(changedId);
+  const { disconnect } = addChoiceRows(
+    group,
+    settings,
+    { key: "reading", values: READINGS, read: readReading, write: writeReading },
+    {
+      remaining: { title: _("Remaining time"), subtitle: _("Until the next sunrise or sunset") },
+      elapsed: { title: _("Elapsed time"), subtitle: _("Since the last sunrise or sunset") },
+    },
+  );
+  return disconnect;
 }
 
 /**
- * Adds the Manual location: the current one, an offline city search, and direct latitude and
- * longitude entry. Returns a function that stops following the settings.
+ * Adds the choice between Automatic and Manual location, and the Manual location: an offline
+ * city search, and direct latitude and longitude entry. Choosing a Manual location also
+ * chooses Manual mode. Returns a function that stops following the settings.
  */
-function addManualLocationGroups(
+function addLocationGroups(
   page: Adw.PreferencesPage,
   settings: Gio.Settings,
   window: Adw.PreferencesWindow,
 ): () => void {
-  const group = new Adw.PreferencesGroup({ title: _("Manual location") });
+  const group = new Adw.PreferencesGroup({ title: _("Location") });
   page.add(group);
-  const currentRow = new Adw.ActionRow();
-  group.add(currentRow);
+  const modes = addChoiceRows(
+    group,
+    settings,
+    {
+      key: "location-mode",
+      values: LOCATION_MODES,
+      read: readLocationMode,
+      write: writeLocationMode,
+    },
+    {
+      automatic: { title: _("Automatic"), subtitle: "" },
+      manual: { title: _("Manual"), subtitle: "" },
+    },
+  );
+  const automaticRow = modes.rows.get("automatic");
+  const manualRow = modes.rows.get("manual");
   const searchRow = new Adw.EntryRow({ title: _("Search for a city") });
   group.add(searchRow);
 
@@ -102,18 +110,30 @@ function addManualLocationGroups(
   coordinatesGroup.add(latitudeRow);
   coordinatesGroup.add(longitudeRow);
 
-  const show = (): void => {
+  const locationServices = new Gio.Settings({ schema_id: "org.gnome.system.location" });
+  const showLocationServices = (): void => {
+    if (!automaticRow) return;
+    automaticRow.subtitle = locationServices.get_boolean("enabled")
+      ? _("From the system's location services")
+      : _("Location services are off");
+  };
+
+  const showManualLocation = (): void => {
     const location = readManualLocation(settings);
     const coordinates = location ? `${round(location.latitude)}, ${round(location.longitude)}` : "";
-    currentRow.title = location?.name ?? coordinates;
-    currentRow.subtitle = location ? (location.name ? coordinates : "") : _("No location set");
+    if (manualRow) manualRow.subtitle = location?.name ?? (coordinates || _("No location set"));
     setTextUnchanged(latitudeRow, location ? String(round(location.latitude)) : "");
     setTextUnchanged(longitudeRow, location ? String(round(location.longitude)) : "");
     for (const row of [latitudeRow, longitudeRow]) row.remove_css_class("error");
   };
 
+  const chooseManualLocation = (location: StoredLocation): void => {
+    writeManualLocation(settings, location);
+    writeLocationMode(settings, "manual");
+  };
+
   const choose = (city: City): void => {
-    writeManualLocation(settings, city);
+    chooseManualLocation(city);
     searchRow.text = "";
   };
 
@@ -145,15 +165,66 @@ function addManualLocationGroups(
       longitudeRow.add_css_class("error");
       window.add_toast(new Adw.Toast({ title: _("Longitude must be between −180 and 180") }));
     } else {
-      writeManualLocation(settings, { name: null, latitude, longitude });
+      chooseManualLocation({ name: null, latitude, longitude });
     }
   };
   latitudeRow.connect("apply", applyCoordinates);
   longitudeRow.connect("apply", applyCoordinates);
 
+  showLocationServices();
+  showManualLocation();
+  const locationServicesChangedId = locationServices.connect(
+    "changed::enabled",
+    showLocationServices,
+  );
+  const manualLocationChangedId = settings.connect("changed::manual-location", showManualLocation);
+  return () => {
+    modes.disconnect();
+    locationServices.disconnect(locationServicesChangedId);
+    settings.disconnect(manualLocationChangedId);
+  };
+}
+
+/**
+ * Adds to `group` one radio row per value of a settings key, in the order of `values`, and
+ * keeps them in step with the settings. Returns the rows, and a function that stops following
+ * the settings.
+ */
+function addChoiceRows<T extends string>(
+  group: Adw.PreferencesGroup,
+  settings: Gio.Settings,
+  setting: {
+    key: string;
+    values: readonly T[];
+    read: (settings: Gio.Settings) => T;
+    write: (settings: Gio.Settings, value: T) => void;
+  },
+  choices: Record<T, { title: string; subtitle: string }>,
+): { rows: ReadonlyMap<T, Adw.ActionRow>; disconnect: () => void } {
+  const rows = new Map<T, Adw.ActionRow>();
+  const buttons = new Map<T, Gtk.CheckButton>();
+  let firstButton: Gtk.CheckButton | undefined;
+  for (const value of setting.values) {
+    const button = new Gtk.CheckButton({ valign: Gtk.Align.CENTER });
+    if (firstButton) button.group = firstButton;
+    else firstButton = button;
+    button.connect("toggled", () => {
+      if (button.active) setting.write(settings, value);
+    });
+    const row = new Adw.ActionRow({ ...choices[value], activatable_widget: button });
+    row.add_prefix(button);
+    group.add(row);
+    rows.set(value, row);
+    buttons.set(value, button);
+  }
+
+  const show = (): void => {
+    const button = buttons.get(setting.read(settings));
+    if (button) button.active = true;
+  };
   show();
-  const changedId = settings.connect("changed::manual-location", show);
-  return () => settings.disconnect(changedId);
+  const changedId = settings.connect(`changed::${setting.key}`, show);
+  return { rows, disconnect: () => settings.disconnect(changedId) };
 }
 
 /** Sets the text of an entry row without revealing its apply button, as typing would. */

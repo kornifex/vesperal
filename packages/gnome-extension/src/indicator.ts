@@ -11,8 +11,15 @@ export class SunClockIndicator {
   readonly #arcIcon = new SunArcIcon();
   readonly #label = new St.Label({ y_align: Clutter.ActorAlign.CENTER });
   readonly #rows = new PopupMenu.PopupMenuSection();
+  readonly #setManualLocation = new PopupMenu.PopupMenuItem("");
 
-  constructor(name: string, actions: { preferences: { label: string; activate: () => void } }) {
+  constructor(
+    name: string,
+    actions: {
+      preferences: { label: string; activate: () => void };
+      setManualLocation: { activate: () => void };
+    },
+  ) {
     const box = new St.BoxLayout({ style_class: "sun-clock-indicator" });
     box.add_child(this.#arcIcon.actor);
     box.add_child(this.#label);
@@ -21,14 +28,19 @@ export class SunClockIndicator {
 
     const menu = this.button.menu as PopupMenu.PopupMenu;
     menu.addMenuItem(this.#rows);
+    this.#setManualLocation.connect("activate", actions.setManualLocation.activate);
+    menu.addMenuItem(this.#setManualLocation);
     menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
     menu.addAction(actions.preferences.label, actions.preferences.activate);
   }
 
   show(view: ViewModel): void {
-    this.#arcIcon.arc = view.bar.arc;
+    if (view.bar.arc) this.#arcIcon.arc = view.bar.arc;
+    this.#arcIcon.actor.visible = view.bar.arc !== null;
     this.#label.text = view.bar.text;
     this.#showRows(view.menu.rows);
+    this.#setManualLocation.label.text = view.menu.setManualLocation ?? "";
+    this.#setManualLocation.visible = view.menu.setManualLocation !== null;
     this.button.show();
   }
 

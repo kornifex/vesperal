@@ -4,8 +4,11 @@ export interface Location {
   readonly longitude: number;
 }
 
-/** Where the Location in use comes from. */
-export type LocationSource = "automatic" | "manual";
+/**
+ * Where the Location in use comes from: the active mode, or the Last known location when that
+ * mode has none.
+ */
+export type LocationSource = "automatic" | "manual" | "last-known";
 
 /** The Location the clock is read for, as the menu describes it. */
 export interface LocationInUse extends Location {
