@@ -17,6 +17,8 @@ export function readManualLocation(settings: Gio.Settings): LocationInUse | null
   const value = settings.get_value("manual-location").get_maybe();
   if (!value) return null;
   const [name, latitude, longitude] = value.deepUnpack() as [string, number, number];
+  // The key can be set from the command line, bypassing the checks of the preferences.
+  if (!(Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180)) return null;
   return { name: name || null, latitude, longitude, source: "manual" };
 }
 

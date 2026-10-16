@@ -41,6 +41,16 @@ export default class SunClockExtension extends Extension {
   }
 
   #refresh(): void {
+    try {
+      this.#update();
+    } catch (error) {
+      // Never leave a stale or broken Reading in the bar.
+      this.#indicator?.hide();
+      this.getLogger().error(error);
+    }
+  }
+
+  #update(): void {
     if (!this.#indicator || !this.#settings || !this.#wallClock) return;
 
     const location = readManualLocation(this.#settings);

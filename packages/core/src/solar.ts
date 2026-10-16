@@ -1,7 +1,9 @@
 // Solar position after the NOAA Solar Calculator (Meeus, "Astronomical Algorithms").
 import type { Location } from "./location.ts";
 
+const MS_PER_MINUTE = 60_000;
 const MS_PER_DAY = 86_400_000;
+const MINUTES_PER_HALF_DAY = 720;
 const UNIX_EPOCH_JULIAN_DAY = 2_440_587.5;
 const J2000_JULIAN_DAY = 2_451_545;
 const DAYS_PER_JULIAN_CENTURY = 36_525;
@@ -14,6 +16,47 @@ const degrees = (angle: number): number => (angle * 180) / Math.PI;
  * (milliseconds since the Unix epoch). Refraction is not applied.
  */
 export function solarAltitude(location: Location, epochMs: number): number {
+  const { declination, equationOfTimeMinutes } = sunAt(epochMs);
+  const utcMinutes = ((((epochMs % MS_PER_DAY) + MS_PER_DAY) % MS_PER_DAY) / MS_PER_DAY) * 1440;
+  const trueSolarTimeMinutes = utcMinutes + equationOfTimeMinutes + 4 * location.longitude;
+  const hourAngle = radians(trueSolarTimeMinutes / 4 - 180);
+
+  const latitude = radians(location.latitude);
+  const cosZenith =
+    Math.sin(latitude) * Math.sin(declination) +
+    Math.cos(latitude) * Math.cos(declination) * Math.cos(hourAngle);
+  return 90 - degrees(Math.acos(Math.min(1, Math.max(-1, cosZenith))));
+}
+
+/**
+ * The instant, in milliseconds since the epoch, of the `index`-th culmination of the Sun at
+ * `location`: its upper transit (local solar noon) for an odd index, its lower transit (local
+ * solar midnight) for an even one. Between two consecutive culminations the Sun only rises or
+ * only sinks, so it crosses the horizon at most once.
+ */
+export function culmination(location: Location, index: number): number {
+  // Local true solar time, counted in minutes from the epoch, is a half-day multiple at each
+  // culmination. The equation of time varies slowly, so a few fixed-point steps converge.
+  const target = index * MINUTES_PER_HALF_DAY - 4 * location.longitude;
+  let epochMs = target * MS_PER_MINUTE;
+  for (let step = 0; step < 3; step++) {
+    epochMs = (target - sunAt(epochMs).equationOfTimeMinutes) * MS_PER_MINUTE;
+  }
+  return Math.round(epochMs);
+}
+
+/** The index of the last culmination at or before `epochMs` (see `culmination`). */
+export function culminationIndexAt(location: Location, epochMs: number): number {
+  const solarMinutes =
+    epochMs / MS_PER_MINUTE + sunAt(epochMs).equationOfTimeMinutes + 4 * location.longitude;
+  let index = Math.floor(solarMinutes / MINUTES_PER_HALF_DAY);
+  // Settle rounding at the boundaries against the culminations as actually computed.
+  while (culmination(location, index) > epochMs) index--;
+  while (culmination(location, index + 1) <= epochMs) index++;
+  return index;
+}
+
+function sunAt(epochMs: number): { declination: number; equationOfTimeMinutes: number } {
   const julianDay = epochMs / MS_PER_DAY + UNIX_EPOCH_JULIAN_DAY;
   const t = (julianDay - J2000_JULIAN_DAY) / DAYS_PER_JULIAN_CENTURY;
 
@@ -47,13 +90,5 @@ export function solarAltitude(location: Location, epochMs: number): number {
         1.25 * eccentricity * eccentricity * Math.sin(2 * m),
     );
 
-  const utcMinutes = ((((epochMs % MS_PER_DAY) + MS_PER_DAY) % MS_PER_DAY) / MS_PER_DAY) * 1440;
-  const trueSolarTimeMinutes = utcMinutes + equationOfTimeMinutes + 4 * location.longitude;
-  const hourAngle = radians(trueSolarTimeMinutes / 4 - 180);
-
-  const latitude = radians(location.latitude);
-  const cosZenith =
-    Math.sin(latitude) * Math.sin(declination) +
-    Math.cos(latitude) * Math.cos(declination) * Math.cos(hourAngle);
-  return 90 - degrees(Math.acos(Math.min(1, Math.max(-1, cosZenith))));
+  return { declination, equationOfTimeMinutes };
 }

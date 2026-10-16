@@ -5,14 +5,26 @@ import { type ClockSnapshot, type Location, readClock } from "./index.ts";
 // (aa.usno.navy.mil/api/rstt), which uses the same −0.833° convention. They are UTC and
 // rounded to the minute.
 const TOLERANCE_MS = 60_000;
+// Above the polar circles, and wherever the Sun only grazes the horizon, it crosses the
+// horizon at a shallow angle: a hundredth of a degree of difference between solar models
+// moves a Solar event by minutes. NOAA's algorithm is therefore only held to ±3 minutes there.
+const HIGH_LATITUDE_TOLERANCE_MS = 3 * 60_000;
 
 const PARIS: Location = { latitude: 48.8566, longitude: 2.3522 };
 const QUITO: Location = { latitude: -0.1807, longitude: -78.4678 };
 const SYDNEY: Location = { latitude: -33.8688, longitude: 151.2093 };
+const TROMSØ: Location = { latitude: 69.6492, longitude: 18.9553 };
+const LONGYEARBYEN: Location = { latitude: 78.2232, longitude: 15.6267 };
+const MCMURDO: Location = { latitude: -77.846, longitude: 166.676 };
+// Apia, Samoa: just west of the date line, at UTC+13.
+const APIA: Location = { latitude: -13.8333, longitude: -171.7667 };
+// A point just south of the polar circle where, around the winter solstice, the Sun only
+// shows for about ten minutes a day.
+const GRAZING: Location = { latitude: 67.393, longitude: 13.25 };
 
-function expectNear(actual: Date, expected: string): void {
+function expectNear(actual: Date, expected: string, tolerance = TOLERANCE_MS): void {
   const difference = Math.abs(actual.getTime() - Date.parse(expected));
-  expect(difference, `${actual.toISOString()} vs ${expected}`).toBeLessThanOrEqual(TOLERANCE_MS);
+  expect(difference, `${actual.toISOString()} vs ${expected}`).toBeLessThanOrEqual(tolerance);
 }
 
 function expectDurationNear(actual: number, hours: number, minutes: number): void {
@@ -25,10 +37,11 @@ function expectPhase(
   kind: ClockSnapshot["phase"]["kind"],
   start: string,
   end: string,
+  tolerance = TOLERANCE_MS,
 ): void {
   expect(snapshot.phase.kind).toBe(kind);
-  expectNear(snapshot.phase.start, start);
-  expectNear(snapshot.phase.end, end);
+  expectNear(snapshot.phase.start, start, tolerance);
+  expectNear(snapshot.phase.end, end, tolerance);
 }
 
 describe("readClock", () => {
@@ -147,5 +160,171 @@ describe("readClock", () => {
     expect(atSunset.phase.start).toEqual(sunset);
     expect(atSunset.elapsed).toBe(0);
     expect(atSunset.progress).toBe(0);
+  });
+});
+
+describe("readClock at high latitudes and near the date line", () => {
+  test.each([
+    {
+      case: "Tromsø, a Day with two Sunrises on the same UTC date",
+      location: TROMSØ,
+      instant: "2026-05-13T12:00:00Z",
+      kind: "day",
+      start: "2026-05-13T00:02Z",
+      end: "2026-05-13T21:27Z",
+    },
+    {
+      case: "Tromsø, the 26-minute Night before the Polar day",
+      location: TROMSØ,
+      instant: "2026-05-17T22:40:00Z",
+      kind: "night",
+      start: "2026-05-17T22:27Z",
+      end: "2026-05-17T22:53Z",
+    },
+    {
+      case: "Tromsø, the first day of the Polar day",
+      location: TROMSØ,
+      instant: "2026-05-18T12:00:00Z",
+      kind: "day",
+      start: "2026-05-17T22:53Z",
+      end: "2026-07-25T22:36Z",
+    },
+    {
+      case: "Tromsø, the last day of the Polar day",
+      location: TROMSØ,
+      instant: "2026-07-25T12:00:00Z",
+      kind: "day",
+      start: "2026-05-17T22:53Z",
+      end: "2026-07-25T22:36Z",
+    },
+    {
+      case: "Tromsø, the first Night after the Polar day",
+      location: TROMSØ,
+      instant: "2026-07-25T22:50:00Z",
+      kind: "night",
+      start: "2026-07-25T22:36Z",
+      end: "2026-07-25T23:06Z",
+    },
+    {
+      case: "Tromsø, the 22-minute Day before the Polar night",
+      location: TROMSØ,
+      instant: "2026-11-27T10:30:00Z",
+      kind: "day",
+      start: "2026-11-27T10:20Z",
+      end: "2026-11-27T10:42Z",
+    },
+    {
+      case: "Tromsø, the first day of the Polar night",
+      location: TROMSØ,
+      instant: "2026-11-28T12:00:00Z",
+      kind: "night",
+      start: "2026-11-27T10:42Z",
+      end: "2027-01-15T10:35Z",
+    },
+    {
+      case: "Tromsø, the last day of the Polar night",
+      location: TROMSØ,
+      instant: "2027-01-15T06:00:00Z",
+      kind: "night",
+      start: "2026-11-27T10:42Z",
+      end: "2027-01-15T10:35Z",
+    },
+    {
+      case: "Longyearbyen, the Polar day",
+      location: LONGYEARBYEN,
+      instant: "2026-04-18T12:00:00Z",
+      kind: "day",
+      start: "2026-04-17T23:39Z",
+      end: "2026-08-24T22:29Z",
+    },
+    {
+      case: "Longyearbyen, the first Night after the Polar day",
+      location: LONGYEARBYEN,
+      instant: "2026-08-24T23:00:00Z",
+      kind: "night",
+      start: "2026-08-24T22:29Z",
+      end: "2026-08-24T23:33Z",
+    },
+    {
+      case: "McMurdo, the last Day before the Polar night",
+      location: MCMURDO,
+      instant: "2026-04-24T01:00:00Z",
+      kind: "day",
+      start: "2026-04-24T00:11Z",
+      end: "2026-04-24T01:30Z",
+    },
+    {
+      case: "McMurdo, the Polar night",
+      location: MCMURDO,
+      instant: "2026-06-21T12:00:00Z",
+      kind: "night",
+      start: "2026-04-24T01:30Z",
+      end: "2026-08-19T00:20Z",
+    },
+    {
+      case: "McMurdo, the first Day after the Polar night",
+      location: MCMURDO,
+      instant: "2026-08-19T01:00:00Z",
+      kind: "day",
+      start: "2026-08-19T00:20Z",
+      end: "2026-08-19T01:36Z",
+    },
+    {
+      case: "Apia, a Day across the UTC date change",
+      location: APIA,
+      instant: "2026-06-21T00:00:00Z",
+      kind: "day",
+      start: "2026-06-20T17:50Z",
+      end: "2026-06-21T05:08Z",
+    },
+    {
+      case: "Apia, a Night",
+      location: APIA,
+      instant: "2026-06-21T10:00:00Z",
+      kind: "night",
+      start: "2026-06-21T05:08Z",
+      end: "2026-06-21T17:50Z",
+    },
+    {
+      case: "a Night before a Day of about ten minutes",
+      location: GRAZING,
+      instant: "2026-12-21T09:00:00Z",
+      kind: "night",
+      start: "2026-12-20T11:13Z",
+      end: "2026-12-21T11:00Z",
+    },
+    {
+      case: "a Day of about ten minutes",
+      location: GRAZING,
+      instant: "2026-12-21T11:05:00Z",
+      kind: "day",
+      start: "2026-12-21T11:00Z",
+      end: "2026-12-21T11:10Z",
+    },
+  ] as const)("$case matches the reference", ({ location, instant, kind, start, end }) => {
+    expectPhase(
+      readClock(location, new Date(instant)),
+      kind,
+      start,
+      end,
+      HIGH_LATITUDE_TOLERANCE_MS,
+    );
+  });
+
+  test("flags a Phase longer than 24 hours as a Polar day or Polar night", () => {
+    expect(readClock(TROMSØ, new Date("2026-05-18T12:00:00Z")).phase.isPolar).toBe(true);
+    expect(readClock(TROMSØ, new Date("2026-11-28T12:00:00Z")).phase.isPolar).toBe(true);
+    expect(readClock(TROMSØ, new Date("2026-05-13T12:00:00Z")).phase.isPolar).toBe(false);
+    expect(readClock(PARIS, new Date("2026-06-21T12:00:00Z")).phase.isPolar).toBe(false);
+  });
+
+  test("reaches a Solar event half a year away, at the poles", () => {
+    const southPole: Location = { latitude: -90, longitude: 0 };
+    const snapshot = readClock(southPole, new Date("2026-06-21T12:00:00Z"));
+
+    // The Sun set around the March equinox and rises around the September one.
+    expect(snapshot.phase.kind).toBe("night");
+    expect(snapshot.phase.start.getTime()).toBeLessThan(Date.parse("2026-04-01T00:00Z"));
+    expect(snapshot.phase.end.getTime()).toBeGreaterThan(Date.parse("2026-09-10T00:00Z"));
   });
 });

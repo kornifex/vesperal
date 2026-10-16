@@ -3,6 +3,7 @@ import type { ClockSnapshot } from "./clock.ts";
 import type { Location, LocationInUse } from "./location.ts";
 
 const MINUTES_PER_HOUR = 60;
+const MINUTES_PER_DAY = 24 * MINUTES_PER_HOUR;
 const MS_PER_MINUTE = 60_000;
 const MS_PER_DAY = 86_400_000;
 
@@ -34,7 +35,7 @@ export interface SunArc {
 
 export interface Bar {
   readonly arc: SunArc;
-  /** The Reading, as a duration. */
+  /** The Reading as a duration, or the polar state once that duration exceeds 24 hours. */
   readonly text: string;
 }
 
@@ -61,10 +62,17 @@ export function present(snapshot: ClockSnapshot, options: PresentationOptions): 
         body: snapshot.phase.kind === "day" ? "sun" : "moon",
         progress: snapshot.progress,
       },
-      text: formatDuration(readingMinutes(snapshot, options.reading), options.translate),
+      text: barText(snapshot, options),
     },
     menu: { rows: menuRows(snapshot, options) },
   };
+}
+
+function barText(snapshot: ClockSnapshot, options: PresentationOptions): string {
+  const { translate } = options;
+  const minutes = readingMinutes(snapshot, options.reading);
+  if (minutes <= MINUTES_PER_DAY) return formatDuration(minutes, translate);
+  return snapshot.phase.kind === "day" ? translate("Polar day") : translate("Polar night");
 }
 
 function menuRows(snapshot: ClockSnapshot, options: PresentationOptions): MenuRow[] {
@@ -197,6 +205,13 @@ function civilDayNumber(instant: Date, timeZone: string): number {
 }
 
 function formatDuration(totalMinutes: number, translate: Translate): string {
+  if (totalMinutes > MINUTES_PER_DAY) {
+    // Translators: a duration over 24 hours, e.g. "68d 23h", for a Polar day or Polar night.
+    return fill(translate("{days}d {hours}h"), {
+      days: String(Math.floor(totalMinutes / MINUTES_PER_DAY)),
+      hours: String(Math.floor((totalMinutes % MINUTES_PER_DAY) / MINUTES_PER_HOUR)),
+    });
+  }
   if (totalMinutes < MINUTES_PER_HOUR) {
     // Translators: a duration under one hour, e.g. "42 min".
     return fill(translate("{minutes} min"), { minutes: String(totalMinutes) });

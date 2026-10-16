@@ -32,7 +32,7 @@ function snapshotOf(
   const now = typeof instant === "number" ? instant : Date.parse(instant);
   return {
     instant: new Date(now),
-    phase: { kind, start: new Date(start), end: new Date(end) },
+    phase: { kind, start: new Date(start), end: new Date(end), isPolar: end - start > 24 * HOUR },
     remaining: end - now,
     elapsed: now - start,
     progress: (now - start) / (end - start),
@@ -72,6 +72,9 @@ const FRENCH_CATALOGUE: Readonly<Record<string, string>> = {
   "{degrees}° S": "{degrees}° S",
   "{degrees}° E": "{degrees}° E",
   "{degrees}° W": "{degrees}° O",
+  "Polar day": "Jour polaire",
+  "Polar night": "Nuit polaire",
+  "{days}d {hours}h": "{days} j {hours} h",
 };
 const FRENCH: PresentationOptions = {
   ...OPTIONS,
@@ -250,5 +253,66 @@ describe("present: Phase menu", () => {
       { label: "Durée du jour", value: "16 h 11" },
       { label: "Lieu manuel", value: "0,181° S, 78,468° O" },
     ]);
+  });
+});
+
+describe("present: Polar day and Polar night", () => {
+  const DAY = 24 * HOUR;
+  // A Polar day in Tromsø, from 17 May to 25 July.
+  const POLAR_DAY = { start: "2026-05-17T22:53:00Z", end: "2026-07-25T22:36:00Z" };
+
+  function polarDayRemaining(remaining: number, options = OPTIONS) {
+    return present(snapshotOf("day", POLAR_DAY, Date.parse(POLAR_DAY.end) - remaining), options);
+  }
+
+  function polarDayElapsed(elapsed: number) {
+    const snapshot = snapshotOf("day", POLAR_DAY, Date.parse(POLAR_DAY.start) + elapsed);
+    return present(snapshot, { ...OPTIONS, reading: "elapsed" });
+  }
+
+  test("shows the polar state while the Remaining time exceeds 24 hours", () => {
+    expect(polarDayRemaining(DAY + 1).bar.text).toBe("Polar day");
+    expect(polarDayRemaining(30 * DAY).bar.text).toBe("Polar day");
+  });
+
+  test("shows the Remaining time again from 24 hours before the Solar event", () => {
+    expect(polarDayRemaining(DAY).bar.text).toBe("24h 00m");
+    expect(polarDayRemaining(DAY - 1).bar.text).toBe("24h 00m");
+  });
+
+  test("applies the same threshold to the Elapsed time", () => {
+    expect(polarDayElapsed(DAY + 59 * SECOND).bar.text).toBe("24h 00m");
+    expect(polarDayElapsed(DAY + MINUTE).bar.text).toBe("Polar day");
+  });
+
+  test("names a Polar night as such", () => {
+    const polarNight = { start: "2026-11-27T10:42:00Z", end: "2027-01-15T10:35:00Z" };
+    const snapshot = snapshotOf("night", polarNight, "2026-12-21T12:00:00Z");
+
+    expect(present(snapshot, OPTIONS).bar.text).toBe("Polar night");
+    expect(present(snapshot, FRENCH).bar.text).toBe("Nuit polaire");
+  });
+
+  test("keeps the Sun arc at the Progress of the long Phase", () => {
+    const halfway = (Date.parse(POLAR_DAY.end) - Date.parse(POLAR_DAY.start)) / 2;
+
+    expect(polarDayRemaining(halfway).bar.arc).toEqual({ body: "sun", progress: 0.5 });
+  });
+
+  test("dates the next Solar event and gives long durations in days and hours", () => {
+    const rows = polarDayRemaining(30 * DAY + 2 * HOUR).menu.rows;
+
+    expect(rows.slice(0, 4)).toEqual([
+      { label: "Sunrise", value: "Mon 18 May at 00:53" },
+      { label: "Sunset", value: "Sun 26 Jul at 00:36" },
+      { label: "Day length", value: "68d 23h" },
+      { label: "Elapsed time", value: "38d 21h" },
+    ]);
+  });
+
+  test("gives long durations the French way", () => {
+    const rows = polarDayRemaining(30 * DAY + 2 * HOUR, FRENCH).menu.rows;
+
+    expect(rows[2]).toEqual({ label: "Durée du jour", value: "68 j 23 h" });
   });
 });

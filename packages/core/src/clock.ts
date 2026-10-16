@@ -1,15 +1,15 @@
 // Seam 1: reading the clock at an instant and a Location.
 import type { Location } from "./location.ts";
-import { solarAltitude } from "./solar.ts";
+import { culmination, culminationIndexAt, solarAltitude } from "./solar.ts";
 
 /** Solar altitude of Sunrise and Sunset: the upper limb plus standard refraction. */
 const SOLAR_EVENT_ALTITUDE = -0.833;
 
-// Solar events are searched on a grid aligned to the epoch, so that a given event is always
-// refined from the same bracket and therefore lands on the same millisecond whatever the
-// instant being read.
-const SEARCH_STEP_MS = 10 * 60_000;
-const SEARCH_HORIZON_MS = 366 * 86_400_000;
+// Searching a little over a year each way reaches the next and previous Solar events even at
+// the poles, where there is one Sunrise and one Sunset a year: 2 culminations a day.
+const SEARCH_HORIZON_CULMINATIONS = 2 * 370;
+
+const MS_PER_DAY = 86_400_000;
 
 export type PhaseKind = "day" | "night";
 
@@ -19,6 +19,8 @@ export interface Phase {
   readonly start: Date;
   /** The Solar event that closes the Phase. */
   readonly end: Date;
+  /** Whether the Phase lasts longer than 24 hours: a Polar day or a Polar night. */
+  readonly isPolar: boolean;
 }
 
 export interface ClockSnapshot {
@@ -48,7 +50,7 @@ export function readClock(location: Location, instant: Date): ClockSnapshot {
 
   return {
     instant,
-    phase: { kind, start: new Date(start), end: new Date(end) },
+    phase: { kind, start: new Date(start), end: new Date(end), isPolar: end - start > MS_PER_DAY },
     remaining: end - now,
     elapsed: now - start,
     progress: (now - start) / (end - start),
@@ -56,7 +58,15 @@ export function readClock(location: Location, instant: Date): ClockSnapshot {
   };
 }
 
-/** Finds Sunrises and Sunsets, as milliseconds since the epoch, around an instant. */
+/**
+ * Finds Sunrises and Sunsets, as milliseconds since the epoch, around an instant.
+ *
+ * Each interval between two consecutive culminations holds at most one Solar event, so walking
+ * them in order yields the actual sequence of events, however short a Phase is (near the polar
+ * circles a Day or a Night can last minutes, and two Sunsets can fall on the same date). The
+ * intervals do not depend on the instant read, so an event always lands on the same
+ * millisecond.
+ */
 class SolarEvents {
   readonly #location: Location;
 
@@ -76,13 +86,16 @@ class SolarEvents {
     return this.#search(epochMs, 1, (event) => event > epochMs);
   }
 
-  // Walks the grid from the step containing `epochMs` in `direction`, and returns the first
-  // event found that `accepts`.
+  // Walks the intervals between culminations from the one containing `epochMs` in
+  // `direction`, and returns the first event found that `accepts`.
   #search(epochMs: number, direction: 1 | -1, accepts: (event: number) => boolean): number {
-    const gridStart = Math.floor(epochMs / SEARCH_STEP_MS) * SEARCH_STEP_MS;
-    for (let offset = 0; offset < SEARCH_HORIZON_MS; offset += SEARCH_STEP_MS) {
-      const from = gridStart + direction * offset;
-      const event = this.#crossing(from, from + SEARCH_STEP_MS);
+    const first = culminationIndexAt(this.#location, epochMs);
+    for (let step = 0; step < SEARCH_HORIZON_CULMINATIONS; step++) {
+      const index = first + direction * step;
+      const event = this.#crossing(
+        culmination(this.#location, index),
+        culmination(this.#location, index + 1),
+      );
       if (event !== undefined && accepts(event)) return event;
     }
     throw new Error("No Solar event found within a year");
