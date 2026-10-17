@@ -8,6 +8,7 @@ import {
   present,
   presentError,
   presentLocationUnknown,
+  READINGS,
   readClock,
   resolveLocation,
 } from "@sun-clock/core";
@@ -21,6 +22,7 @@ import {
   readReading,
   readSunArcPosition,
   writeLastKnownLocation,
+  writeReading,
 } from "./settings.ts";
 
 export default class SunClockExtension extends Extension {
@@ -41,6 +43,7 @@ export default class SunClockExtension extends Extension {
       preferences: { label: _("Preferences"), activate: () => this.openPreferences() },
       // The preferences open on the city search when no Location is known (see prefs.ts).
       manualLocationEntry: { activate: () => this.openPreferences() },
+      secondaryClick: () => this.#switchReading(),
     });
     Main.panel.addToStatusArea(this.uuid, this.#indicator.button, positionRightOfClock(), "center");
 
@@ -90,6 +93,13 @@ export default class SunClockExtension extends Extension {
       this.#automaticLocation.destroy();
       this.#automaticLocation = null;
     }
+  }
+
+  /** Switches the bar to the next Reading, which the menu showed alongside it. */
+  #switchReading(): void {
+    if (!this.#settings) return;
+    const current = READINGS.indexOf(readReading(this.#settings));
+    writeReading(this.#settings, READINGS[(current + 1) % READINGS.length] ?? READINGS[0]);
   }
 
   #placeSunArc(): void {

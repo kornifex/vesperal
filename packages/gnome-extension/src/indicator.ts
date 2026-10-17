@@ -20,12 +20,23 @@ export class SunClockIndicator {
     actions: {
       preferences: { label: string; activate: () => void };
       manualLocationEntry: { activate: () => void };
+      /** Run on a secondary click, which then does not open the menu. */
+      secondaryClick: () => void;
     },
   ) {
     this.#box.add_child(this.#arcIcon.actor);
     this.#box.add_child(this.#label);
     this.button = new PanelMenu.Button(0.5, name);
     this.button.add_child(this.#box);
+    // The button's own gesture opens the menu on a press of any button: keep it to the primary
+    // one (touch counts as primary), and give the secondary one its own gesture.
+    this.button._clickGesture.required_button = Clutter.BUTTON_PRIMARY;
+    const secondaryClick = new Clutter.ClickGesture({
+      required_button: Clutter.BUTTON_SECONDARY,
+      recognize_on_press: true,
+    });
+    secondaryClick.connect("recognize", actions.secondaryClick);
+    this.button.add_action(secondaryClick);
 
     const menu = this.button.menu as PopupMenu.PopupMenu;
     menu.addMenuItem(this.#rows);
