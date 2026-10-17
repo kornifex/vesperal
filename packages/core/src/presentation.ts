@@ -117,15 +117,18 @@ function menuRows(snapshot: ClockSnapshot, options: PresentationOptions): MenuRo
   const phaseLength = Math.round((phase.end.getTime() - phase.start.getTime()) / MS_PER_MINUTE);
   const otherReading = otherReadingThan(options.reading);
 
+  const civilTimeRow = (label: string, time: Date | null): MenuRow[] =>
+    time ? [{ label, value: formatCivilTime(time, instant, options) }] : [];
+  const dawn = civilTimeRow(translate("Dawn"), snapshot.dawn);
+  const sunrise = civilTimeRow(translate("Sunrise"), isDay ? phase.start : phase.end);
+  const sunset = civilTimeRow(translate("Sunset"), isDay ? phase.end : phase.start);
+  const dusk = civilTimeRow(translate("Dusk"), snapshot.dusk);
+
   const rows: MenuRow[] = [
-    {
-      label: isDay ? translate("Sunrise") : translate("Sunset"),
-      value: formatCivilTime(phase.start, instant, options),
-    },
-    {
-      label: isDay ? translate("Sunset") : translate("Sunrise"),
-      value: formatCivilTime(phase.end, instant, options),
-    },
+    // In the order they happen: Dawn and Dusk lie outside a Day, and inside a Night.
+    ...(isDay
+      ? [...dawn, ...sunrise, ...sunset, ...dusk]
+      : [...sunset, ...dusk, ...dawn, ...sunrise]),
     {
       label: isDay ? translate("Day length") : translate("Night length"),
       value: formatDuration(phaseLength, translate),

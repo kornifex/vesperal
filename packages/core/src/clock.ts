@@ -11,6 +11,19 @@ const SEARCH_HORIZON_CULMINATIONS = 2 * 370;
 
 const MS_PER_DAY = 86_400_000;
 
+/** Every Twilight the user can choose, the default first. */
+export const TWILIGHTS = ["civil", "nautical", "astronomical"] as const;
+
+/** How far below the horizon the Sun must be for Dawn and Dusk. */
+export type Twilight = (typeof TWILIGHTS)[number];
+
+/** Geometric altitude of the Sun's centre at Dawn and Dusk, without refraction. */
+const TWILIGHT_ALTITUDE: Readonly<Record<Twilight, number>> = {
+  civil: -6,
+  nautical: -12,
+  astronomical: -18,
+};
+
 export type PhaseKind = "day" | "night";
 
 export interface Phase {
@@ -35,18 +48,43 @@ export interface ClockSnapshot {
   readonly progress: number;
   /** Milliseconds from Sunrise to Sunset of the most recent Day (the current one if any). */
   readonly lastDayLength: number;
+  /**
+   * The Dawn before the Sunrise that opens or closes the Phase, or null if the Sun does not get
+   * that far below the horizon in the Night before that Sunrise.
+   */
+  readonly dawn: Date | null;
+  /**
+   * The Dusk after the Sunset that opens or closes the Phase, or null if the Sun does not get
+   * that far below the horizon in the Night after that Sunset.
+   */
+  readonly dusk: Date | null;
 }
 
 /**
  * Reads the clock at `instant` for `location`: the current Phase, as the half-open interval
- * [start, end) between two consecutive Solar events, and where `instant` stands within it.
+ * [start, end) between two consecutive Solar events, where `instant` stands within it, and the
+ * Dawn and Dusk of the chosen `twilight` around it.
  */
-export function readClock(location: Location, instant: Date): ClockSnapshot {
+export function readClock(
+  location: Location,
+  instant: Date,
+  twilight: Twilight = TWILIGHTS[0],
+): ClockSnapshot {
   const now = instant.getTime();
-  const events = new SolarEvents(location);
-  const kind: PhaseKind = events.isAboveHorizon(now) ? "day" : "night";
+  const events = new AltitudeCrossings(location, SOLAR_EVENT_ALTITUDE);
+  const kind: PhaseKind = events.isAbove(now) ? "day" : "night";
   const start = events.latestAtOrBefore(now);
   const end = events.earliestAfter(now);
+  // The Solar event before the Phase: the previous Sunset for a Day, Sunrise for a Night.
+  const previous = events.latestAtOrBefore(start - 1);
+
+  // Dawn falls in the Night before the Sunrise, and Dusk in the Night after the Sunset.
+  const [sunrise, nightBeforeSunrise] = kind === "day" ? [start, previous] : [end, start];
+  const [sunset, nightAfterSunset] =
+    kind === "day" ? [end, events.earliestAfter(end)] : [start, end];
+  const twilightCrossings = new AltitudeCrossings(location, TWILIGHT_ALTITUDE[twilight]);
+  const dawn = twilightCrossings.latestAtOrBefore(sunrise);
+  const dusk = twilightCrossings.earliestAfter(sunset);
 
   return {
     instant,
@@ -54,28 +92,34 @@ export function readClock(location: Location, instant: Date): ClockSnapshot {
     remaining: end - now,
     elapsed: now - start,
     progress: (now - start) / (end - start),
-    lastDayLength: kind === "day" ? end - start : start - events.latestAtOrBefore(start - 1),
+    lastDayLength: kind === "day" ? end - start : start - previous,
+    dawn: dawn > nightBeforeSunrise ? new Date(dawn) : null,
+    dusk: dusk < nightAfterSunset ? new Date(dusk) : null,
   };
 }
 
 /**
- * Finds Sunrises and Sunsets, as milliseconds since the epoch, around an instant.
+ * Finds the instants, as milliseconds since the epoch, when the Sun crosses an altitude around
+ * an instant: Sunrises and Sunsets at the Solar event altitude, Dawns and Dusks at a Twilight
+ * altitude.
  *
- * Each interval between two consecutive culminations holds at most one Solar event, so walking
- * them in order yields the actual sequence of events, however short a Phase is (near the polar
- * circles a Day or a Night can last minutes, and two Sunsets can fall on the same date). The
- * intervals do not depend on the instant read, so an event always lands on the same
+ * Each interval between two consecutive culminations holds at most one crossing, so walking
+ * them in order yields the actual sequence of crossings, however short a Phase is (near the
+ * polar circles a Day or a Night can last minutes, and two Sunsets can fall on the same date).
+ * The intervals do not depend on the instant read, so a crossing always lands on the same
  * millisecond.
  */
-class SolarEvents {
+class AltitudeCrossings {
   readonly #location: Location;
+  readonly #altitude: number;
 
-  constructor(location: Location) {
+  constructor(location: Location, altitude: number) {
     this.#location = location;
+    this.#altitude = altitude;
   }
 
-  isAboveHorizon(epochMs: number): boolean {
-    return solarAltitude(this.#location, epochMs) >= SOLAR_EVENT_ALTITUDE;
+  isAbove(epochMs: number): boolean {
+    return solarAltitude(this.#location, epochMs) >= this.#altitude;
   }
 
   latestAtOrBefore(epochMs: number): number {
@@ -98,19 +142,20 @@ class SolarEvents {
       );
       if (event !== undefined && accepts(event)) return event;
     }
-    throw new Error("No Solar event found within a year");
+    // The Sun crosses every altitude down to −23° at least once a year, anywhere on Earth.
+    throw new Error("No crossing found within a year");
   }
 
   // The first millisecond after `from` (exclusive) up to `to` where the Sun is on the same
-  // side of the horizon as at `to`, if it crosses the horizon in between.
+  // side of the altitude as at `to`, if it crosses the altitude in between.
   #crossing(from: number, to: number): number | undefined {
-    const side = this.isAboveHorizon(to);
-    if (this.isAboveHorizon(from) === side) return undefined;
+    const side = this.isAbove(to);
+    if (this.isAbove(from) === side) return undefined;
     let before = from;
     let after = to;
     while (after - before > 1) {
       const middle = Math.floor((before + after) / 2);
-      if (this.isAboveHorizon(middle) === side) after = middle;
+      if (this.isAbove(middle) === side) after = middle;
       else before = middle;
     }
     return after;

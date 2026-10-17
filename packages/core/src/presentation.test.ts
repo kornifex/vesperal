@@ -39,6 +39,8 @@ function snapshotOf(
     elapsed: now - start,
     progress: (now - start) / (end - start),
     lastDayLength,
+    dawn: null,
+    dusk: null,
   };
 }
 
@@ -68,6 +70,8 @@ const FRENCH_CATALOGUE: Readonly<Record<string, string>> = {
   "{date} at {time}": "{date} à {time}",
   "Day length": "Durée du jour",
   "Night length": "Durée de la nuit",
+  Dawn: "Aube",
+  Dusk: "Crépuscule",
   "Remaining time": "Temps restant",
   "Elapsed time": "Temps écoulé",
   "Manual location": "Lieu manuel",
@@ -199,6 +203,46 @@ describe("present: Phase menu", () => {
       { label: "Elapsed time", value: "1h 02m" },
       { label: "Day length", value: "16h 11m" },
       { label: "Manual location", value: "Paris" },
+    ]);
+  });
+
+  test("frames the Phase with Dawn and Dusk, in the order they happen", () => {
+    const night = {
+      ...snapshotOf("night", NIGHT, "2026-06-21T21:00:00Z"),
+      dusk: new Date("2026-06-21T20:41:00Z"),
+      dawn: new Date("2026-06-22T03:04:00Z"),
+    };
+    const DAY = { start: "2026-06-21T03:47:00Z", end: "2026-06-21T19:58:00Z" };
+    const day = {
+      ...snapshotOf("day", DAY, "2026-06-21T12:00:00Z"),
+      dawn: new Date("2026-06-21T03:04:00Z"),
+      dusk: new Date("2026-06-21T20:41:00Z"),
+    };
+
+    expect(rows(night).slice(0, 4)).toEqual([
+      { label: "Sunset", value: "21:58" },
+      { label: "Dusk", value: "22:41" },
+      { label: "Dawn", value: "tomorrow at 05:04" },
+      { label: "Sunrise", value: "tomorrow at 05:47" },
+    ]);
+    expect(rows(day).slice(0, 4)).toEqual([
+      { label: "Dawn", value: "05:04" },
+      { label: "Sunrise", value: "05:47" },
+      { label: "Sunset", value: "21:58" },
+      { label: "Dusk", value: "22:41" },
+    ]);
+  });
+
+  test("leaves out a Dawn or Dusk that does not happen", () => {
+    const snapshot = {
+      ...snapshotOf("night", NIGHT, "2026-06-21T21:00:00Z"),
+      dusk: new Date("2026-06-21T20:41:00Z"),
+    };
+
+    expect(rows(snapshot).slice(0, 3)).toEqual([
+      { label: "Sunset", value: "21:58" },
+      { label: "Dusk", value: "22:41" },
+      { label: "Sunrise", value: "tomorrow at 05:47" },
     ]);
   });
 

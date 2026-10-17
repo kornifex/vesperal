@@ -8,6 +8,11 @@
     <value nick="remaining" value="0"/>
     <value nick="elapsed" value="1"/>
   </enum>
+  <enum id="org.gnome.shell.extensions.sun-clock.Twilight">
+    <value nick="civil" value="0"/>
+    <value nick="nautical" value="1"/>
+    <value nick="astronomical" value="2"/>
+  </enum>
   <enum id="org.gnome.shell.extensions.sun-clock.SunArcPosition">
     <value nick="left" value="0"/>
     <value nick="right" value="1"/>
@@ -32,6 +37,11 @@
       <default>'remaining'</default>
       <summary>Reading</summary>
       <description>The duration shown in the top bar: the Remaining time until the next Solar event, or the Elapsed time since the last one.</description>
+    </key>
+    <key name="twilight" enum="org.gnome.shell.extensions.sun-clock.Twilight">
+      <default>'civil'</default>
+      <summary>Twilight</summary>
+      <description>How far below the horizon the Sun must be for the Dawn and Dusk shown in the menu: 6° (civil), 12° (nautical) or 18° (astronomical).</description>
     </key>
     <key name="sun-arc-position" enum="org.gnome.shell.extensions.sun-clock.SunArcPosition">
       <default>'left'</default>

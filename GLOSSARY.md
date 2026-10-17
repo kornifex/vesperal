@@ -6,15 +6,29 @@ A clock that tells time relative to the Sun at the user's Location rather than o
 
 **Sunrise**:
 The moment the upper limb of the Sun rises above the horizon, accounting for standard atmospheric refraction (solar altitude of −0.833°).
-_Avoid_: Dawn, daybreak
+_Avoid_: Daybreak (Dawn is a different moment)
 
 **Sunset**:
 The moment the upper limb of the Sun sinks below the horizon, with the same convention as Sunrise.
-_Avoid_: Dusk, nightfall
+_Avoid_: Nightfall (Dusk is a different moment)
 
 **Solar event**:
 A Sunrise or a Sunset.
 _Avoid_: Transition, sun change
+
+## Twilight
+
+**Twilight**:
+How far below the horizon the Sun's centre must be for Dawn and Dusk, chosen by the user: civil (6°, the default), nautical (12°) or astronomical (18°). Measured geometrically, without refraction.
+_Avoid_: Twilight type, depth
+
+**Dawn**:
+The moment the Sun rises back above the Twilight altitude, before a Sunrise. There is none when the Sun does not get that far below the horizon in the Night before that Sunrise.
+_Avoid_: Daybreak, first light
+
+**Dusk**:
+The moment the Sun sinks below the Twilight altitude, after a Sunset. There is none when the Sun does not get that far below the horizon in the Night after that Sunset.
+_Avoid_: Nightfall, last light
 
 ## Phases
 

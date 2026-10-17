@@ -1,5 +1,12 @@
 // Solar computation and its presentation. Must never import GNOME libraries (see ADR 0001).
-export { type ClockSnapshot, type Phase, type PhaseKind, readClock } from "./clock.ts";
+export {
+  type ClockSnapshot,
+  type Phase,
+  type PhaseKind,
+  readClock,
+  TWILIGHTS,
+  type Twilight,
+} from "./clock.ts";
 export {
   isValidLocation,
   LOCATION_MODES,

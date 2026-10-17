@@ -328,3 +328,46 @@ describe("readClock at high latitudes and near the date line", () => {
     expect(snapshot.phase.end.getTime()).toBeGreaterThan(Date.parse("2026-09-10T00:00Z"));
   });
 });
+
+// Reference Dawn and Dusk times: civil ones from USNO, as above; nautical and astronomical ones
+// from sunrise-sunset.org (api.sunrise-sunset.org), which agrees with USNO on civil ones to the
+// second. Twilight altitudes are geometric (−6°, −12°, −18°), with no refraction.
+describe("readClock: Dawn and Dusk", () => {
+  test("during a Day, gives the Dawn before its Sunrise and the Dusk after its Sunset", () => {
+    const snapshot = readClock(PARIS, new Date("2026-06-21T12:00:00Z"), "civil");
+
+    expectNear(snapshot.dawn ?? new Date(Number.NaN), "2026-06-21T03:04Z");
+    expectNear(snapshot.dusk ?? new Date(Number.NaN), "2026-06-21T20:41Z");
+  });
+
+  test("during a Night, gives the Dusk after its Sunset and the Dawn before its Sunrise", () => {
+    const snapshot = readClock(PARIS, new Date("2026-12-21T20:00:00Z"), "nautical");
+
+    expectNear(snapshot.dusk ?? new Date(Number.NaN), "2026-12-21T17:13:44Z");
+    expectNear(snapshot.dawn ?? new Date(Number.NaN), "2026-12-22T06:24:03Z");
+  });
+
+  test("follows the chosen Twilight", () => {
+    const at = new Date("2026-12-21T12:00:00Z");
+
+    expectNear(readClock(PARIS, at, "civil").dawn ?? new Date(Number.NaN), "2026-12-21T07:04Z");
+    expectNear(
+      readClock(PARIS, at, "astronomical").dusk ?? new Date(Number.NaN),
+      "2026-12-21T17:52:15Z",
+    );
+  });
+
+  test("defaults to the civil Twilight", () => {
+    const at = new Date("2026-12-21T12:00:00Z");
+
+    expect(readClock(PARIS, at).dawn).toEqual(readClock(PARIS, at, "civil").dawn);
+  });
+
+  test("has no Dawn or Dusk when the Sun never gets that far below the horizon", () => {
+    // Around the June solstice, the Sun stays above −18° all night in Paris.
+    const day = readClock(PARIS, new Date("2026-06-21T12:00:00Z"), "astronomical");
+    const night = readClock(PARIS, new Date("2026-06-21T23:00:00Z"), "astronomical");
+
+    expect([day.dawn, day.dusk, night.dusk, night.dawn]).toEqual([null, null, null, null]);
+  });
+});

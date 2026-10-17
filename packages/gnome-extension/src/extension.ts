@@ -21,6 +21,7 @@ import {
   readManualLocation,
   readReading,
   readSunArcPosition,
+  readTwilight,
   writeLastKnownLocation,
   writeReading,
 } from "./settings.ts";
@@ -127,7 +128,7 @@ export default class SunClockExtension extends Extension {
     const location = resolveLocation(mode, fromMode, readLastKnownLocation(this.#settings));
     this.#indicator.show(
       location
-        ? present(readClock(location, new Date()), {
+        ? present(readClock(location, new Date(), readTwilight(this.#settings)), {
             reading: readReading(this.#settings),
             timeZone: this.#wallClock.timezone.get_identifier(),
             locale: civilTimeLocale(),

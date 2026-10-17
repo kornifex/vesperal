@@ -5,7 +5,7 @@ import {
   gettext as _,
   ExtensionPreferences,
 } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
-import { LOCATION_MODES, type NamedLocation, READINGS } from "@sun-clock/core";
+import { LOCATION_MODES, type NamedLocation, READINGS, TWILIGHTS } from "@sun-clock/core";
 import { type City, CitySearch } from "./citySearch.ts";
 import {
   readLastKnownLocation,
@@ -13,11 +13,13 @@ import {
   readManualLocation,
   readReading,
   readSunArcPosition,
+  readTwilight,
   SUN_ARC_POSITIONS,
   writeLocationMode,
   writeManualLocation,
   writeReading,
   writeSunArcPosition,
+  writeTwilight,
 } from "./settings.ts";
 
 const MAX_SEARCH_RESULTS = 8;
@@ -31,6 +33,7 @@ export default class SunClockPreferences extends ExtensionPreferences {
     const disconnects = [
       addReadingGroup(page, settings),
       addSunArcGroup(page, settings),
+      addTwilightGroup(page, settings),
       addLocationGroups(page, settings, window),
     ];
     window.connect("close-request", () => {
@@ -80,6 +83,27 @@ function addSunArcGroup(page: Adw.PreferencesPage, settings: Gio.Settings): () =
     {
       left: { title: _("Left"), subtitle: "" },
       right: { title: _("Right"), subtitle: "" },
+    },
+  );
+  return disconnect;
+}
+
+/** Adds the choice of Twilight; returns a function that stops following the settings. */
+function addTwilightGroup(page: Adw.PreferencesPage, settings: Gio.Settings): () => void {
+  const group = new Adw.PreferencesGroup({
+    title: _("Twilight"),
+    description: _("When Dawn and Dusk fall, as shown in the menu"),
+  });
+  page.add(group);
+
+  const { disconnect } = addChoiceRows(
+    group,
+    settings,
+    { key: "twilight", values: TWILIGHTS, read: readTwilight, write: writeTwilight },
+    {
+      civil: { title: _("Civil"), subtitle: _("Sun 6° below the horizon") },
+      nautical: { title: _("Nautical"), subtitle: _("Sun 12° below the horizon") },
+      astronomical: { title: _("Astronomical"), subtitle: _("Sun 18° below the horizon") },
     },
   );
   return disconnect;

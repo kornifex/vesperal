@@ -9,6 +9,8 @@ import {
   type NamedLocation,
   READINGS,
   type Reading,
+  TWILIGHTS,
+  type Twilight,
 } from "@sun-clock/core";
 
 /** Every side of the Reading the Sun arc can sit on, the default first. */
@@ -24,6 +26,15 @@ export function readReading(settings: Gio.Settings): Reading {
 
 export function writeReading(settings: Gio.Settings, reading: Reading): void {
   settings.set_string("reading", reading);
+}
+
+export function readTwilight(settings: Gio.Settings): Twilight {
+  const nick = settings.get_string("twilight");
+  return TWILIGHTS.find((twilight) => twilight === nick) ?? TWILIGHTS[0];
+}
+
+export function writeTwilight(settings: Gio.Settings, twilight: Twilight): void {
+  settings.set_string("twilight", twilight);
 }
 
 export function readSunArcPosition(settings: Gio.Settings): SunArcPosition {
