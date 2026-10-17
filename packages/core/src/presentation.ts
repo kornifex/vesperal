@@ -1,4 +1,4 @@
-// Seam 2: turning a clock snapshot into what the front ends display.
+// Turning a clock snapshot into what the front ends display.
 import type { ClockSnapshot } from "./clock.ts";
 import type { Location, LocationInUse, LocationSource } from "./location.ts";
 import { MINUTES_PER_DAY, MINUTES_PER_HOUR, MS_PER_DAY, MS_PER_MINUTE } from "./time.ts";

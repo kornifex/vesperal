@@ -110,7 +110,7 @@ export default class VesperalExtension extends Extension {
     try {
       this.#update();
     } catch (error) {
-      // Never leave a stale or broken Reading in the bar.
+      // Shows an error rather than a stale or broken Reading.
       this.getLogger().error(error);
       this.#indicator?.show(presentError((message) => this.gettext(message)));
     }

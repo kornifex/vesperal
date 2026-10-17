@@ -1,4 +1,4 @@
-// Seam 1: reading the clock at an instant and a Location.
+// Reading the clock at an instant and a Location.
 import type { Location } from "./location.ts";
 import { culmination, culminationIndexAt, solarAltitude } from "./solar.ts";
 import { MS_PER_DAY } from "./time.ts";
