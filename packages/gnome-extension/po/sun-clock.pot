@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: sun-clock\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-16 23:20+0200\n"
+"POT-Creation-Date: 2026-10-17 08:35+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -55,12 +55,12 @@ msgid "Night length"
 msgstr ""
 
 #: packages/core/src/presentation.ts:167
-#: packages/gnome-extension/src/prefs.ts:52
+#: packages/gnome-extension/src/prefs.ts:56
 msgid "Remaining time"
 msgstr ""
 
 #: packages/core/src/presentation.ts:169
-#: packages/gnome-extension/src/prefs.ts:53
+#: packages/gnome-extension/src/prefs.ts:57
 msgid "Elapsed time"
 msgstr ""
 
@@ -123,74 +123,90 @@ msgstr ""
 msgid "{hours}h {minutes}m"
 msgstr ""
 
-#: packages/gnome-extension/src/extension.ts:39
+#: packages/gnome-extension/src/extension.ts:41
 msgid "Preferences"
 msgstr ""
 
-#: packages/gnome-extension/src/prefs.ts:42
+#: packages/gnome-extension/src/prefs.ts:46
 msgid "Reading"
 msgstr ""
 
-#: packages/gnome-extension/src/prefs.ts:43
+#: packages/gnome-extension/src/prefs.ts:47
 msgid "The duration shown in the top bar"
 msgstr ""
 
-#: packages/gnome-extension/src/prefs.ts:52
+#: packages/gnome-extension/src/prefs.ts:56
 msgid "Until the next sunrise or sunset"
 msgstr ""
 
-#: packages/gnome-extension/src/prefs.ts:53
+#: packages/gnome-extension/src/prefs.ts:57
 msgid "Since the last sunrise or sunset"
 msgstr ""
 
-#: packages/gnome-extension/src/prefs.ts:69
-msgid "Location"
+#: packages/gnome-extension/src/prefs.ts:66
+msgid "Sun arc"
+msgstr ""
+
+#: packages/gnome-extension/src/prefs.ts:67
+msgid "Its side of the Reading in the top bar"
 msgstr ""
 
 #: packages/gnome-extension/src/prefs.ts:81
-msgid "Automatic"
+msgid "Left"
 msgstr ""
 
 #: packages/gnome-extension/src/prefs.ts:82
-msgid "Manual"
-msgstr ""
-
-#: packages/gnome-extension/src/prefs.ts:87
-msgid "Search for a city"
+msgid "Right"
 msgstr ""
 
 #: packages/gnome-extension/src/prefs.ts:98
+msgid "Location"
+msgstr ""
+
+#: packages/gnome-extension/src/prefs.ts:110
+msgid "Automatic"
+msgstr ""
+
+#: packages/gnome-extension/src/prefs.ts:111
+msgid "Manual"
+msgstr ""
+
+#: packages/gnome-extension/src/prefs.ts:116
+msgid "Search for a city"
+msgstr ""
+
+#: packages/gnome-extension/src/prefs.ts:127
 msgid "Coordinates"
 msgstr ""
 
-#: packages/gnome-extension/src/prefs.ts:99
+#: packages/gnome-extension/src/prefs.ts:128
 msgid "For any point on Earth, in decimal degrees"
 msgstr ""
 
-#: packages/gnome-extension/src/prefs.ts:103
+#: packages/gnome-extension/src/prefs.ts:132
 msgid "Latitude (north positive)"
 msgstr ""
 
-#: packages/gnome-extension/src/prefs.ts:108
+#: packages/gnome-extension/src/prefs.ts:137
 msgid "Longitude (east positive)"
 msgstr ""
 
-#: packages/gnome-extension/src/prefs.ts:119
+#: packages/gnome-extension/src/prefs.ts:148
 msgid "From the system's location services"
 msgstr ""
 
-#: packages/gnome-extension/src/prefs.ts:120
+#: packages/gnome-extension/src/prefs.ts:149
 msgid "Location services are off"
 msgstr ""
 
-#: packages/gnome-extension/src/prefs.ts:126
+#: packages/gnome-extension/src/prefs.ts:155
 msgid "No location set"
 msgstr ""
 
-#: packages/gnome-extension/src/prefs.ts:165
+#: packages/gnome-extension/src/prefs.ts:194
 msgid "Latitude must be between −90 and 90"
 msgstr ""
 
-#: packages/gnome-extension/src/prefs.ts:168
+#: packages/gnome-extension/src/prefs.ts:197
 msgid "Longitude must be between −180 and 180"
 msgstr ""

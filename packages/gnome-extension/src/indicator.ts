@@ -3,11 +3,13 @@ import St from "gi://St";
 import * as PanelMenu from "resource:///org/gnome/shell/ui/panelMenu.js";
 import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js";
 import type { MenuRow, ViewModel } from "@sun-clock/core";
+import type { SunArcPosition } from "./settings.ts";
 import { SunArcIcon } from "./sunArcIcon.ts";
 
 /** The panel indicator and its menu, rendering a view model. */
 export class SunClockIndicator {
   readonly button: PanelMenu.Button;
+  readonly #box = new St.BoxLayout({ style_class: "sun-clock-indicator" });
   readonly #arcIcon = new SunArcIcon();
   readonly #label = new St.Label({ y_align: Clutter.ActorAlign.CENTER });
   readonly #rows = new PopupMenu.PopupMenuSection();
@@ -20,11 +22,10 @@ export class SunClockIndicator {
       manualLocationEntry: { activate: () => void };
     },
   ) {
-    const box = new St.BoxLayout({ style_class: "sun-clock-indicator" });
-    box.add_child(this.#arcIcon.actor);
-    box.add_child(this.#label);
+    this.#box.add_child(this.#arcIcon.actor);
+    this.#box.add_child(this.#label);
     this.button = new PanelMenu.Button(0.5, name);
-    this.button.add_child(box);
+    this.button.add_child(this.#box);
 
     const menu = this.button.menu as PopupMenu.PopupMenu;
     menu.addMenuItem(this.#rows);
@@ -41,6 +42,11 @@ export class SunClockIndicator {
     this.#showRows(view.menu.rows);
     this.#manualLocationEntry.label.text = view.menu.manualLocationEntry ?? "";
     this.#manualLocationEntry.visible = view.menu.manualLocationEntry !== null;
+  }
+
+  /** Puts the Sun arc on the given side of the Reading. */
+  placeSunArc(position: SunArcPosition): void {
+    this.#box.set_child_at_index(this.#arcIcon.actor, position === "left" ? 0 : 1);
   }
 
   destroy(): void {

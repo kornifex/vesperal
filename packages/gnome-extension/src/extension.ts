@@ -19,6 +19,7 @@ import {
   readLocationMode,
   readManualLocation,
   readReading,
+  readSunArcPosition,
   writeLastKnownLocation,
 } from "./settings.ts";
 
@@ -27,6 +28,7 @@ export default class SunClockExtension extends Extension {
   #settings: Gio.Settings | null = null;
   #settingsChangedId = 0;
   #locationModeChangedId = 0;
+  #sunArcPositionChangedId = 0;
   // Only exists in Automatic mode, so that Manual mode never asks the system for a Location.
   #automaticLocation: AutomaticLocation | null = null;
   // GNOME's WallClock notifies on each minute boundary and after suspend/resume, time-zone
@@ -47,11 +49,15 @@ export default class SunClockExtension extends Extension {
     this.#locationModeChangedId = this.#settings.connect("changed::location-mode", () =>
       this.#followLocationMode(),
     );
+    this.#sunArcPositionChangedId = this.#settings.connect("changed::sun-arc-position", () =>
+      this.#placeSunArc(),
+    );
     this.#settingsChangedId = this.#settings.connect("changed", (_settings, key: string) => {
       // Only #update writes the Last known location, and it does not need refreshing for it.
       if (key !== "last-known-location") this.#refresh();
     });
     this.#followLocationMode();
+    this.#placeSunArc();
     this.#wallClock = new GnomeDesktop.WallClock();
     this.#wallClockChangedId = this.#wallClock.connect("notify::clock", () => this.#refresh());
 
@@ -65,6 +71,7 @@ export default class SunClockExtension extends Extension {
     this.#automaticLocation?.destroy();
     this.#automaticLocation = null;
     this.#settings?.disconnect(this.#locationModeChangedId);
+    this.#settings?.disconnect(this.#sunArcPositionChangedId);
     this.#settings?.disconnect(this.#settingsChangedId);
     this.#settings = null;
     this.#indicator?.destroy();
@@ -83,6 +90,10 @@ export default class SunClockExtension extends Extension {
       this.#automaticLocation.destroy();
       this.#automaticLocation = null;
     }
+  }
+
+  #placeSunArc(): void {
+    if (this.#settings) this.#indicator?.placeSunArc(readSunArcPosition(this.#settings));
   }
 
   #refresh(): void {

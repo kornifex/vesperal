@@ -11,6 +11,12 @@ import {
   type Reading,
 } from "@sun-clock/core";
 
+/** Every side of the Reading the Sun arc can sit on, the default first. */
+export const SUN_ARC_POSITIONS = ["left", "right"] as const;
+
+/** Which side of the Reading the Sun arc sits on in the top bar. */
+export type SunArcPosition = (typeof SUN_ARC_POSITIONS)[number];
+
 export function readReading(settings: Gio.Settings): Reading {
   const nick = settings.get_string("reading");
   return READINGS.find((reading) => reading === nick) ?? READINGS[0];
@@ -18,6 +24,15 @@ export function readReading(settings: Gio.Settings): Reading {
 
 export function writeReading(settings: Gio.Settings, reading: Reading): void {
   settings.set_string("reading", reading);
+}
+
+export function readSunArcPosition(settings: Gio.Settings): SunArcPosition {
+  const nick = settings.get_string("sun-arc-position");
+  return SUN_ARC_POSITIONS.find((position) => position === nick) ?? SUN_ARC_POSITIONS[0];
+}
+
+export function writeSunArcPosition(settings: Gio.Settings, position: SunArcPosition): void {
+  settings.set_string("sun-arc-position", position);
 }
 
 export function readLocationMode(settings: Gio.Settings): LocationMode {

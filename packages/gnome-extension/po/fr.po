@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: sun-clock\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-16 23:20+0200\n"
+"POT-Creation-Date: 2026-10-17 08:35+0200\n"
 "PO-Revision-Date: 2026-10-16 22:38+0200\n"
 "Last-Translator: Julien Seren-Rosso\n"
 "Language-Team: none\n"
@@ -55,12 +55,12 @@ msgid "Night length"
 msgstr "Durée de la nuit"
 
 #: packages/core/src/presentation.ts:167
-#: packages/gnome-extension/src/prefs.ts:52
+#: packages/gnome-extension/src/prefs.ts:56
 msgid "Remaining time"
 msgstr "Temps restant"
 
 #: packages/core/src/presentation.ts:169
-#: packages/gnome-extension/src/prefs.ts:53
+#: packages/gnome-extension/src/prefs.ts:57
 msgid "Elapsed time"
 msgstr "Temps écoulé"
 
@@ -123,74 +123,90 @@ msgstr "{minutes} min"
 msgid "{hours}h {minutes}m"
 msgstr "{hours} h {minutes}"
 
-#: packages/gnome-extension/src/extension.ts:39
+#: packages/gnome-extension/src/extension.ts:41
 msgid "Preferences"
 msgstr "Préférences"
 
-#: packages/gnome-extension/src/prefs.ts:42
+#: packages/gnome-extension/src/prefs.ts:46
 msgid "Reading"
 msgstr "Durée affichée"
 
-#: packages/gnome-extension/src/prefs.ts:43
+#: packages/gnome-extension/src/prefs.ts:47
 msgid "The duration shown in the top bar"
 msgstr "Dans la barre supérieure"
 
-#: packages/gnome-extension/src/prefs.ts:52
+#: packages/gnome-extension/src/prefs.ts:56
 msgid "Until the next sunrise or sunset"
 msgstr "Jusqu’au prochain lever ou coucher du soleil"
 
-#: packages/gnome-extension/src/prefs.ts:53
+#: packages/gnome-extension/src/prefs.ts:57
 msgid "Since the last sunrise or sunset"
 msgstr "Depuis le dernier lever ou coucher du soleil"
 
-#: packages/gnome-extension/src/prefs.ts:69
+#: packages/gnome-extension/src/prefs.ts:66
+msgid "Sun arc"
+msgstr "Arc solaire"
+
+#: packages/gnome-extension/src/prefs.ts:67
+msgid "Its side of the Reading in the top bar"
+msgstr "De quel côté de la durée, dans la barre supérieure"
+
+#: packages/gnome-extension/src/prefs.ts:81
+msgid "Left"
+msgstr "À gauche"
+
+#: packages/gnome-extension/src/prefs.ts:82
+msgid "Right"
+msgstr "À droite"
+
+#: packages/gnome-extension/src/prefs.ts:98
 msgid "Location"
 msgstr "Lieu"
 
-#: packages/gnome-extension/src/prefs.ts:81
+#: packages/gnome-extension/src/prefs.ts:110
 msgid "Automatic"
 msgstr "Automatique"
 
-#: packages/gnome-extension/src/prefs.ts:82
+#: packages/gnome-extension/src/prefs.ts:111
 msgid "Manual"
 msgstr "Manuel"
 
-#: packages/gnome-extension/src/prefs.ts:87
+#: packages/gnome-extension/src/prefs.ts:116
 msgid "Search for a city"
 msgstr "Rechercher une ville"
 
-#: packages/gnome-extension/src/prefs.ts:98
+#: packages/gnome-extension/src/prefs.ts:127
 msgid "Coordinates"
 msgstr "Coordonnées"
 
-#: packages/gnome-extension/src/prefs.ts:99
+#: packages/gnome-extension/src/prefs.ts:128
 msgid "For any point on Earth, in decimal degrees"
 msgstr "Pour n’importe quel point du globe, en degrés décimaux"
 
-#: packages/gnome-extension/src/prefs.ts:103
+#: packages/gnome-extension/src/prefs.ts:132
 msgid "Latitude (north positive)"
 msgstr "Latitude (positive au nord)"
 
-#: packages/gnome-extension/src/prefs.ts:108
+#: packages/gnome-extension/src/prefs.ts:137
 msgid "Longitude (east positive)"
 msgstr "Longitude (positive à l’est)"
 
-#: packages/gnome-extension/src/prefs.ts:119
+#: packages/gnome-extension/src/prefs.ts:148
 msgid "From the system's location services"
 msgstr "Par les services de localisation du système"
 
-#: packages/gnome-extension/src/prefs.ts:120
+#: packages/gnome-extension/src/prefs.ts:149
 msgid "Location services are off"
 msgstr "Les services de localisation sont désactivés"
 
-#: packages/gnome-extension/src/prefs.ts:126
+#: packages/gnome-extension/src/prefs.ts:155
 msgid "No location set"
 msgstr "Aucun lieu défini"
 
-#: packages/gnome-extension/src/prefs.ts:165
+#: packages/gnome-extension/src/prefs.ts:194
 msgid "Latitude must be between −90 and 90"
 msgstr "La latitude doit être comprise entre −90 et 90"
 
-#: packages/gnome-extension/src/prefs.ts:168
+#: packages/gnome-extension/src/prefs.ts:197
 msgid "Longitude must be between −180 and 180"
 msgstr "La longitude doit être comprise entre −180 et 180"

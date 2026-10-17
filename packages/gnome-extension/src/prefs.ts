@@ -12,9 +12,12 @@ import {
   readLocationMode,
   readManualLocation,
   readReading,
+  readSunArcPosition,
+  SUN_ARC_POSITIONS,
   writeLocationMode,
   writeManualLocation,
   writeReading,
+  writeSunArcPosition,
 } from "./settings.ts";
 
 const MAX_SEARCH_RESULTS = 8;
@@ -27,6 +30,7 @@ export default class SunClockPreferences extends ExtensionPreferences {
 
     const disconnects = [
       addReadingGroup(page, settings),
+      addSunArcGroup(page, settings),
       addLocationGroups(page, settings, window),
     ];
     window.connect("close-request", () => {
@@ -51,6 +55,31 @@ function addReadingGroup(page: Adw.PreferencesPage, settings: Gio.Settings): () 
     {
       remaining: { title: _("Remaining time"), subtitle: _("Until the next sunrise or sunset") },
       elapsed: { title: _("Elapsed time"), subtitle: _("Since the last sunrise or sunset") },
+    },
+  );
+  return disconnect;
+}
+
+/** Adds the choice of Sun arc position; returns a function that stops following the settings. */
+function addSunArcGroup(page: Adw.PreferencesPage, settings: Gio.Settings): () => void {
+  const group = new Adw.PreferencesGroup({
+    title: _("Sun arc"),
+    description: _("Its side of the Reading in the top bar"),
+  });
+  page.add(group);
+
+  const { disconnect } = addChoiceRows(
+    group,
+    settings,
+    {
+      key: "sun-arc-position",
+      values: SUN_ARC_POSITIONS,
+      read: readSunArcPosition,
+      write: writeSunArcPosition,
+    },
+    {
+      left: { title: _("Left"), subtitle: "" },
+      right: { title: _("Right"), subtitle: "" },
     },
   );
   return disconnect;

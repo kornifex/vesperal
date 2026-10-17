@@ -8,6 +8,10 @@
     <value nick="remaining" value="0"/>
     <value nick="elapsed" value="1"/>
   </enum>
+  <enum id="org.gnome.shell.extensions.sun-clock.SunArcPosition">
+    <value nick="left" value="0"/>
+    <value nick="right" value="1"/>
+  </enum>
   <schema id="org.gnome.shell.extensions.sun-clock" path="/org/gnome/shell/extensions/sun-clock/">
     <key name="location-mode" enum="org.gnome.shell.extensions.sun-clock.LocationMode">
       <default>'automatic'</default>
@@ -28,6 +32,11 @@
       <default>'remaining'</default>
       <summary>Reading</summary>
       <description>The duration shown in the top bar: the Remaining time until the next Solar event, or the Elapsed time since the last one.</description>
+    </key>
+    <key name="sun-arc-position" enum="org.gnome.shell.extensions.sun-clock.SunArcPosition">
+      <default>'left'</default>
+      <summary>Sun arc position</summary>
+      <description>Which side of the Reading the Sun arc sits on in the top bar.</description>
     </key>
   </schema>
 </schemalist>
