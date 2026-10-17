@@ -29,8 +29,14 @@ export class SunArcIcon {
 
   constructor(text: St.Label) {
     this.#text = text;
-    this.actor.connect("repaint", () => this.#repaint());
-    this.actor.connect("style-changed", () => this.actor.queue_repaint());
+    // Tracked on the actor itself, so the handlers go with it when it is destroyed.
+    this.actor.connectObject(
+      "repaint",
+      () => this.#repaint(),
+      "style-changed",
+      () => this.actor.queue_repaint(),
+      this.actor,
+    );
   }
 
   set arc(arc: SunArc) {

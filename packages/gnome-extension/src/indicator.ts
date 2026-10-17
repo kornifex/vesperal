@@ -1,5 +1,6 @@
 import Clutter from "gi://Clutter";
 import St from "gi://St";
+import * as Main from "resource:///org/gnome/shell/ui/main.js";
 import * as PanelMenu from "resource:///org/gnome/shell/ui/panelMenu.js";
 import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js";
 import type { MenuRow, ViewModel } from "@vesperal/core";
@@ -8,7 +9,7 @@ import { SunArcIcon } from "./sunArcIcon.ts";
 
 /** The panel indicator and its menu, rendering a view model. */
 export class VesperalIndicator {
-  readonly button: PanelMenu.Button;
+  #button: PanelMenu.Button | null;
   readonly #box = new St.BoxLayout({ style_class: "vesperal-indicator" });
   readonly #label = new St.Label({ y_align: Clutter.ActorAlign.CENTER });
   readonly #arcIcon = new SunArcIcon(this.#label);
@@ -26,24 +27,30 @@ export class VesperalIndicator {
   ) {
     this.#box.add_child(this.#arcIcon.actor);
     this.#box.add_child(this.#label);
-    this.button = new PanelMenu.Button(0.5, name);
-    this.button.add_child(this.#box);
+    this.#button = new PanelMenu.Button(0.5, name);
+    this.#button.add_child(this.#box);
     // The button's own gesture opens the menu on a press of any button: keep it to the primary
     // one (touch counts as primary), and give the secondary one its own gesture.
-    this.button._clickGesture.required_button = Clutter.BUTTON_PRIMARY;
+    this.#button._clickGesture.required_button = Clutter.BUTTON_PRIMARY;
     const secondaryClick = new Clutter.ClickGesture({
       required_button: Clutter.BUTTON_SECONDARY,
       recognize_on_press: true,
     });
-    secondaryClick.connect("recognize", actions.secondaryClick);
-    this.button.add_action(secondaryClick);
+    // Tracked on the button, so the handler goes with it when it is destroyed.
+    secondaryClick.connectObject("recognize", actions.secondaryClick, this.#button);
+    this.#button.add_action(secondaryClick);
 
-    const menu = this.button.menu as PopupMenu.PopupMenu;
+    const menu = this.#button.menu as PopupMenu.PopupMenu;
     menu.addMenuItem(this.#rows);
     this.#manualLocationEntry.connect("activate", actions.manualLocationEntry.activate);
     menu.addMenuItem(this.#manualLocationEntry);
     menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
     menu.addAction(actions.preferences.label, actions.preferences.activate);
+  }
+
+  /** Adds the indicator to the centre of the panel, at the given index, under the given role. */
+  addToPanel(role: string, index: number): void {
+    if (this.#button) Main.panel.addToStatusArea(role, this.#button, index, "center");
   }
 
   show(view: ViewModel): void {
@@ -61,7 +68,8 @@ export class VesperalIndicator {
   }
 
   destroy(): void {
-    this.button.destroy();
+    this.#button?.destroy();
+    this.#button = null;
   }
 
   #showRows(rows: readonly MenuRow[]): void {

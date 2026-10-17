@@ -46,7 +46,7 @@ export default class VesperalExtension extends Extension {
       manualLocationEntry: { activate: () => this.openPreferences() },
       secondaryClick: () => this.#switchReading(),
     });
-    Main.panel.addToStatusArea(this.uuid, this.#indicator.button, positionRightOfClock(), "center");
+    this.#indicator.addToPanel(this.uuid, positionRightOfClock());
 
     this.#settings = this.getSettings();
     // Connected first, so that the Automatic location follows the mode before the refresh.

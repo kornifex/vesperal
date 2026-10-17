@@ -1,6 +1,7 @@
-// Bundles the extension (with @vesperal/core inlined), its compiled GSettings schema and its
-// compiled translations into dist/.
-// With --install, also copies dist/ into the user's GNOME Shell extensions directory.
+// Bundles the extension (with @vesperal/core inlined), its GSettings schema and its compiled
+// translations into dist/.
+// With --install, also copies dist/ into the user's GNOME Shell extensions directory and compiles
+// the schema there.
 // With --pack, also zips dist/ into <uuid>.shell-extension.zip, for extensions.gnome.org.
 import { cp, mkdir, readFile, rm } from "node:fs/promises";
 import { homedir } from "node:os";
@@ -28,7 +29,8 @@ await cp(join(root, "metadata.json"), join(dist, "metadata.json"));
 await cp(join(root, "stylesheet.css"), join(dist, "stylesheet.css"));
 
 await cp(join(root, "schemas"), join(dist, "schemas"), { recursive: true });
-await run("glib-compile-schemas", ["--strict", join(dist, "schemas")]);
+// Only checked: GNOME Shell 45+ compiles the schema on install, so the package must not ship it.
+await run("glib-compile-schemas", ["--strict", "--dry-run", join(dist, "schemas")]);
 
 const domain = await gettextDomain();
 for (const language of await languages()) {
@@ -55,5 +57,7 @@ if (process.argv.includes("--install")) {
   const target = join(homedir(), ".local/share/gnome-shell/extensions", metadata.uuid);
   await rm(target, { recursive: true, force: true });
   await cp(dist, target, { recursive: true });
+  // Copying by hand skips the install step that compiles the schema.
+  await run("glib-compile-schemas", ["--strict", join(target, "schemas")]);
   console.log(`Installed to ${target}`);
 }
