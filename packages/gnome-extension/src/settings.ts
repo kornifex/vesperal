@@ -1,6 +1,6 @@
 // Typed access to the extension's GSettings keys, shared by the extension and its preferences.
 
-import type Gio from "gi://Gio";
+import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 import {
   isValidLocation,
@@ -77,6 +77,19 @@ export function writeLastKnownLocation(settings: Gio.Settings, location: NamedLo
   ) {
     writeStoredLocation(settings, "last-known-location", location);
   }
+}
+
+/**
+ * Calls `follow` now, then whenever the GNOME location services are switched on or off.
+ * Returns a function that stops following them.
+ */
+export function followLocationServices(follow: (enabled: boolean) => void): () => void {
+  const locationServices = new Gio.Settings({ schema_id: "org.gnome.system.location" });
+  const changedId = locationServices.connect("changed::enabled", () =>
+    follow(locationServices.get_boolean("enabled")),
+  );
+  follow(locationServices.get_boolean("enabled"));
+  return () => locationServices.disconnect(changedId);
 }
 
 function readStoredLocation(settings: Gio.Settings, key: string): NamedLocation | null {

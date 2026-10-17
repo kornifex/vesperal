@@ -1,6 +1,7 @@
 // Seam 1: reading the clock at an instant and a Location.
 import type { Location } from "./location.ts";
 import { culmination, culminationIndexAt, solarAltitude } from "./solar.ts";
+import { MS_PER_DAY } from "./time.ts";
 
 /** Solar altitude of Sunrise and Sunset: the upper limb plus standard refraction. */
 const SOLAR_EVENT_ALTITUDE = -0.833;
@@ -8,8 +9,6 @@ const SOLAR_EVENT_ALTITUDE = -0.833;
 // Searching a little over a year each way reaches the next and previous Solar events even at
 // the poles, where there is one Sunrise and one Sunset a year: 2 culminations a day.
 const SEARCH_HORIZON_CULMINATIONS = 2 * 370;
-
-const MS_PER_DAY = 86_400_000;
 
 /** Every Twilight the user can choose, the default first. */
 export const TWILIGHTS = ["civil", "nautical", "astronomical"] as const;

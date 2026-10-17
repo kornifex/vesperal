@@ -1,11 +1,7 @@
 // Seam 2: turning a clock snapshot into what the front ends display.
 import type { ClockSnapshot } from "./clock.ts";
 import type { Location, LocationInUse, LocationSource } from "./location.ts";
-
-const MINUTES_PER_HOUR = 60;
-const MINUTES_PER_DAY = 24 * MINUTES_PER_HOUR;
-const MS_PER_MINUTE = 60_000;
-const MS_PER_DAY = 86_400_000;
+import { MINUTES_PER_DAY, MINUTES_PER_HOUR, MS_PER_DAY, MS_PER_MINUTE } from "./time.ts";
 
 /** Every Reading the user can choose, the default first. */
 export const READINGS = ["remaining", "elapsed"] as const;
@@ -78,7 +74,7 @@ export function present(snapshot: ClockSnapshot, options: PresentationOptions): 
       arc: {
         body: snapshot.phase.kind === "day" ? "sun" : "moon",
         progress: snapshot.progress,
-        emphasis: arcEmphasis(options.reading),
+        emphasis: READING_RULES[options.reading].emphasis,
       },
       text: barText(snapshot, options),
     },
@@ -105,7 +101,7 @@ export function presentError(translate: Translate): ViewModel {
 
 function barText(snapshot: ClockSnapshot, options: PresentationOptions): string {
   const { translate } = options;
-  const minutes = readingMinutes(snapshot, options.reading);
+  const minutes = READING_RULES[options.reading].minutes(snapshot);
   if (minutes <= MINUTES_PER_DAY) return formatDuration(minutes, translate);
   return snapshot.phase.kind === "day" ? translate("Polar day") : translate("Polar night");
 }
@@ -115,7 +111,7 @@ function menuRows(snapshot: ClockSnapshot, options: PresentationOptions): MenuRo
   const { phase, instant } = snapshot;
   const isDay = phase.kind === "day";
   const phaseLength = Math.round((phase.end.getTime() - phase.start.getTime()) / MS_PER_MINUTE);
-  const otherReading = otherReadingThan(options.reading);
+  const otherReading = READING_RULES[READING_RULES[options.reading].other];
 
   const civilTimeRow = (label: string, time: Date | null): MenuRow[] =>
     time ? [{ label, value: formatCivilTime(time, instant, options) }] : [];
@@ -134,8 +130,8 @@ function menuRows(snapshot: ClockSnapshot, options: PresentationOptions): MenuRo
       value: formatDuration(phaseLength, translate),
     },
     {
-      label: readingLabel(otherReading, translate),
-      value: formatDuration(readingMinutes(snapshot, otherReading), translate),
+      label: otherReading.label(translate),
+      value: formatDuration(otherReading.minutes(snapshot), translate),
     },
   ];
   // During a Day, the Phase length above is already the Day length.
@@ -149,44 +145,35 @@ function menuRows(snapshot: ClockSnapshot, options: PresentationOptions): MenuRo
   return rows;
 }
 
-/** The Reading in whole minutes, each rounding erring towards "less time". */
-function readingMinutes(snapshot: ClockSnapshot, reading: Reading): number {
-  switch (reading) {
-    case "remaining":
-      // Rounded up, so the clock never claims the Solar event has arrived before it has.
-      return Math.ceil(snapshot.remaining / MS_PER_MINUTE);
-    case "elapsed":
-      return Math.floor(snapshot.elapsed / MS_PER_MINUTE);
-  }
-}
-
-function arcEmphasis(reading: Reading): SunArc["emphasis"] {
-  switch (reading) {
-    case "remaining":
-      return "ahead";
-    case "elapsed":
-      return "behind";
-  }
-}
-
-/** The Reading the menu shows alongside the one in the bar. */
-function otherReadingThan(reading: Reading): Reading {
-  switch (reading) {
-    case "remaining":
-      return "elapsed";
-    case "elapsed":
-      return "remaining";
-  }
-}
-
-function readingLabel(reading: Reading, translate: Translate): string {
-  switch (reading) {
-    case "remaining":
-      return translate("Remaining time");
-    case "elapsed":
-      return translate("Elapsed time");
-  }
-}
+/** What each Reading measures, and how the bar and the menu show it. */
+const READING_RULES: Readonly<
+  Record<
+    Reading,
+    {
+      /** The Reading in whole minutes, rounded towards "less time". */
+      readonly minutes: (snapshot: ClockSnapshot) => number;
+      readonly label: (translate: Translate) => string;
+      /** The part of the Sun arc the Reading measures. */
+      readonly emphasis: SunArc["emphasis"];
+      /** The Reading the menu shows alongside this one in the bar. */
+      readonly other: Reading;
+    }
+  >
+> = {
+  remaining: {
+    // Rounded up, so the clock never claims the Solar event has arrived before it has.
+    minutes: (snapshot) => Math.ceil(snapshot.remaining / MS_PER_MINUTE),
+    label: (translate) => translate("Remaining time"),
+    emphasis: "ahead",
+    other: "elapsed",
+  },
+  elapsed: {
+    minutes: (snapshot) => Math.floor(snapshot.elapsed / MS_PER_MINUTE),
+    label: (translate) => translate("Elapsed time"),
+    emphasis: "behind",
+    other: "remaining",
+  },
+};
 
 function locationRow(options: PresentationOptions): MenuRow {
   const { location, translate } = options;

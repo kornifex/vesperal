@@ -1,9 +1,8 @@
 // Solar position after the NOAA Solar Calculator (Meeus, "Astronomical Algorithms").
 import type { Location } from "./location.ts";
+import { MINUTES_PER_DAY, MS_PER_DAY, MS_PER_MINUTE } from "./time.ts";
 
-const MS_PER_MINUTE = 60_000;
-const MS_PER_DAY = 86_400_000;
-const MINUTES_PER_HALF_DAY = 720;
+const MINUTES_PER_HALF_DAY = MINUTES_PER_DAY / 2;
 const UNIX_EPOCH_JULIAN_DAY = 2_440_587.5;
 const J2000_JULIAN_DAY = 2_451_545;
 const DAYS_PER_JULIAN_CENTURY = 36_525;
@@ -17,7 +16,8 @@ const degrees = (angle: number): number => (angle * 180) / Math.PI;
  */
 export function solarAltitude(location: Location, epochMs: number): number {
   const { declination, equationOfTimeMinutes } = sunAt(epochMs);
-  const utcMinutes = ((((epochMs % MS_PER_DAY) + MS_PER_DAY) % MS_PER_DAY) / MS_PER_DAY) * 1440;
+  const utcMinutes =
+    ((((epochMs % MS_PER_DAY) + MS_PER_DAY) % MS_PER_DAY) / MS_PER_DAY) * MINUTES_PER_DAY;
   const trueSolarTimeMinutes = utcMinutes + equationOfTimeMinutes + 4 * location.longitude;
   const hourAngle = radians(trueSolarTimeMinutes / 4 - 180);
 

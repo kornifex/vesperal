@@ -1,5 +1,5 @@
 import Adw from "gi://Adw";
-import Gio from "gi://Gio";
+import type Gio from "gi://Gio";
 import Gtk from "gi://Gtk";
 import {
   gettext as _,
@@ -8,6 +8,7 @@ import {
 import { LOCATION_MODES, type NamedLocation, READINGS, TWILIGHTS } from "@sun-clock/core";
 import { type City, CitySearch } from "./citySearch.ts";
 import {
+  followLocationServices,
   readLastKnownLocation,
   readLocationMode,
   readManualLocation,
@@ -165,10 +166,9 @@ function addLocationGroups(
   coordinatesGroup.add(latitudeRow);
   coordinatesGroup.add(longitudeRow);
 
-  const locationServices = new Gio.Settings({ schema_id: "org.gnome.system.location" });
-  const showLocationServices = (): void => {
+  const showLocationServices = (enabled: boolean): void => {
     if (!automaticRow) return;
-    automaticRow.subtitle = locationServices.get_boolean("enabled")
+    automaticRow.subtitle = enabled
       ? _("From the system's location services")
       : _("Location services are off");
   };
@@ -226,16 +226,12 @@ function addLocationGroups(
   latitudeRow.connect("apply", applyCoordinates);
   longitudeRow.connect("apply", applyCoordinates);
 
-  showLocationServices();
+  const stopFollowingLocationServices = followLocationServices(showLocationServices);
   showManualLocation();
-  const locationServicesChangedId = locationServices.connect(
-    "changed::enabled",
-    showLocationServices,
-  );
   const manualLocationChangedId = settings.connect("changed::manual-location", showManualLocation);
   return () => {
     modes.disconnect();
-    locationServices.disconnect(locationServicesChangedId);
+    stopFollowingLocationServices();
     settings.disconnect(manualLocationChangedId);
   };
 }
