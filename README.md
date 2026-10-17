@@ -132,10 +132,14 @@ dbus-run-session gnome-shell --devkit --wayland
 
 On Fedora, this needs the `mutter-devkit` package.
 
-### AI assistance
+### Authorship and AI assistance
 
-The development of Vesperal was assisted by AI, with Claude Code from Anthropic. The author
-decided the design, tested each change on GNOME Shell, and is responsible for the code.
+Vesperal is designed and directed by its author, Julien Seren-Rosso. What the extension does,
+how it looks and behaves, and every design decision come from the author. Each change was tried
+on GNOME Shell by the author, then accepted or sent back for rework.
+
+An AI coding assistant, Claude Code by Anthropic, helped write and refactor the code under that
+direction.
 
 ## License
 
