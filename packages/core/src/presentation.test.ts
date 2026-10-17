@@ -157,18 +157,27 @@ describe("present: Sun arc", () => {
   test("puts the Sun on the arc during a Day, at the Progress of the Phase", () => {
     const { arc } = present(phaseWithRemaining("day", 3.5 * HOUR), OPTIONS).bar;
 
-    expect(arc).toEqual({ body: "sun", progress: 0.75 });
+    expect(arc).toEqual({ body: "sun", progress: 0.75, emphasis: "ahead" });
   });
 
   test("puts the Moon on the arc during a Night", () => {
     const { arc } = present(phaseWithRemaining("night", 7 * HOUR), OPTIONS).bar;
 
-    expect(arc).toEqual({ body: "moon", progress: 0.5 });
+    expect(arc).toEqual({ body: "moon", progress: 0.5, emphasis: "ahead" });
   });
 
   test("covers the whole Phase, from its very start to just before its end", () => {
     expect(present(phaseWithRemaining("day", 14 * HOUR), OPTIONS).bar.arc?.progress).toBe(0);
     expect(present(phaseWithRemaining("day", 1), OPTIONS).bar.arc?.progress).toBeCloseTo(1, 6);
+  });
+
+  test("emphasises the part of the arc the Reading measures", () => {
+    const snapshot = phaseWithRemaining("day", 3.5 * HOUR);
+
+    // Remaining time: the way still ahead of the Sun.
+    expect(present(snapshot, OPTIONS).bar.arc?.emphasis).toBe("ahead");
+    // Elapsed time: the way already behind it.
+    expect(present(snapshot, { ...OPTIONS, reading: "elapsed" }).bar.arc?.emphasis).toBe("behind");
   });
 });
 
@@ -326,7 +335,11 @@ describe("present: Polar day and Polar night", () => {
   test("keeps the Sun arc at the Progress of the long Phase", () => {
     const halfway = (Date.parse(POLAR_DAY.end) - Date.parse(POLAR_DAY.start)) / 2;
 
-    expect(polarDayRemaining(halfway).bar.arc).toEqual({ body: "sun", progress: 0.5 });
+    expect(polarDayRemaining(halfway).bar.arc).toEqual({
+      body: "sun",
+      progress: 0.5,
+      emphasis: "ahead",
+    });
   });
 
   test("dates the next Solar event and gives long durations in days and hours", () => {

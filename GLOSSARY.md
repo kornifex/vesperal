@@ -63,7 +63,7 @@ The fraction of the current Phase already elapsed, from 0 to 1.
 _Avoid_: Percentage, completion
 
 **Sun arc**:
-The visual representation of Progress: a half arc on which the Sun (during a Day) or the Moon (during a Night) sits at the current Progress.
+The visual representation of Progress: a half arc on which the Sun (during a Day) or the Moon (during a Night) sits at the current Progress. The part of the arc the Reading measures is emphasised: the way still ahead of the body for Remaining time, the way already behind it for Elapsed time.
 _Avoid_: Progress bar, gauge
 
 **Civil time**:

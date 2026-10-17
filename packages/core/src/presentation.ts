@@ -34,6 +34,11 @@ export interface SunArc {
   readonly body: "sun" | "moon";
   /** From 0 (rising end of the arc) to 1 (setting end). */
   readonly progress: number;
+  /**
+   * The part of the arc the Reading measures, to draw emphasised so the bar tells which Reading
+   * it shows: the way still ahead of the body, or the way already behind it.
+   */
+  readonly emphasis: "ahead" | "behind";
 }
 
 export interface Bar {
@@ -73,6 +78,7 @@ export function present(snapshot: ClockSnapshot, options: PresentationOptions): 
       arc: {
         body: snapshot.phase.kind === "day" ? "sun" : "moon",
         progress: snapshot.progress,
+        emphasis: arcEmphasis(options.reading),
       },
       text: barText(snapshot, options),
     },
@@ -148,6 +154,15 @@ function readingMinutes(snapshot: ClockSnapshot, reading: Reading): number {
       return Math.ceil(snapshot.remaining / MS_PER_MINUTE);
     case "elapsed":
       return Math.floor(snapshot.elapsed / MS_PER_MINUTE);
+  }
+}
+
+function arcEmphasis(reading: Reading): SunArc["emphasis"] {
+  switch (reading) {
+    case "remaining":
+      return "ahead";
+    case "elapsed":
+      return "behind";
   }
 }
 

@@ -3,6 +3,10 @@ import St from "gi://St";
 import type { SunArc } from "@sun-clock/core";
 import Cairo from "cairo";
 
+// How the part of the arc the Reading does not measure is drawn, relative to the rest.
+const FADED_WIDTH = 0.6;
+const FADED_OPACITY = 0.4;
+
 /**
  * Draws the Sun arc in the panel's foreground colour, so it renders like a symbolic icon:
  * a horizon, a half arc above it, and the Sun or the Moon at the current Progress.
@@ -31,7 +35,9 @@ export class SunArcIcon {
     const [width, height] = this.actor.get_surface_size();
     const { red, green, blue, alpha } = this.actor.get_theme_node().get_foreground_color();
     const cr = this.actor.get_context();
-    cr.setSourceRGBA(red / 255, green / 255, blue / 255, alpha / 255);
+    const setOpacity = (opacity: number): void =>
+      cr.setSourceRGBA(red / 255, green / 255, blue / 255, (alpha / 255) * opacity);
+    setOpacity(1);
 
     const lineWidth = Math.max(1, height / 10);
     const bodyRadius = height * 0.25;
@@ -44,11 +50,21 @@ export class SunArcIcon {
     cr.moveTo(lineWidth / 2, horizonY);
     cr.lineTo(width - lineWidth / 2, horizonY);
     cr.stroke();
-    cr.arc(centreX, horizonY, radius, Math.PI, 2 * Math.PI);
-    cr.stroke();
 
     // Cairo angles grow clockwise on screen: π is the rising end of the arc, 2π the setting end.
     const angle = Math.PI * (1 + arc.progress);
+
+    // The part the Reading measures is drawn in full, the other part thin and faded.
+    const strokeArc = (from: number, to: number, emphasised: boolean): void => {
+      cr.setLineWidth(emphasised ? lineWidth : Math.max(1, lineWidth * FADED_WIDTH));
+      setOpacity(emphasised ? 1 : FADED_OPACITY);
+      cr.arc(centreX, horizonY, radius, from, to);
+      cr.stroke();
+    };
+    strokeArc(Math.PI, angle, arc.emphasis === "behind");
+    strokeArc(angle, 2 * Math.PI, arc.emphasis === "ahead");
+    setOpacity(1);
+
     const bodyX = centreX + radius * Math.cos(angle);
     const bodyY = horizonY + radius * Math.sin(angle);
 
