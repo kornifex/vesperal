@@ -1,4 +1,5 @@
 import Clutter from "gi://Clutter";
+import Pango from "gi://Pango";
 import St from "gi://St";
 import type { SunArc } from "@sun-clock/core";
 import Cairo from "cairo";
@@ -10,15 +11,20 @@ const FADED_OPACITY = 0.4;
 /**
  * Draws the Sun arc in the panel's foreground colour, so it renders like a symbolic icon:
  * a horizon, a half arc above it, and the Sun or the Moon at the current Progress.
+ *
+ * The horizon lies on the baseline of `text`, so the Reading stands on the same ground as the
+ * Sun whatever the font; the drawing area spans the full height of the bar to allow it.
  */
 export class SunArcIcon {
   readonly actor = new St.DrawingArea({
     style_class: "sun-clock-arc",
-    y_align: Clutter.ActorAlign.CENTER,
+    y_align: Clutter.ActorAlign.FILL,
   });
+  readonly #text: St.Label;
   #arc: SunArc | null = null;
 
-  constructor() {
+  constructor(text: St.Label) {
+    this.#text = text;
     this.actor.connect("repaint", () => this.#repaint());
     this.actor.connect("style-changed", () => this.actor.queue_repaint());
   }
@@ -39,9 +45,11 @@ export class SunArcIcon {
       cr.setSourceRGBA(red / 255, green / 255, blue / 255, (alpha / 255) * opacity);
     setOpacity(1);
 
-    const lineWidth = Math.max(1, height / 10);
-    const bodyRadius = height * 0.25;
-    const horizonY = height - lineWidth / 2;
+    // Sized on the width, so the drawing does not grow with the height of the bar.
+    const size = (width * 2) / 3;
+    const lineWidth = Math.max(1, size / 10);
+    const bodyRadius = size * 0.25;
+    const horizonY = Math.min(this.#baselineY() ?? height, height) - lineWidth / 2;
     const centreX = width / 2;
     const radius = Math.min(centreX - bodyRadius - lineWidth, horizonY - bodyRadius - lineWidth);
 
@@ -86,5 +94,14 @@ export class SunArcIcon {
     }
 
     cr.$dispose();
+  }
+
+  /** The baseline of the text, from the top of the drawing area, if the text is laid out. */
+  #baselineY(): number | undefined {
+    const text = this.#text.clutter_text;
+    if (!text.has_allocation() || !this.actor.has_allocation()) return undefined;
+    const [, textY] = text.get_transformed_position();
+    const [, areaY] = this.actor.get_transformed_position();
+    return textY - areaY + text.get_layout().get_baseline() / Pango.SCALE;
   }
 }

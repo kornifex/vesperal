@@ -10,8 +10,8 @@ import { SunArcIcon } from "./sunArcIcon.ts";
 export class SunClockIndicator {
   readonly button: PanelMenu.Button;
   readonly #box = new St.BoxLayout({ style_class: "sun-clock-indicator" });
-  readonly #arcIcon = new SunArcIcon();
   readonly #label = new St.Label({ y_align: Clutter.ActorAlign.CENTER });
+  readonly #arcIcon = new SunArcIcon(this.#label);
   readonly #rows = new PopupMenu.PopupMenuSection();
   readonly #manualLocationEntry = new PopupMenu.PopupMenuItem("");
 
