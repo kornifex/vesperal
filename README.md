@@ -1,3 +1,5 @@
+<img src="docs/icon/vesperal.svg" alt="" width="96" align="right">
+
 # Vesperal
 
 **Tell time by the Sun, right in the GNOME top bar.**
@@ -110,6 +112,7 @@ pnpm check                                                  # lint, typecheck an
 pnpm format                                                 # apply Biome formatting
 pnpm build                                                  # bundle the extension into packages/gnome-extension/dist
 pnpm --filter @vesperal/gnome-extension install-extension   # build and install locally
+pnpm --filter @vesperal/gnome-extension pack-extension      # build the zip for extensions.gnome.org
 pnpm --filter @vesperal/gnome-extension update-po           # refresh po/ after changing messages
 ```
 

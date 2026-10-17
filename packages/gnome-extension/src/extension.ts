@@ -70,7 +70,6 @@ export default class VesperalExtension extends Extension {
 
   override disable(): void {
     this.#wallClock?.disconnect(this.#wallClockChangedId);
-    this.#wallClock?.run_dispose();
     this.#wallClock = null;
     this.#automaticLocation?.destroy();
     this.#automaticLocation = null;

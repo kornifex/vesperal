@@ -6,6 +6,7 @@
   "scripts": {
     "build": "node scripts/build.ts",
     "install-extension": "node scripts/build.ts --install",
+    "pack-extension": "node scripts/build.ts --pack",
     "update-po": "node scripts/update-po.ts",
     "test": "node scripts/check-translations.ts",
     "typecheck": "tsc -p . && tsc -p tsconfig.scripts.json"

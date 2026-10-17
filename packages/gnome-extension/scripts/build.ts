@@ -1,6 +1,7 @@
 // Bundles the extension (with @vesperal/core inlined), its compiled GSettings schema and its
 // compiled translations into dist/.
 // With --install, also copies dist/ into the user's GNOME Shell extensions directory.
+// With --pack, also zips dist/ into <uuid>.shell-extension.zip, for extensions.gnome.org.
 import { cp, mkdir, readFile, rm } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -40,10 +41,17 @@ for (const language of await languages()) {
   ]);
 }
 
+const metadata: { uuid: string } = JSON.parse(await readFile(join(root, "metadata.json"), "utf8"));
+
+if (process.argv.includes("--pack")) {
+  const archive = join(root, `${metadata.uuid}.shell-extension.zip`);
+  await rm(archive, { force: true });
+  // -X leaves out file attributes that would make the archive differ from one build to another.
+  await run("zip", ["-r", "-X", "-q", archive, "."], { cwd: dist });
+  console.log(`Packed ${archive}`);
+}
+
 if (process.argv.includes("--install")) {
-  const metadata: { uuid: string } = JSON.parse(
-    await readFile(join(root, "metadata.json"), "utf8"),
-  );
   const target = join(homedir(), ".local/share/gnome-shell/extensions", metadata.uuid);
   await rm(target, { recursive: true, force: true });
   await cp(dist, target, { recursive: true });
