@@ -7,10 +7,14 @@ import Cairo from "cairo";
 // How the part of the arc the Reading does not measure is drawn, relative to the rest.
 const FADED_WIDTH = 0.6;
 const FADED_OPACITY = 0.4;
+// The arc is a flattened half ellipse: its height as a fraction of its half-width.
+const ARC_FLATNESS = 0.55;
+// How far the horizon runs past each end of the arc, as a fraction of the body's radius.
+const HORIZON_OVERHANG = 0.6;
 
 /**
  * Draws the Sun arc in the panel's foreground colour, so it renders like a symbolic icon:
- * a horizon, a half arc above it, and the Sun or the Moon at the current Progress.
+ * a horizon, a flattened half arc above it, and the Sun or the Moon at the current Progress.
  *
  * The horizon lies on the baseline of `text`, so the Reading stands on the same ground as the
  * Sun whatever the font; the drawing area spans the full height of the bar to allow it.
@@ -45,18 +49,21 @@ export class SunArcIcon {
       cr.setSourceRGBA(red / 255, green / 255, blue / 255, (alpha / 255) * opacity);
     setOpacity(1);
 
-    // Sized on the width, so the drawing does not grow with the height of the bar.
-    const size = (width * 2) / 3;
-    const lineWidth = Math.max(1, size / 10);
-    const bodyRadius = size * 0.25;
+    // Sized on the width, so the drawing does not grow with the height of the bar; the arc is
+    // flattened to stay low beside the text, within the room above the baseline.
+    const lineWidth = Math.max(1, width / 18);
+    const bodyRadius = width / 7;
     const horizonY = Math.min(this.#baselineY() ?? height, height) - lineWidth / 2;
     const centreX = width / 2;
-    const radius = Math.min(centreX - bodyRadius - lineWidth, horizonY - bodyRadius - lineWidth);
+    const radiusX = centreX - bodyRadius - lineWidth;
+    const radiusY = Math.min(radiusX * ARC_FLATNESS, horizonY - bodyRadius - lineWidth);
 
+    // The horizon runs a little past each end of the arc.
+    const horizonHalfLength = radiusX + bodyRadius * HORIZON_OVERHANG;
     cr.setLineWidth(lineWidth);
     cr.setLineCap(Cairo.LineCap.ROUND);
-    cr.moveTo(lineWidth / 2, horizonY);
-    cr.lineTo(width - lineWidth / 2, horizonY);
+    cr.moveTo(centreX - horizonHalfLength, horizonY);
+    cr.lineTo(centreX + horizonHalfLength, horizonY);
     cr.stroke();
 
     // Cairo angles grow clockwise on screen: π is the rising end of the arc, 2π the setting end.
@@ -66,32 +73,39 @@ export class SunArcIcon {
     const strokeArc = (from: number, to: number, emphasised: boolean): void => {
       cr.setLineWidth(emphasised ? lineWidth : Math.max(1, lineWidth * FADED_WIDTH));
       setOpacity(emphasised ? 1 : FADED_OPACITY);
-      cr.arc(centreX, horizonY, radius, from, to);
+      // Scale a unit circle into the ellipse, then stroke unscaled so the line keeps its width.
+      cr.save();
+      cr.translate(centreX, horizonY);
+      cr.scale(radiusX, radiusY);
+      cr.arc(0, 0, 1, from, to);
+      cr.restore();
       cr.stroke();
     };
     strokeArc(Math.PI, angle, arc.emphasis === "behind");
     strokeArc(angle, 2 * Math.PI, arc.emphasis === "ahead");
     setOpacity(1);
 
-    const bodyX = centreX + radius * Math.cos(angle);
-    const bodyY = horizonY + radius * Math.sin(angle);
+    const bodyX = centreX + radiusX * Math.cos(angle);
+    const bodyY = horizonY + radiusY * Math.sin(angle);
 
     // A transparent ring keeps the body distinct from the arc it sits on.
     cr.setOperator(Cairo.Operator.CLEAR);
     cr.arc(bodyX, bodyY, bodyRadius + lineWidth, 0, 2 * Math.PI);
     cr.fill();
     cr.setOperator(Cairo.Operator.OVER);
+
+    // The body is drawn in a group of its own, so that carving the Moon's crescent clears only
+    // the disc: clearing through an antialiased clip would leave a faint sliver of its edge.
+    cr.pushGroup();
     cr.arc(bodyX, bodyY, bodyRadius, 0, 2 * Math.PI);
     cr.fill();
-
     if (arc.body === "moon") {
-      // Carve a crescent out of the disc.
-      cr.arc(bodyX, bodyY, bodyRadius, 0, 2 * Math.PI);
-      cr.clip();
       cr.setOperator(Cairo.Operator.CLEAR);
       cr.arc(bodyX + bodyRadius * 0.5, bodyY - bodyRadius * 0.35, bodyRadius * 0.8, 0, 2 * Math.PI);
       cr.fill();
     }
+    cr.popGroupToSource();
+    cr.paint();
 
     cr.$dispose();
   }
