@@ -2,3 +2,5 @@ node_modules/
 dist/
 *.zip
 .scratch/
+CLAUDE.md
+docs/agents/
