@@ -96,12 +96,16 @@ export class SunArcIcon {
     cr.$dispose();
   }
 
-  /** The baseline of the text, from the top of the drawing area, if the text is laid out. */
+  /**
+   * The baseline of the text, from the top of the drawing area, if the text is laid out. The
+   * text and the drawing area are siblings, so their allocations share the same origin.
+   */
   #baselineY(): number | undefined {
     const text = this.#text.clutter_text;
     if (!text.has_allocation() || !this.actor.has_allocation()) return undefined;
-    const [, textY] = text.get_transformed_position();
-    const [, areaY] = this.actor.get_transformed_position();
+    const labelY = this.#text.get_allocation_box().y1;
+    const textY = labelY + text.get_allocation_box().y1;
+    const areaY = this.actor.get_allocation_box().y1;
     return textY - areaY + text.get_layout().get_baseline() / Pango.SCALE;
   }
 }
