@@ -1,5 +1,5 @@
 import GWeather from "gi://GWeather?version=4.0";
-import { isValidLocation } from "@sun-clock/core";
+import { isValidLocation } from "@vesperal/core";
 
 export interface City {
   readonly name: string;

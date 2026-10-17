@@ -1,7 +1,7 @@
 import Geoclue from "gi://Geoclue";
 import Gio from "gi://Gio";
 import GWeather from "gi://GWeather?version=4.0";
-import type { NamedLocation } from "@sun-clock/core";
+import type { NamedLocation } from "@vesperal/core";
 import { followLocationServices } from "./settings.ts";
 
 // The extension runs inside GNOME Shell, so it asks GeoClue as the Shell, like its weather.

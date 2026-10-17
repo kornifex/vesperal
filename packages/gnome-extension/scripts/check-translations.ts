@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { extractMessages, languages, poDirectory, run } from "./i18n.ts";
 
-const workDirectory = await mkdtemp(join(tmpdir(), "sun-clock-i18n-"));
+const workDirectory = await mkdtemp(join(tmpdir(), "vesperal-i18n-"));
 try {
   const template = join(workDirectory, "messages.pot");
   await extractMessages(template);

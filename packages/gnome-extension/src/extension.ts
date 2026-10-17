@@ -11,9 +11,9 @@ import {
   READINGS,
   readClock,
   resolveLocation,
-} from "@sun-clock/core";
+} from "@vesperal/core";
 import { AutomaticLocation } from "./automaticLocation.ts";
-import { SunClockIndicator } from "./indicator.ts";
+import { VesperalIndicator } from "./indicator.ts";
 import { civilTimeLocale } from "./locale.ts";
 import {
   readLastKnownLocation,
@@ -26,8 +26,8 @@ import {
   writeReading,
 } from "./settings.ts";
 
-export default class SunClockExtension extends Extension {
-  #indicator: SunClockIndicator | null = null;
+export default class VesperalExtension extends Extension {
+  #indicator: VesperalIndicator | null = null;
   #settings: Gio.Settings | null = null;
   #settingsChangedId = 0;
   #locationModeChangedId = 0;
@@ -40,7 +40,7 @@ export default class SunClockExtension extends Extension {
   #wallClockChangedId = 0;
 
   override enable(): void {
-    this.#indicator = new SunClockIndicator(this.metadata.name, {
+    this.#indicator = new VesperalIndicator(this.metadata.name, {
       preferences: { label: _("Preferences"), activate: () => this.openPreferences() },
       // The preferences open on the city search when no Location is known (see prefs.ts).
       manualLocationEntry: { activate: () => this.openPreferences() },

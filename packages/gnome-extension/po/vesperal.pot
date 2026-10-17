@@ -1,14 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the sun-clock package.
+# This file is distributed under the same license as the vesperal package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: sun-clock\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-17 09:20+0200\n"
+"Project-Id-Version: vesperal\n"
+"Report-Msgid-Bugs-To: https://github.com/kornifex/vesperal/issues\n"
+"POT-Creation-Date: 2026-10-17 09:23+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"

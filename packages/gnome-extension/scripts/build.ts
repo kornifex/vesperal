@@ -1,4 +1,4 @@
-// Bundles the extension (with @sun-clock/core inlined), its compiled GSettings schema and its
+// Bundles the extension (with @vesperal/core inlined), its compiled GSettings schema and its
 // compiled translations into dist/.
 // With --install, also copies dist/ into the user's GNOME Shell extensions directory.
 import { cp, mkdir, readFile, rm } from "node:fs/promises";

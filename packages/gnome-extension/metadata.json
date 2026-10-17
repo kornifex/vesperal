@@ -1,9 +1,9 @@
 {
-  "uuid": "sun-clock@local",
-  "name": "Sun Clock",
+  "uuid": "vesperal@kornifex.github.io",
+  "name": "Vesperal",
   "description": "Tells time relative to sunrise and sunset at your location.",
   "shell-version": ["50"],
-  "url": "",
-  "settings-schema": "org.gnome.shell.extensions.sun-clock",
-  "gettext-domain": "sun-clock"
+  "url": "https://github.com/kornifex/vesperal",
+  "settings-schema": "org.gnome.shell.extensions.vesperal",
+  "gettext-domain": "vesperal"
 }

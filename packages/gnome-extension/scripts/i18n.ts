@@ -48,6 +48,7 @@ export async function extractMessages(output: string): Promise<void> {
       "--add-comments=Translators:",
       `--package-name=${await gettextDomain()}`,
       "--sort-by-file",
+      "--msgid-bugs-address=https://github.com/kornifex/vesperal/issues",
       `--output=${output}`,
       ...sources.sort(),
     ],

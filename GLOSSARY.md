@@ -1,4 +1,4 @@
-# Sun Clock
+# Vesperal
 
 A clock that tells time relative to the Sun at the user's Location rather than on a 24-hour dial: it shows how long remains until the next Solar event.
 

@@ -11,7 +11,7 @@ import {
   type Reading,
   TWILIGHTS,
   type Twilight,
-} from "@sun-clock/core";
+} from "@vesperal/core";
 
 /** Every side of the Reading the Sun arc can sit on, the default first. */
 export const SUN_ARC_POSITIONS = ["left", "right"] as const;

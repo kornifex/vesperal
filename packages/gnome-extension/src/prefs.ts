@@ -5,7 +5,7 @@ import {
   gettext as _,
   ExtensionPreferences,
 } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
-import { LOCATION_MODES, type NamedLocation, READINGS, TWILIGHTS } from "@sun-clock/core";
+import { LOCATION_MODES, type NamedLocation, READINGS, TWILIGHTS } from "@vesperal/core";
 import { type City, CitySearch } from "./citySearch.ts";
 import {
   followLocationServices,
@@ -25,7 +25,7 @@ import {
 
 const MAX_SEARCH_RESULTS = 8;
 
-export default class SunClockPreferences extends ExtensionPreferences {
+export default class VesperalPreferences extends ExtensionPreferences {
   override async fillPreferencesWindow(window: Adw.PreferencesWindow): Promise<void> {
     const settings = this.getSettings();
     const page = new Adw.PreferencesPage();

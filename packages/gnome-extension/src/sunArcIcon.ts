@@ -1,7 +1,7 @@
 import Clutter from "gi://Clutter";
 import Pango from "gi://Pango";
 import St from "gi://St";
-import type { SunArc } from "@sun-clock/core";
+import type { SunArc } from "@vesperal/core";
 import Cairo from "cairo";
 
 // How the part of the arc the Reading does not measure is drawn, relative to the rest.
@@ -21,7 +21,7 @@ const HORIZON_OVERHANG = 0.6;
  */
 export class SunArcIcon {
   readonly actor = new St.DrawingArea({
-    style_class: "sun-clock-arc",
+    style_class: "vesperal-arc",
     y_align: Clutter.ActorAlign.FILL,
   });
   readonly #text: St.Label;

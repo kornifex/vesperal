@@ -1,12 +1,12 @@
-# French translations for sun-clock package
-# Traductions françaises du paquet sun-clock.
-# Copyright (C) 2026 THE sun-clock'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the sun-clock package.
+# French translations for Vesperal.
+# Traductions françaises de Vesperal.
+# Copyright (C) 2026 Julien Seren-Rosso
+# This file is distributed under the same license as the Vesperal package.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: sun-clock\n"
-"Report-Msgid-Bugs-To: \n"
+"Project-Id-Version: vesperal\n"
+"Report-Msgid-Bugs-To: https://github.com/kornifex/vesperal/issues\n"
 "POT-Creation-Date: 2026-10-17 09:20+0200\n"
 "PO-Revision-Date: 2026-10-16 22:38+0200\n"
 "Last-Translator: Julien Seren-Rosso\n"

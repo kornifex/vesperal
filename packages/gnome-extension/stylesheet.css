@@ -1,17 +1,17 @@
-.sun-clock-indicator {
+.vesperal-indicator {
   /* biome-ignore lint/correctness/noUnknownProperty: St's own property for box layouts */
   spacing: 6px;
 }
 
-.sun-clock-arc {
+.vesperal-arc {
   width: 36px;
 }
 
-.sun-clock-menu-label {
+.vesperal-menu-label {
   font-weight: normal;
 }
 
-.sun-clock-menu-value {
+.vesperal-menu-value {
   font-weight: bold;
   padding-left: 24px;
   font-feature-settings: "tnum";

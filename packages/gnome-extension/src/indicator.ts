@@ -2,14 +2,14 @@ import Clutter from "gi://Clutter";
 import St from "gi://St";
 import * as PanelMenu from "resource:///org/gnome/shell/ui/panelMenu.js";
 import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js";
-import type { MenuRow, ViewModel } from "@sun-clock/core";
+import type { MenuRow, ViewModel } from "@vesperal/core";
 import type { SunArcPosition } from "./settings.ts";
 import { SunArcIcon } from "./sunArcIcon.ts";
 
 /** The panel indicator and its menu, rendering a view model. */
-export class SunClockIndicator {
+export class VesperalIndicator {
   readonly button: PanelMenu.Button;
-  readonly #box = new St.BoxLayout({ style_class: "sun-clock-indicator" });
+  readonly #box = new St.BoxLayout({ style_class: "vesperal-indicator" });
   readonly #label = new St.Label({ y_align: Clutter.ActorAlign.CENTER });
   readonly #arcIcon = new SunArcIcon(this.#label);
   readonly #rows = new PopupMenu.PopupMenuSection();
@@ -74,9 +74,9 @@ export class SunClockIndicator {
         can_focus: false,
       });
       item.add_child(
-        new St.Label({ text: label, x_expand: true, style_class: "sun-clock-menu-label" }),
+        new St.Label({ text: label, x_expand: true, style_class: "vesperal-menu-label" }),
       );
-      item.add_child(new St.Label({ text: value, style_class: "sun-clock-menu-value" }));
+      item.add_child(new St.Label({ text: value, style_class: "vesperal-menu-value" }));
       this.#rows.addMenuItem(item);
     }
   }

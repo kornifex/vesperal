@@ -1,5 +1,5 @@
 {
-  "name": "@sun-clock/gnome-extension",
+  "name": "@vesperal/gnome-extension",
   "private": true,
   "license": "GPL-3.0-or-later",
   "type": "module",
@@ -11,7 +11,7 @@
     "typecheck": "tsc -p . && tsc -p tsconfig.scripts.json"
   },
   "dependencies": {
-    "@sun-clock/core": "workspace:*"
+    "@vesperal/core": "workspace:*"
   },
   "devDependencies": {
     "@girs/geoclue-2.0": "^4.9.0",

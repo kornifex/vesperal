@@ -186,7 +186,7 @@ importers:
 
   packages/gnome-extension:
     dependencies:
-      '@sun-clock/core':
+      '@vesperal/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
