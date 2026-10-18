@@ -29,7 +29,9 @@ along the night.
   offline) or any coordinates. If the location becomes unavailable, Vesperal keeps using the last
   known one.
 - **Offline**: every computation runs on your computer, after the NOAA solar position algorithm.
-- **English and French**.
+- **18 languages**: English and French, plus Catalan, Czech, Danish, Dutch, Finnish, German,
+  Greek, Hungarian, Italian, Norwegian Bokmål, Polish, Portuguese, Romanian, Spanish, Swedish
+  and Ukrainian.
 
 ## Installation
 
@@ -98,7 +100,9 @@ GNOME Shell 50.
 
 ## Translations
 
-Vesperal is translated with gettext. English is the source language, and French ships with it.
+Vesperal is translated with gettext. English is the source language. The French translation is
+the author's. The other languages are machine translations awaiting review by native speakers:
+corrections are very welcome.
 
 To add a language, copy `packages/gnome-extension/po/vesperal.pot` to
 `packages/gnome-extension/po/<language>.po`, translate every message, and open a pull request.
@@ -139,7 +143,7 @@ how it looks and behaves, and every design decision come from the author. Each c
 on GNOME Shell by the author, then accepted or sent back for rework.
 
 An AI coding assistant, Claude Code by Anthropic, helped write and refactor the code under that
-direction.
+direction, and drafted the translations other than French.
 
 ## License
 

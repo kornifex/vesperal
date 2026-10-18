@@ -1,0 +1,252 @@
+# Greek translations for Vesperal.
+# Machine translation by Claude Code (Anthropic), awaiting review by a native speaker.
+# Copyright (C) 2026 Julien Seren-Rosso
+# This file is distributed under the same license as the Vesperal package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: vesperal\n"
+"Report-Msgid-Bugs-To: https://github.com/kornifex/vesperal/issues\n"
+"POT-Creation-Date: 2026-10-17 19:16+0200\n"
+"PO-Revision-Date: 2026-10-17 12:00+0200\n"
+"Last-Translator: Claude Code (machine translation, unreviewed)\n"
+"Language-Team: none\n"
+"Language: el\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: packages/core/src/presentation.ts:88
+msgid "Location unknown"
+msgstr "Άγνωστη τοποθεσία"
+
+#: packages/core/src/presentation.ts:89
+msgid "Set a location manually…"
+msgstr "Ορισμός τοποθεσίας χειροκίνητα…"
+
+#. Translators: shown in the top bar instead of the Reading when something went wrong.
+#: packages/core/src/presentation.ts:97
+msgid "Error"
+msgstr "Σφάλμα"
+
+#: packages/core/src/presentation.ts:106
+msgid "Polar day"
+msgstr "Πολική ημέρα"
+
+#: packages/core/src/presentation.ts:106
+msgid "Polar night"
+msgstr "Πολική νύχτα"
+
+#: packages/core/src/presentation.ts:118
+msgid "Dawn"
+msgstr "Αυγή"
+
+#: packages/core/src/presentation.ts:119
+msgid "Sunrise"
+msgstr "Ανατολή ηλίου"
+
+#: packages/core/src/presentation.ts:120
+msgid "Sunset"
+msgstr "Δύση ηλίου"
+
+#: packages/core/src/presentation.ts:121
+msgid "Dusk"
+msgstr "Σούρουπο"
+
+#: packages/core/src/presentation.ts:129 packages/core/src/presentation.ts:140
+msgid "Day length"
+msgstr "Διάρκεια ημέρας"
+
+#: packages/core/src/presentation.ts:129
+msgid "Night length"
+msgstr "Διάρκεια νύχτας"
+
+#: packages/core/src/presentation.ts:166
+#: packages/gnome-extension/src/prefs.ts:60
+msgid "Remaining time"
+msgstr "Υπολειπόμενος χρόνος"
+
+#: packages/core/src/presentation.ts:172
+#: packages/gnome-extension/src/prefs.ts:61
+msgid "Elapsed time"
+msgstr "Χρόνος που πέρασε"
+
+#: packages/core/src/presentation.ts:189
+msgid "Automatic location"
+msgstr "Αυτόματη τοποθεσία"
+
+#: packages/core/src/presentation.ts:191
+msgid "Manual location"
+msgstr "Χειροκίνητη τοποθεσία"
+
+#: packages/core/src/presentation.ts:193
+msgid "Last known location"
+msgstr "Τελευταία γνωστή τοποθεσία"
+
+#: packages/core/src/presentation.ts:206
+msgid "{degrees}° N"
+msgstr "{degrees}° Β"
+
+#: packages/core/src/presentation.ts:206
+msgid "{degrees}° S"
+msgstr "{degrees}° Ν"
+
+#: packages/core/src/presentation.ts:210
+msgid "{degrees}° E"
+msgstr "{degrees}° Α"
+
+#: packages/core/src/presentation.ts:210
+msgid "{degrees}° W"
+msgstr "{degrees}° Δ"
+
+#. Translators: a Civil time on the day before today, e.g. "yesterday at 21:58".
+#: packages/core/src/presentation.ts:231
+msgid "yesterday at {time}"
+msgstr "χθες στις {time}"
+
+#. Translators: a Civil time on the day after today, e.g. "tomorrow at 05:47".
+#: packages/core/src/presentation.ts:234
+msgid "tomorrow at {time}"
+msgstr "αύριο στις {time}"
+
+#. Translators: a Civil time further away than yesterday or tomorrow, e.g. "Thu 18 Jun at
+#. 21:58"; {date} follows the locale of dates and times.
+#: packages/core/src/presentation.ts:244
+msgid "{date} at {time}"
+msgstr "{date} στις {time}"
+
+#. Translators: a duration over 24 hours, e.g. "68d 23h", for a Polar day or Polar night.
+#: packages/core/src/presentation.ts:265
+msgid "{days}d {hours}h"
+msgstr "{days} ημ. {hours} ώ."
+
+#. Translators: a duration under one hour, e.g. "42 min".
+#: packages/core/src/presentation.ts:272
+msgid "{minutes} min"
+msgstr "{minutes} λεπ."
+
+#. Translators: a duration over one hour, e.g. "3h 05m"; {minutes} always has two digits.
+#: packages/core/src/presentation.ts:275
+msgid "{hours}h {minutes}m"
+msgstr "{hours} ώ. {minutes} λεπ."
+
+#: packages/gnome-extension/src/extension.ts:44
+msgid "Preferences"
+msgstr "Προτιμήσεις"
+
+#: packages/gnome-extension/src/prefs.ts:50
+msgid "Reading"
+msgstr "Εμφανιζόμενη διάρκεια"
+
+#: packages/gnome-extension/src/prefs.ts:51
+msgid "The duration shown in the top bar"
+msgstr "Στην πάνω μπάρα"
+
+#: packages/gnome-extension/src/prefs.ts:60
+msgid "Until the next sunrise or sunset"
+msgstr "Μέχρι την επόμενη ανατολή ή δύση του ηλίου"
+
+#: packages/gnome-extension/src/prefs.ts:61
+msgid "Since the last sunrise or sunset"
+msgstr "Από την τελευταία ανατολή ή δύση του ηλίου"
+
+#: packages/gnome-extension/src/prefs.ts:70
+msgid "Sun arc"
+msgstr "Τόξο του ήλιου"
+
+#: packages/gnome-extension/src/prefs.ts:71
+msgid "Its side of the Reading in the top bar"
+msgstr "Σε ποια πλευρά της διάρκειας, στην πάνω μπάρα"
+
+#: packages/gnome-extension/src/prefs.ts:85
+msgid "Left"
+msgstr "Αριστερά"
+
+#: packages/gnome-extension/src/prefs.ts:86
+msgid "Right"
+msgstr "Δεξιά"
+
+#: packages/gnome-extension/src/prefs.ts:95
+msgid "Twilight"
+msgstr "Αυγή και σούρουπο"
+
+#: packages/gnome-extension/src/prefs.ts:96
+msgid "When Dawn and Dusk fall, as shown in the menu"
+msgstr "Οι ώρες τους, όπως εμφανίζονται στο μενού"
+
+#: packages/gnome-extension/src/prefs.ts:105
+msgid "Civil"
+msgstr "Πολιτικό"
+
+#: packages/gnome-extension/src/prefs.ts:105
+msgid "Sun 6° below the horizon"
+msgstr "Ήλιος 6° κάτω από τον ορίζοντα"
+
+#: packages/gnome-extension/src/prefs.ts:106
+msgid "Nautical"
+msgstr "Ναυτικό"
+
+#: packages/gnome-extension/src/prefs.ts:106
+msgid "Sun 12° below the horizon"
+msgstr "Ήλιος 12° κάτω από τον ορίζοντα"
+
+#: packages/gnome-extension/src/prefs.ts:107
+msgid "Astronomical"
+msgstr "Αστρονομικό"
+
+#: packages/gnome-extension/src/prefs.ts:107
+msgid "Sun 18° below the horizon"
+msgstr "Ήλιος 18° κάτω από τον ορίζοντα"
+
+#: packages/gnome-extension/src/prefs.ts:123
+msgid "Location"
+msgstr "Τοποθεσία"
+
+#: packages/gnome-extension/src/prefs.ts:135
+msgid "Automatic"
+msgstr "Αυτόματη"
+
+#: packages/gnome-extension/src/prefs.ts:136
+msgid "Manual"
+msgstr "Χειροκίνητη"
+
+#: packages/gnome-extension/src/prefs.ts:141
+msgid "Search for a city"
+msgstr "Αναζήτηση πόλης"
+
+#: packages/gnome-extension/src/prefs.ts:152
+msgid "Coordinates"
+msgstr "Συντεταγμένες"
+
+#: packages/gnome-extension/src/prefs.ts:153
+msgid "For any point on Earth, in decimal degrees"
+msgstr "Για οποιοδήποτε σημείο της Γης, σε δεκαδικές μοίρες"
+
+#: packages/gnome-extension/src/prefs.ts:157
+msgid "Latitude (north positive)"
+msgstr "Γεωγραφικό πλάτος (θετικό προς βορρά)"
+
+#: packages/gnome-extension/src/prefs.ts:162
+msgid "Longitude (east positive)"
+msgstr "Γεωγραφικό μήκος (θετικό προς ανατολή)"
+
+#: packages/gnome-extension/src/prefs.ts:172
+msgid "From the system's location services"
+msgstr "Από τις υπηρεσίες τοποθεσίας του συστήματος"
+
+#: packages/gnome-extension/src/prefs.ts:173
+msgid "Location services are off"
+msgstr "Οι υπηρεσίες τοποθεσίας είναι απενεργοποιημένες"
+
+#: packages/gnome-extension/src/prefs.ts:179
+msgid "No location set"
+msgstr "Δεν έχει οριστεί τοποθεσία"
+
+#: packages/gnome-extension/src/prefs.ts:218
+msgid "Latitude must be between −90 and 90"
+msgstr "Το γεωγραφικό πλάτος πρέπει να είναι μεταξύ −90 και 90"
+
+#: packages/gnome-extension/src/prefs.ts:221
+msgid "Longitude must be between −180 and 180"
+msgstr "Το γεωγραφικό μήκος πρέπει να είναι μεταξύ −180 και 180"
