@@ -114,17 +114,21 @@ function splitClicks(button: PanelMenu.Button, secondaryClick: () => void): void
     return;
   }
   // GNOME Shell 49: handlers of the "event" signal run before the button's own, and stopping
-  // the secondary press there keeps the menu closed.
-  button.connect("event", (_actor, event: Clutter.Event) => {
-    if (
-      event.type() !== Clutter.EventType.BUTTON_PRESS ||
-      event.get_button() !== Clutter.BUTTON_SECONDARY
-    ) {
-      return Clutter.EVENT_PROPAGATE;
-    }
-    secondaryClick();
-    return Clutter.EVENT_STOP;
-  });
+  // the secondary press there keeps the menu closed. Tracked on the button, like the gesture.
+  button.connectObject(
+    "event",
+    (_actor: Clutter.Actor, event: Clutter.Event) => {
+      if (
+        event.type() !== Clutter.EventType.BUTTON_PRESS ||
+        event.get_button() !== Clutter.BUTTON_SECONDARY
+      ) {
+        return Clutter.EVENT_PROPAGATE;
+      }
+      secondaryClick();
+      return Clutter.EVENT_STOP;
+    },
+    button,
+  );
 }
 
 /** The index in the panel's centre box just after the GNOME clock. */
