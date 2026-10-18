@@ -14,6 +14,7 @@ import {
   type NamedLocation,
   NOTIFIABLE_EVENTS,
   type NotifiableEvent,
+  PHASE_BOUNDS,
   presentYear,
   READINGS,
   readYear,
@@ -31,6 +32,7 @@ import {
   readLocationMode,
   readManualLocation,
   readNotifiedEvents,
+  readPhaseBounds,
   readReading,
   readSunArcPosition,
   readTwilight,
@@ -40,6 +42,7 @@ import {
   writeLocationMode,
   writeManualLocation,
   writeNotifiedEvents,
+  writePhaseBounds,
   writeReading,
   writeSunArcPosition,
   writeTwilight,
@@ -75,6 +78,7 @@ export default class VesperalPreferences extends ExtensionPreferences {
       addSunArcGroup(displayPage, settings),
       addIndicatorPositionGroup(displayPage, settings),
       addTwilightGroup(displayPage, settings),
+      addPhaseBoundsGroup(displayPage, settings),
       location.disconnect,
       addNotificationGroup(locationPage, settings),
       addYearGroups(yearPage, settings, location.showCitySearch),
@@ -86,7 +90,10 @@ export default class VesperalPreferences extends ExtensionPreferences {
   }
 }
 
-/** Adds the choice of Reading; returns a function that stops following the settings. */
+/**
+ * Adds the choice of Reading, explained for the Phase bounds in use; returns a function that
+ * stops following the settings.
+ */
 function addReadingGroup(page: Adw.PreferencesPage, settings: Gio.Settings): () => void {
   const group = new Adw.PreferencesGroup({
     title: _("Reading"),
@@ -94,16 +101,36 @@ function addReadingGroup(page: Adw.PreferencesPage, settings: Gio.Settings): () 
   });
   page.add(group);
 
-  const { disconnect } = addChoiceRows(
+  const { rows, disconnect } = addChoiceRows(
     group,
     settings,
     { key: "reading", values: READINGS, read: readReading, write: writeReading },
     {
-      remaining: { title: _("Remaining time"), subtitle: _("Until the next sunrise or sunset") },
-      elapsed: { title: _("Elapsed time"), subtitle: _("Since the last sunrise or sunset") },
+      remaining: { title: _("Remaining time"), subtitle: "" },
+      elapsed: { title: _("Elapsed time"), subtitle: "" },
     },
   );
-  return disconnect;
+  const followPhaseBounds = (): void => {
+    const fromDawn = readPhaseBounds(settings) === "dawn-dusk";
+    const remainingRow = rows.get("remaining");
+    const elapsedRow = rows.get("elapsed");
+    if (remainingRow) {
+      remainingRow.subtitle = fromDawn
+        ? _("Until the next dawn or dusk")
+        : _("Until the next sunrise or sunset");
+    }
+    if (elapsedRow) {
+      elapsedRow.subtitle = fromDawn
+        ? _("Since the last dawn or dusk")
+        : _("Since the last sunrise or sunset");
+    }
+  };
+  followPhaseBounds();
+  const phaseBoundsChangedId = settings.connect("changed::phase-bounds", followPhaseBounds);
+  return () => {
+    disconnect();
+    settings.disconnect(phaseBoundsChangedId);
+  };
 }
 
 /** Adds the choice of what the bar shows; returns a function that stops following the settings. */
@@ -194,7 +221,7 @@ function addIndicatorPositionGroup(page: Adw.PreferencesPage, settings: Gio.Sett
 function addTwilightGroup(page: Adw.PreferencesPage, settings: Gio.Settings): () => void {
   const group = new Adw.PreferencesGroup({
     title: _("Twilight"),
-    description: _("When Dawn and Dusk fall, as shown in the menu"),
+    description: _("When Dawn and Dusk fall"),
   });
   page.add(group);
 
@@ -206,6 +233,30 @@ function addTwilightGroup(page: Adw.PreferencesPage, settings: Gio.Settings): ()
       civil: { title: _("Civil"), subtitle: _("Sun 6° below the horizon") },
       nautical: { title: _("Nautical"), subtitle: _("Sun 12° below the horizon") },
       astronomical: { title: _("Astronomical"), subtitle: _("Sun 18° below the horizon") },
+    },
+  );
+  return disconnect;
+}
+
+/** Adds the choice of Phase bounds; returns a function that stops following the settings. */
+function addPhaseBoundsGroup(page: Adw.PreferencesPage, settings: Gio.Settings): () => void {
+  const group = new Adw.PreferencesGroup({
+    title: _("Day and night"),
+    description: _("When the day begins and ends"),
+  });
+  page.add(group);
+  const dawnDuskExplanation = _(
+    // Translators: "the twilight above" is the choice of Twilight just above this one.
+    "The day lasts as long as it is light enough outside for the twilight above. With nautical or astronomical twilight, summer nights may not get that dark for weeks, even at mid-latitudes.",
+  );
+
+  const { disconnect } = addChoiceRows(
+    group,
+    settings,
+    { key: "phase-bounds", values: PHASE_BOUNDS, read: readPhaseBounds, write: writePhaseBounds },
+    {
+      "sunrise-sunset": { title: _("From sunrise to sunset"), subtitle: "" },
+      "dawn-dusk": { title: _("From dawn to dusk"), subtitle: dawnDuskExplanation },
     },
   );
   return disconnect;
@@ -440,7 +491,14 @@ function addYearGroups(
     if (!location) return;
 
     const timeZone = GLib.TimeZone.new_local().get_identifier();
-    const view = presentYear(readYear(location, new Date(), timeZone), {
+    const reading = readYear(
+      location,
+      new Date(),
+      timeZone,
+      readTwilight(settings),
+      readPhaseBounds(settings),
+    );
+    const view = presentYear(reading, {
       timeZone,
       locale: civilTimeLocale(),
       translate: _,
@@ -455,9 +513,13 @@ function addYearGroups(
     });
   };
   show();
-  const changedIds = ["location-mode", "manual-location", "last-known-location"].map((key) =>
-    settings.connect(`changed::${key}`, show),
-  );
+  const changedIds = [
+    "location-mode",
+    "manual-location",
+    "last-known-location",
+    "twilight",
+    "phase-bounds",
+  ].map((key) => settings.connect(`changed::${key}`, show));
   return () => {
     for (const id of changedIds) settings.disconnect(id);
     chart.disconnect();

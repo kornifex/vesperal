@@ -27,6 +27,10 @@
     <value nick="left" value="1"/>
     <value nick="right" value="2"/>
   </enum>
+  <enum id="org.gnome.shell.extensions.vesperal.PhaseBounds">
+    <value nick="sunrise-sunset" value="0"/>
+    <value nick="dawn-dusk" value="1"/>
+  </enum>
   <schema id="org.gnome.shell.extensions.vesperal" path="/org/gnome/shell/extensions/vesperal/">
     <key name="location-mode" enum="org.gnome.shell.extensions.vesperal.LocationMode">
       <default>'automatic'</default>
@@ -51,7 +55,12 @@
     <key name="twilight" enum="org.gnome.shell.extensions.vesperal.Twilight">
       <default>'civil'</default>
       <summary>Twilight</summary>
-      <description>How far below the horizon the Sun must be for the Dawn and Dusk shown in the menu: 6° (civil), 12° (nautical) or 18° (astronomical).</description>
+      <description>How far below the horizon the Sun must be for Dawn and Dusk: 6° (civil), 12° (nautical) or 18° (astronomical).</description>
+    </key>
+    <key name="phase-bounds" enum="org.gnome.shell.extensions.vesperal.PhaseBounds">
+      <default>'sunrise-sunset'</default>
+      <summary>Phase bounds</summary>
+      <description>The events the Day and the Night run between: Sunrise and Sunset, or Dawn and Dusk of the chosen Twilight.</description>
     </key>
     <key name="sun-arc-position" enum="org.gnome.shell.extensions.vesperal.SunArcPosition">
       <default>'left'</default>

@@ -197,8 +197,17 @@ function sunArc(snapshot: ClockSnapshot, options: PresentationOptions): SunArc {
 function barText(snapshot: ClockSnapshot, options: PresentationOptions): string {
   const { translate } = options;
   const minutes = READING_RULES[options.reading].minutes(snapshot);
-  if (minutes <= MINUTES_PER_DAY) return formatDuration(minutes, translate);
-  return snapshot.phase.kind === "day" ? translate("Polar day") : translate("Polar night");
+  if (minutes <= MINUTES_PER_DAY || !snapshot.longPhase) return formatDuration(minutes, translate);
+  switch (snapshot.longPhase) {
+    case "polar-day":
+      return translate("Polar day");
+    case "polar-night":
+      return translate("Polar night");
+    case "no-dark-night":
+      // Translators: shown in the top bar instead of the Reading while, counting from Dawn to
+      // Dusk, the Sun does not get far enough below the horizon for Dusk for over 24 hours.
+      return translate("No dark night");
+  }
 }
 
 function menuRows(snapshot: ClockSnapshot, options: PresentationOptions): MenuRow[] {
@@ -208,18 +217,18 @@ function menuRows(snapshot: ClockSnapshot, options: PresentationOptions): MenuRo
   const phaseLength = Math.round((phase.end.getTime() - phase.start.getTime()) / MS_PER_MINUTE);
   const otherReading = READING_RULES[READING_RULES[options.reading].other];
 
-  const civilTimeRow = (label: string, time: Date | null): MenuRow[] =>
-    time ? [{ label, value: formatCivilTime(time, instant, options) }] : [];
-  const dawn = civilTimeRow(translate("Dawn"), snapshot.dawn);
-  const sunrise = civilTimeRow(translate("Sunrise"), isDay ? phase.start : phase.end);
-  const sunset = civilTimeRow(translate("Sunset"), isDay ? phase.end : phase.start);
-  const dusk = civilTimeRow(translate("Dusk"), snapshot.dusk);
-
+  const events: [string, Date | null][] = [
+    [translate("Dawn"), snapshot.dawn],
+    [translate("Sunrise"), snapshot.sunrise],
+    [translate("Sunset"), snapshot.sunset],
+    [translate("Dusk"), snapshot.dusk],
+  ];
   const rows: MenuRow[] = [
-    // In the order they happen: Dawn and Dusk lie outside a Day, and inside a Night.
-    ...(isDay
-      ? [...dawn, ...sunrise, ...sunset, ...dusk]
-      : [...sunset, ...dusk, ...dawn, ...sunrise]),
+    // In the order they happen, whichever two of them bound the Phase.
+    ...events
+      .flatMap(([label, time]) => (time ? [{ label, time }] : []))
+      .sort((a, b) => a.time.getTime() - b.time.getTime())
+      .map(({ label, time }) => ({ label, value: formatCivilTime(time, instant, options) })),
     {
       label: isDay ? translate("Day length") : translate("Night length"),
       value:

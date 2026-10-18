@@ -362,10 +362,10 @@ describe("readClock at high latitudes and near the date line", () => {
   });
 
   test("flags a Phase longer than 24 hours as a Polar day or Polar night", () => {
-    expect(readClock(TROMSØ, new Date("2026-05-18T12:00:00Z")).phase.isPolar).toBe(true);
-    expect(readClock(TROMSØ, new Date("2026-11-28T12:00:00Z")).phase.isPolar).toBe(true);
-    expect(readClock(TROMSØ, new Date("2026-05-13T12:00:00Z")).phase.isPolar).toBe(false);
-    expect(readClock(PARIS, new Date("2026-06-21T12:00:00Z")).phase.isPolar).toBe(false);
+    expect(readClock(TROMSØ, new Date("2026-05-18T12:00:00Z")).longPhase).toBe("polar-day");
+    expect(readClock(TROMSØ, new Date("2026-11-28T12:00:00Z")).longPhase).toBe("polar-night");
+    expect(readClock(TROMSØ, new Date("2026-05-13T12:00:00Z")).longPhase).toBeNull();
+    expect(readClock(PARIS, new Date("2026-06-21T12:00:00Z")).longPhase).toBeNull();
   });
 
   test("reaches a Solar event half a year away, at the poles", () => {
@@ -419,5 +419,169 @@ describe("readClock: Dawn and Dusk", () => {
     const night = readClock(PARIS, new Date("2026-06-21T23:00:00Z"), "astronomical");
 
     expect([day.dawn, day.dusk, night.dusk, night.dawn]).toEqual([null, null, null, null]);
+  });
+});
+
+// Reference Dawn and Dusk times from sunrise-sunset.org, as above.
+describe("readClock: from Dawn to Dusk", () => {
+  test("defaults to counting from Sunrise to Sunset", () => {
+    const at = new Date("2026-06-21T12:00:00Z");
+
+    expect(readClock(PARIS, at, "civil")).toEqual(readClock(PARIS, at, "civil", "sunrise-sunset"));
+  });
+
+  test.each([
+    {
+      twilight: "civil",
+      instant: "2026-06-21T12:00:00Z",
+      kind: "day",
+      start: "2026-06-21T03:04:21Z",
+      end: "2026-06-21T20:40:28Z",
+    },
+    {
+      twilight: "nautical",
+      instant: "2026-12-21T20:00:00Z",
+      kind: "night",
+      start: "2026-12-21T17:13:44Z",
+      end: "2026-12-22T06:24:03Z",
+    },
+    {
+      twilight: "astronomical",
+      instant: "2026-12-21T12:00:00Z",
+      kind: "day",
+      start: "2026-12-21T05:45:02Z",
+      end: "2026-12-21T17:52:15Z",
+    },
+  ] as const)("in Paris, a $kind runs between the $twilight Dawn and Dusk", (reference) => {
+    const { twilight, instant, kind, start, end } = reference;
+    const snapshot = readClock(PARIS, new Date(instant), twilight, "dawn-dusk");
+
+    expectPhase(snapshot, kind, start, end);
+    expect(snapshot.longPhase).toBeNull();
+  });
+
+  test("a Day from Dawn to Dusk holds the Sunrise and Sunset, and its length spans them", () => {
+    const at = new Date("2026-06-21T12:00:00Z");
+    const snapshot = readClock(PARIS, at, "civil", "dawn-dusk");
+    const fromSunrise = readClock(PARIS, at, "civil");
+
+    expect(snapshot.dawn).toEqual(snapshot.phase.start);
+    expect(snapshot.sunrise).toEqual(fromSunrise.phase.start);
+    expect(snapshot.sunset).toEqual(fromSunrise.phase.end);
+    expect(snapshot.dusk).toEqual(snapshot.phase.end);
+    // 03:04:21 → 20:40:28
+    expect(Math.abs(snapshot.lastDayLength - (17 * 60 + 36) * 60_000)).toBeLessThanOrEqual(
+      2 * TOLERANCE_MS,
+    );
+    expect(snapshot.previousDayLength).not.toBeNull();
+  });
+
+  test("a Night from Dusk to Dawn lies between the Sunset before and the Sunrise after", () => {
+    const evening = new Date("2026-12-21T17:00:00Z");
+    const snapshot = readClock(PARIS, new Date("2026-12-21T20:00:00Z"), "nautical", "dawn-dusk");
+    const fromSunset = readClock(PARIS, evening, "nautical");
+
+    expect(snapshot.sunset).toEqual(fromSunset.phase.start);
+    expect(snapshot.dusk).toEqual(snapshot.phase.start);
+    expect(snapshot.dawn).toEqual(snapshot.phase.end);
+    expect(snapshot.sunrise).toEqual(fromSunset.phase.end);
+  });
+
+  test("gives exactly the Day length the clock read the day before", () => {
+    const yesterday = readClock(PARIS, new Date("2026-03-19T12:00:00Z"), "nautical", "dawn-dusk");
+    const today = readClock(PARIS, new Date("2026-03-20T12:00:00Z"), "nautical", "dawn-dusk");
+
+    expect(today.previousDayLength).toBe(yesterday.lastDayLength);
+  });
+
+  describe("in June weeks with no astronomical Dusk in Paris", () => {
+    // sunrise-sunset.org: the last astronomical Dusk is at 23:39 on 11 June, and the first
+    // Dawn after the weeks with none at 00:07 on 1 July.
+    const LAST_DUSK = Date.parse("2026-06-11T23:39:22Z");
+    const FIRST_DAWN = Date.parse("2026-07-01T00:07:43Z");
+
+    function read(instant: string) {
+      return readClock(PARIS, new Date(instant), "astronomical", "dawn-dusk");
+    }
+
+    test("a single Day runs on for weeks, with no dark night", () => {
+      const snapshot = read("2026-06-21T12:00:00Z");
+
+      expect(snapshot.phase.kind).toBe("day");
+      expect(snapshot.phase.start.getTime()).toBeGreaterThan(LAST_DUSK);
+      expect(snapshot.phase.start.getTime()).toBeLessThan(Date.parse("2026-06-12T01:00:00Z"));
+      expect(snapshot.phase.end.getTime()).toBeGreaterThan(Date.parse("2026-06-30T23:00:00Z"));
+      expect(snapshot.phase.end.getTime()).toBeLessThan(FIRST_DAWN);
+      expect(snapshot.longPhase).toBe("no-dark-night");
+      expect(snapshot.previousDayLength).toBeNull();
+    });
+
+    test("lists the Sunrise and Sunset of the day, or around the night", () => {
+      const fromSunrise = (instant: string) => readClock(PARIS, new Date(instant)).phase;
+      const noon = fromSunrise("2026-06-21T12:00:00Z");
+      const night = fromSunrise("2026-06-21T23:00:00Z");
+
+      expect(read("2026-06-21T12:00:00Z")).toMatchObject({
+        sunrise: noon.start,
+        sunset: noon.end,
+      });
+      expect(read("2026-06-21T23:00:00Z")).toMatchObject({
+        sunset: night.start,
+        sunrise: night.end,
+      });
+    });
+
+    test("the Day around it is counted as usual", () => {
+      expect(read("2026-06-05T12:00:00Z").longPhase).toBeNull();
+      expect(read("2026-07-10T12:00:00Z").longPhase).toBeNull();
+    });
+  });
+
+  describe("in Tromsø", () => {
+    // Near the polar circle the Sun crosses −6° at a shallow angle: sunrise-sunset.org and
+    // the clock differ by up to a quarter of an hour.
+    const GRAZING_TOLERANCE_MS = 20 * 60_000;
+
+    test("a civil Day runs from April to August, around the Polar day", () => {
+      const snapshot = readClock(TROMSØ, new Date("2026-06-21T12:00:00Z"), "civil", "dawn-dusk");
+
+      expectPhase(snapshot, "day", "2026-04-27T23:07Z", "2026-08-14T22:28Z", GRAZING_TOLERANCE_MS);
+      expect(snapshot.longPhase).toBe("polar-day");
+      expectNear(snapshot.sunrise ?? new Date(Number.NaN), "2026-05-17T22:53Z", 3 * 60_000);
+      expectNear(snapshot.sunset ?? new Date(Number.NaN), "2026-07-25T22:36Z", 3 * 60_000);
+    });
+
+    test("before the Polar day, the same Day has no dark night", () => {
+      const snapshot = readClock(TROMSØ, new Date("2026-05-10T12:00:00Z"), "civil", "dawn-dusk");
+
+      expect(snapshot.longPhase).toBe("no-dark-night");
+    });
+
+    test("in the Polar night, a short civil Day has no Sunrise or Sunset", () => {
+      const snapshot = readClock(TROMSØ, new Date("2026-12-21T11:00:00Z"), "civil", "dawn-dusk");
+
+      expectPhase(snapshot, "day", "2026-12-21T08:31:12Z", "2026-12-21T12:53:13Z");
+      expect([snapshot.sunrise, snapshot.sunset]).toEqual([null, null]);
+    });
+
+    test("counting from Sunrise to Sunset, a Polar night lists the Dawn and Dusk of the day", () => {
+      const snapshot = readClock(TROMSØ, new Date("2026-12-21T11:00:00Z"), "civil");
+
+      expect(snapshot.longPhase).toBe("polar-night");
+      expectNear(snapshot.dawn ?? new Date(Number.NaN), "2026-12-21T08:31:12Z");
+      expectNear(snapshot.dusk ?? new Date(Number.NaN), "2026-12-21T12:53:13Z");
+    });
+  });
+
+  test("a Night longer than 24 hours is a Polar night", () => {
+    const snapshot = readClock(
+      LONGYEARBYEN,
+      new Date("2026-12-21T12:00:00Z"),
+      "civil",
+      "dawn-dusk",
+    );
+
+    expect(snapshot.phase.kind).toBe("night");
+    expect(snapshot.longPhase).toBe("polar-night");
   });
 });

@@ -27,6 +27,7 @@ import {
   readNotificationLeadMinutes,
   readNotificationsEnabled,
   readNotifiedEvents,
+  readPhaseBounds,
   readReading,
   readSunArcPosition,
   readTwilight,
@@ -158,9 +159,10 @@ export default class VesperalExtension extends Extension {
     // Only the Automatic location is remembered: the Manual location stays in its own key.
     if (mode === "automatic" && fromMode) writeLastKnownLocation(this.#settings, fromMode);
     const location = resolveLocation(mode, fromMode, readLastKnownLocation(this.#settings));
+    const twilight = readTwilight(this.#settings);
     this.#indicator.show(
       location
-        ? present(readClock(location, now, readTwilight(this.#settings)), {
+        ? present(readClock(location, now, twilight, readPhaseBounds(this.#settings)), {
             reading: readReading(this.#settings),
             barContent: readBarContent(this.#settings),
             timeZone,

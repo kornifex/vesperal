@@ -152,3 +152,30 @@ describe("readYear", () => {
     expect(reading.instant).toEqual(new Date("2026-12-31T23:30:00Z"));
   });
 });
+
+describe("dayLengthsByDate from Dawn to Dusk", () => {
+  test("counts from the Dawn to the Dusk of the chosen Twilight", () => {
+    // sunrise-sunset.org: Paris on 21 June, civil Dawn at 05:04:21 and Dusk at 22:40:28.
+    const length = dayLengthsByDate(PARIS, 2026, "Europe/Paris", "civil", "dawn-dusk");
+
+    expect(Math.abs((length[dateIndex(6, 21)] ?? 0) - (17 * HOUR + 36 * MINUTE))).toBeLessThan(
+      DAY_LENGTH_TOLERANCE_MS,
+    );
+  });
+
+  test("counts a date with no dark night as 24 hours", () => {
+    const lengths = dayLengthsByDate(PARIS, 2026, "Europe/Paris", "astronomical", "dawn-dusk");
+
+    expect(lengths[dateIndex(6, 21)]).toBe(24 * HOUR);
+    expect(lengths[dateIndex(12, 21)]).toBeLessThan(13 * HOUR);
+  });
+
+  test("is read for the chosen Phase bounds", () => {
+    const at = new Date("2026-06-21T12:00:00Z");
+    const reading = readYear(PARIS, at, "Europe/Paris", "nautical", "dawn-dusk");
+
+    expect(reading.dayLengths).toEqual(
+      dayLengthsByDate(PARIS, 2026, "Europe/Paris", "nautical", "dawn-dusk"),
+    );
+  });
+});

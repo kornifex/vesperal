@@ -11,6 +11,8 @@ import {
   type NamedLocation,
   NOTIFIABLE_EVENTS,
   type NotifiableEvent,
+  PHASE_BOUNDS,
+  type PhaseBounds,
   READINGS,
   type Reading,
   TWILIGHTS,
@@ -39,6 +41,15 @@ export function readTwilight(settings: Gio.Settings): Twilight {
 
 export function writeTwilight(settings: Gio.Settings, twilight: Twilight): void {
   settings.set_string("twilight", twilight);
+}
+
+export function readPhaseBounds(settings: Gio.Settings): PhaseBounds {
+  const nick = settings.get_string("phase-bounds");
+  return PHASE_BOUNDS.find((bounds) => bounds === nick) ?? PHASE_BOUNDS[0];
+}
+
+export function writePhaseBounds(settings: Gio.Settings, bounds: PhaseBounds): void {
+  settings.set_string("phase-bounds", bounds);
 }
 
 export function readSunArcPosition(settings: Gio.Settings): SunArcPosition {

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vesperal\n"
 "Report-Msgid-Bugs-To: https://github.com/kornifex/vesperal/issues\n"
-"POT-Creation-Date: 2026-10-18 14:08+0200\n"
+"POT-Creation-Date: 2026-10-18 14:41+0200\n"
 "PO-Revision-Date: 2026-10-17 12:00+0200\n"
 "Last-Translator: Claude Code (machine translation, unreviewed)\n"
 "Language-Team: none\n"
@@ -27,28 +27,28 @@ msgstr "{event} in {duration}"
 msgid "{event} now"
 msgstr "{event} jetzt"
 
-#: packages/core/src/presentation.ts:161 packages/core/src/presentation.ts:213
-#: packages/gnome-extension/src/prefs.ts:360
+#: packages/core/src/presentation.ts:161 packages/core/src/presentation.ts:221
+#: packages/gnome-extension/src/prefs.ts:411
 msgid "Dawn"
 msgstr "Morgendämmerung"
 
-#: packages/core/src/presentation.ts:163 packages/core/src/presentation.ts:214
-#: packages/gnome-extension/src/prefs.ts:361
+#: packages/core/src/presentation.ts:163 packages/core/src/presentation.ts:222
+#: packages/gnome-extension/src/prefs.ts:412
 msgid "Sunrise"
 msgstr "Sonnenaufgang"
 
-#: packages/core/src/presentation.ts:165 packages/core/src/presentation.ts:215
-#: packages/gnome-extension/src/prefs.ts:362
+#: packages/core/src/presentation.ts:165 packages/core/src/presentation.ts:223
+#: packages/gnome-extension/src/prefs.ts:413
 msgid "Sunset"
 msgstr "Sonnenuntergang"
 
-#: packages/core/src/presentation.ts:167 packages/core/src/presentation.ts:216
-#: packages/gnome-extension/src/prefs.ts:363
+#: packages/core/src/presentation.ts:167 packages/core/src/presentation.ts:224
+#: packages/gnome-extension/src/prefs.ts:414
 msgid "Dusk"
 msgstr "Abenddämmerung"
 
 #: packages/core/src/presentation.ts:174
-#: packages/gnome-extension/src/prefs.ts:429
+#: packages/gnome-extension/src/prefs.ts:480
 msgid "Location unknown"
 msgstr "Ort unbekannt"
 
@@ -61,101 +61,107 @@ msgstr "Ort manuell festlegen…"
 msgid "Error"
 msgstr "Fehler"
 
-#: packages/core/src/presentation.ts:201
+#: packages/core/src/presentation.ts:203
 msgid "Polar day"
 msgstr "Polartag"
 
-#: packages/core/src/presentation.ts:201
+#: packages/core/src/presentation.ts:205
 msgid "Polar night"
 msgstr "Polarnacht"
 
-#: packages/core/src/presentation.ts:224 packages/core/src/presentation.ts:236
+#. Translators: shown in the top bar instead of the Reading while, counting from Dawn to
+#. Dusk, the Sun does not get far enough below the horizon for Dusk for over 24 hours.
+#: packages/core/src/presentation.ts:209
+msgid "No dark night"
+msgstr "Keine dunkle Nacht"
+
+#: packages/core/src/presentation.ts:233 packages/core/src/presentation.ts:245
 #: packages/core/src/yearPresentation.ts:59
 msgid "Day length"
 msgstr "Tageslänge"
 
-#: packages/core/src/presentation.ts:224
+#: packages/core/src/presentation.ts:233
 msgid "Night length"
 msgstr "Nachtlänge"
 
-#: packages/core/src/presentation.ts:262
-#: packages/gnome-extension/src/prefs.ts:102
+#: packages/core/src/presentation.ts:271
+#: packages/gnome-extension/src/prefs.ts:109
 msgid "Remaining time"
 msgstr "Verbleibende Zeit"
 
-#: packages/core/src/presentation.ts:268
-#: packages/gnome-extension/src/prefs.ts:103
+#: packages/core/src/presentation.ts:277
+#: packages/gnome-extension/src/prefs.ts:110
 msgid "Elapsed time"
 msgstr "Vergangene Zeit"
 
-#: packages/core/src/presentation.ts:287
+#: packages/core/src/presentation.ts:296
 msgid "Automatic location"
 msgstr "Automatischer Ort"
 
-#: packages/core/src/presentation.ts:289
+#: packages/core/src/presentation.ts:298
 msgid "Manual location"
 msgstr "Manueller Ort"
 
-#: packages/core/src/presentation.ts:291
+#: packages/core/src/presentation.ts:300
 msgid "Last known location"
 msgstr "Letzter bekannter Ort"
 
-#: packages/core/src/presentation.ts:307
+#: packages/core/src/presentation.ts:316
 msgid "{degrees}° N"
 msgstr "{degrees}° N"
 
-#: packages/core/src/presentation.ts:307
+#: packages/core/src/presentation.ts:316
 msgid "{degrees}° S"
 msgstr "{degrees}° S"
 
-#: packages/core/src/presentation.ts:311
+#: packages/core/src/presentation.ts:320
 msgid "{degrees}° E"
 msgstr "{degrees}° O"
 
-#: packages/core/src/presentation.ts:311
+#: packages/core/src/presentation.ts:320
 msgid "{degrees}° W"
 msgstr "{degrees}° W"
 
 #. Translators: a Civil time on the day before today, e.g. "yesterday at 21:58".
-#: packages/core/src/presentation.ts:336
+#: packages/core/src/presentation.ts:345
 msgid "yesterday at {time}"
 msgstr "gestern um {time}"
 
 #. Translators: a Civil time on the day after today, e.g. "tomorrow at 05:47".
-#: packages/core/src/presentation.ts:339
+#: packages/core/src/presentation.ts:348
 msgid "tomorrow at {time}"
 msgstr "morgen um {time}"
 
 #. Translators: a Civil time further away than yesterday or tomorrow, e.g. "Thu 18 Jun at
 #. 21:58"; {date} follows the locale of dates and times.
-#: packages/core/src/presentation.ts:349
+#: packages/core/src/presentation.ts:358
 msgid "{date} at {time}"
 msgstr "{date} um {time}"
 
 #. Translators: a duration over 24 hours, e.g. "68d 23h", for a Polar day or Polar night.
-#: packages/core/src/presentation.ts:357
+#: packages/core/src/presentation.ts:366
 msgid "{days}d {hours}h"
 msgstr "{days} T {hours} h"
 
 #. Translators: a duration under one hour, e.g. "42 min".
-#: packages/core/src/presentation.ts:364
+#: packages/core/src/presentation.ts:373
 msgid "{minutes} min"
 msgstr "{minutes} min"
 
 #. Translators: a duration over one hour, e.g. "3h 05m"; {minutes} always has two digits.
-#: packages/core/src/presentation.ts:367
+#: packages/core/src/presentation.ts:376
 msgid "{hours}h {minutes}m"
 msgstr "{hours} h {minutes} min"
 
 #. Translators: how much longer or shorter a Day is than the Day before, under a
 #. minute, after an arrow: e.g. "↑45s".
-#: packages/core/src/presentation.ts:402
+#: packages/core/src/presentation.ts:411
 msgid "{seconds}s"
 msgstr "{seconds} s"
 
 #. Translators: how much longer or shorter a Day is than the Day before, after an
 #. arrow: e.g. "↓3m".
-#: packages/core/src/presentation.ts:405
+#: packages/core/src/presentation.ts:414
 msgid "{minutes}m"
 msgstr "{minutes} min"
 
@@ -196,212 +202,248 @@ msgstr "September-Tagundnachtgleiche"
 msgid "December solstice"
 msgstr "Dezember-Sonnenwende"
 
-#: packages/gnome-extension/src/extension.ts:105
+#: packages/gnome-extension/src/extension.ts:106
 msgid "Preferences"
 msgstr "Einstellungen"
 
 #. Translators: a page of the preferences, about what the top bar and the menu show.
-#: packages/gnome-extension/src/prefs.ts:56
+#: packages/gnome-extension/src/prefs.ts:59
 msgid "Display"
 msgstr "Anzeige"
 
-#: packages/gnome-extension/src/prefs.ts:60
+#: packages/gnome-extension/src/prefs.ts:63
 msgid "Location and notifications"
 msgstr "Ort und Benachrichtigungen"
 
-#: packages/gnome-extension/src/prefs.ts:64
+#: packages/gnome-extension/src/prefs.ts:67
 msgid "Year"
 msgstr "Jahr"
 
-#: packages/gnome-extension/src/prefs.ts:92
+#: packages/gnome-extension/src/prefs.ts:99
 msgid "Reading"
 msgstr "Angezeigte Dauer"
 
-#: packages/gnome-extension/src/prefs.ts:93
+#: packages/gnome-extension/src/prefs.ts:100
 msgid "The duration shown in the top bar"
 msgstr "In der oberen Leiste"
 
-#: packages/gnome-extension/src/prefs.ts:102
+#: packages/gnome-extension/src/prefs.ts:119
+msgid "Until the next dawn or dusk"
+msgstr "Bis zur nächsten Morgen- oder Abenddämmerung"
+
+#: packages/gnome-extension/src/prefs.ts:120
 msgid "Until the next sunrise or sunset"
 msgstr "Bis zum nächsten Sonnenaufgang oder -untergang"
 
-#: packages/gnome-extension/src/prefs.ts:103
+#: packages/gnome-extension/src/prefs.ts:124
+msgid "Since the last dawn or dusk"
+msgstr "Seit der letzten Morgen- oder Abenddämmerung"
+
+#: packages/gnome-extension/src/prefs.ts:125
 msgid "Since the last sunrise or sunset"
 msgstr "Seit dem letzten Sonnenaufgang oder -untergang"
 
-#: packages/gnome-extension/src/prefs.ts:112
+#: packages/gnome-extension/src/prefs.ts:139
 msgid "Content"
 msgstr "Inhalt"
 
-#: packages/gnome-extension/src/prefs.ts:113
+#: packages/gnome-extension/src/prefs.ts:140
 msgid "What the top bar shows"
 msgstr "Was die obere Leiste anzeigt"
 
-#: packages/gnome-extension/src/prefs.ts:122
+#: packages/gnome-extension/src/prefs.ts:149
 msgid "Sun arc and duration"
 msgstr "Sonnenbogen und Dauer"
 
-#: packages/gnome-extension/src/prefs.ts:123
+#: packages/gnome-extension/src/prefs.ts:150
 msgid "Sun arc only"
 msgstr "Nur Sonnenbogen"
 
-#: packages/gnome-extension/src/prefs.ts:124
+#: packages/gnome-extension/src/prefs.ts:151
 msgid "Duration only"
 msgstr "Nur Dauer"
 
-#: packages/gnome-extension/src/prefs.ts:136
+#: packages/gnome-extension/src/prefs.ts:163
 msgid "Sun arc"
 msgstr "Sonnenbogen"
 
-#: packages/gnome-extension/src/prefs.ts:137
+#: packages/gnome-extension/src/prefs.ts:164
 msgid "Its side of the Reading in the top bar"
 msgstr "Auf welcher Seite der Dauer, in der oberen Leiste"
 
-#: packages/gnome-extension/src/prefs.ts:156
+#: packages/gnome-extension/src/prefs.ts:183
 msgid "Left"
 msgstr "Links"
 
-#: packages/gnome-extension/src/prefs.ts:157
+#: packages/gnome-extension/src/prefs.ts:184
 msgid "Right"
 msgstr "Rechts"
 
 #. Translators: where the indicator sits in the top bar, not a geographic position.
-#: packages/gnome-extension/src/prefs.ts:170
+#: packages/gnome-extension/src/prefs.ts:197
 msgid "Position"
 msgstr "Position"
 
-#: packages/gnome-extension/src/prefs.ts:171
+#: packages/gnome-extension/src/prefs.ts:198
 msgid "Where the indicator sits in the top bar"
 msgstr "Wo die Anzeige in der oberen Leiste sitzt"
 
-#: packages/gnome-extension/src/prefs.ts:185
+#: packages/gnome-extension/src/prefs.ts:212
 msgid "Next to the clock"
 msgstr "Neben der Uhr"
 
-#: packages/gnome-extension/src/prefs.ts:186
+#: packages/gnome-extension/src/prefs.ts:213
 msgid "After the workspace indicator"
 msgstr "Nach der Arbeitsflächenanzeige"
 
-#: packages/gnome-extension/src/prefs.ts:186
+#: packages/gnome-extension/src/prefs.ts:213
 msgid "Left side"
 msgstr "Linke Seite"
 
-#: packages/gnome-extension/src/prefs.ts:187
+#: packages/gnome-extension/src/prefs.ts:214
 msgid "Before the system indicators"
 msgstr "Vor den Systemanzeigen"
 
-#: packages/gnome-extension/src/prefs.ts:187
+#: packages/gnome-extension/src/prefs.ts:214
 msgid "Right side"
 msgstr "Rechte Seite"
 
-#: packages/gnome-extension/src/prefs.ts:196
+#: packages/gnome-extension/src/prefs.ts:223
 msgid "Twilight"
 msgstr "Dämmerung"
 
-#: packages/gnome-extension/src/prefs.ts:197
-msgid "When Dawn and Dusk fall, as shown in the menu"
-msgstr "Für Morgen- und Abenddämmerung im Menü"
+#: packages/gnome-extension/src/prefs.ts:224
+msgid "When Dawn and Dusk fall"
+msgstr "Wann Morgen- und Abenddämmerung eintreten"
 
-#: packages/gnome-extension/src/prefs.ts:206
+#: packages/gnome-extension/src/prefs.ts:233
 msgid "Civil"
 msgstr "Bürgerlich"
 
-#: packages/gnome-extension/src/prefs.ts:206
+#: packages/gnome-extension/src/prefs.ts:233
 msgid "Sun 6° below the horizon"
 msgstr "Sonne 6° unter dem Horizont"
 
-#: packages/gnome-extension/src/prefs.ts:207
+#: packages/gnome-extension/src/prefs.ts:234
 msgid "Nautical"
 msgstr "Nautisch"
 
-#: packages/gnome-extension/src/prefs.ts:207
+#: packages/gnome-extension/src/prefs.ts:234
 msgid "Sun 12° below the horizon"
 msgstr "Sonne 12° unter dem Horizont"
 
-#: packages/gnome-extension/src/prefs.ts:208
+#: packages/gnome-extension/src/prefs.ts:235
 msgid "Astronomical"
 msgstr "Astronomisch"
 
-#: packages/gnome-extension/src/prefs.ts:208
+#: packages/gnome-extension/src/prefs.ts:235
 msgid "Sun 18° below the horizon"
 msgstr "Sonne 18° unter dem Horizont"
 
-#: packages/gnome-extension/src/prefs.ts:225
+#: packages/gnome-extension/src/prefs.ts:244
+msgid "Day and night"
+msgstr "Tag und Nacht"
+
+#: packages/gnome-extension/src/prefs.ts:245
+msgid "When the day begins and ends"
+msgstr "Wann der Tag beginnt und endet"
+
+#. Translators: "the twilight above" is the choice of Twilight just above this one.
+#: packages/gnome-extension/src/prefs.ts:250
+msgid ""
+"The day lasts as long as it is light enough outside for the twilight above. "
+"With nautical or astronomical twilight, summer nights may not get that dark "
+"for weeks, even at mid-latitudes."
+msgstr ""
+"Der Tag dauert, solange es draußen hell genug für die oben gewählte "
+"Dämmerung ist. Bei nautischer oder astronomischer Dämmerung werden "
+"Sommernächte mitunter wochenlang nicht so dunkel, selbst in mittleren "
+"Breiten."
+
+#: packages/gnome-extension/src/prefs.ts:258
+msgid "From sunrise to sunset"
+msgstr "Von Sonnenaufgang bis Sonnenuntergang"
+
+#: packages/gnome-extension/src/prefs.ts:259
+msgid "From dawn to dusk"
+msgstr "Von der Morgen- bis zur Abenddämmerung"
+
+#: packages/gnome-extension/src/prefs.ts:276
 msgid "Location"
 msgstr "Ort"
 
-#: packages/gnome-extension/src/prefs.ts:237
+#: packages/gnome-extension/src/prefs.ts:288
 msgid "Automatic"
 msgstr "Automatisch"
 
-#: packages/gnome-extension/src/prefs.ts:238
+#: packages/gnome-extension/src/prefs.ts:289
 msgid "Manual"
 msgstr "Manuell"
 
-#: packages/gnome-extension/src/prefs.ts:243
+#: packages/gnome-extension/src/prefs.ts:294
 msgid "Search for a city"
 msgstr "Nach einer Stadt suchen"
 
-#: packages/gnome-extension/src/prefs.ts:258
+#: packages/gnome-extension/src/prefs.ts:309
 msgid "Coordinates"
 msgstr "Koordinaten"
 
-#: packages/gnome-extension/src/prefs.ts:259
+#: packages/gnome-extension/src/prefs.ts:310
 msgid "For any point on Earth, in decimal degrees"
 msgstr "Für jeden Punkt der Erde, in Dezimalgrad"
 
-#: packages/gnome-extension/src/prefs.ts:263
+#: packages/gnome-extension/src/prefs.ts:314
 msgid "Latitude (north positive)"
 msgstr "Breitengrad (Norden positiv)"
 
-#: packages/gnome-extension/src/prefs.ts:268
+#: packages/gnome-extension/src/prefs.ts:319
 msgid "Longitude (east positive)"
 msgstr "Längengrad (Osten positiv)"
 
-#: packages/gnome-extension/src/prefs.ts:278
+#: packages/gnome-extension/src/prefs.ts:329
 msgid "From the system's location services"
 msgstr "Über die Ortungsdienste des Systems"
 
-#: packages/gnome-extension/src/prefs.ts:279
+#: packages/gnome-extension/src/prefs.ts:330
 msgid "Location services are off"
 msgstr "Ortungsdienste sind ausgeschaltet"
 
-#: packages/gnome-extension/src/prefs.ts:285
+#: packages/gnome-extension/src/prefs.ts:336
 msgid "No location set"
 msgstr "Kein Ort festgelegt"
 
-#: packages/gnome-extension/src/prefs.ts:324
+#: packages/gnome-extension/src/prefs.ts:375
 msgid "Latitude must be between −90 and 90"
 msgstr "Der Breitengrad muss zwischen −90 und 90 liegen"
 
-#: packages/gnome-extension/src/prefs.ts:327
+#: packages/gnome-extension/src/prefs.ts:378
 msgid "Longitude must be between −180 and 180"
 msgstr "Der Längengrad muss zwischen −180 und 180 liegen"
 
-#: packages/gnome-extension/src/prefs.ts:353
+#: packages/gnome-extension/src/prefs.ts:404
 msgid "Notifications"
 msgstr "Benachrichtigungen"
 
-#: packages/gnome-extension/src/prefs.ts:355
+#: packages/gnome-extension/src/prefs.ts:406
 msgid "Send notifications"
 msgstr "Benachrichtigungen senden"
 
-#: packages/gnome-extension/src/prefs.ts:385
+#: packages/gnome-extension/src/prefs.ts:436
 msgid "Minutes before"
 msgstr "Minuten vorher"
 
-#: packages/gnome-extension/src/prefs.ts:386
+#: packages/gnome-extension/src/prefs.ts:437
 msgid "0 notifies at the event itself"
 msgstr "0 benachrichtigt zum Zeitpunkt selbst"
 
-#: packages/gnome-extension/src/prefs.ts:413
+#: packages/gnome-extension/src/prefs.ts:464
 msgid "Day length through the year"
 msgstr "Tageslänge im Lauf des Jahres"
 
-#: packages/gnome-extension/src/prefs.ts:420
+#: packages/gnome-extension/src/prefs.ts:471
 msgid "Set a location"
 msgstr "Ort festlegen"
 
-#: packages/gnome-extension/src/prefs.ts:430
+#: packages/gnome-extension/src/prefs.ts:481
 msgid "Set a location to see its year"
 msgstr "Legen Sie einen Ort fest, um sein Jahr zu sehen"

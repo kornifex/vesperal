@@ -39,14 +39,18 @@ function snapshotOf(
   const now = typeof instant === "number" ? instant : Date.parse(instant);
   return {
     instant: new Date(now),
-    phase: { kind, start: new Date(start), end: new Date(end), isPolar: end - start > 24 * HOUR },
+    phase: { kind, start: new Date(start), end: new Date(end) },
+    longPhase: end - start <= 24 * HOUR ? null : kind === "day" ? "polar-day" : "polar-night",
     remaining: end - now,
     elapsed: now - start,
     progress: (now - start) / (end - start),
     lastDayLength,
     previousDayLength,
     moon,
+    // Counted from Sunrise to Sunset, with no Dawn or Dusk unless a test adds them.
     dawn: null,
+    sunrise: new Date(kind === "day" ? start : end),
+    sunset: new Date(kind === "day" ? end : start),
     dusk: null,
   };
 }
@@ -91,6 +95,7 @@ const FRENCH_CATALOGUE: Readonly<Record<string, string>> = {
   "{degrees}° W": "{degrees}° O",
   "Polar day": "Jour polaire",
   "Polar night": "Nuit polaire",
+  "No dark night": "Pas de nuit noire",
   "{days}d {hours}h": "{days} j {hours} h",
   "Location unknown": "Lieu inconnu",
   "Set a location manually…": "Définir un lieu manuellement…",
@@ -520,6 +525,74 @@ describe("present: Polar day and Polar night", () => {
     const rows = polarDayRemaining(30 * DAY + 2 * HOUR, FRENCH).menu.rows;
 
     expect(rows[2]).toEqual({ label: "Durée du jour", value: "68 j 23 h" });
+  });
+});
+
+describe("present: from Dawn to Dusk", () => {
+  const DAY = 24 * HOUR;
+  // Paris, counting from the astronomical Dawn on 11 June to the Dusk on 30 June, read on
+  // the evening of 21 June, between its Sunset and the next Sunrise.
+  const NO_DARK_NIGHT = { start: "2026-06-11T23:54:00Z", end: "2026-06-30T23:46:00Z" };
+
+  function noDarkNight(instant: string | number): ClockSnapshot {
+    return {
+      ...snapshotOf("day", NO_DARK_NIGHT, instant),
+      longPhase: "no-dark-night",
+      dawn: new Date(NO_DARK_NIGHT.start),
+      sunrise: new Date("2026-06-22T03:47:00Z"),
+      sunset: new Date("2026-06-21T19:58:00Z"),
+      dusk: new Date(NO_DARK_NIGHT.end),
+    };
+  }
+
+  const ELAPSED: PresentationOptions = { ...OPTIONS, reading: "elapsed" };
+  const end = Date.parse(NO_DARK_NIGHT.end);
+  const start = Date.parse(NO_DARK_NIGHT.start);
+
+  test('shows "No dark night" while the Remaining time exceeds 24 hours', () => {
+    expect(present(noDarkNight(end - DAY - 1), OPTIONS).bar.text).toBe("No dark night");
+    expect(present(noDarkNight(end - DAY), OPTIONS).bar.text).toBe("24h 00m");
+  });
+
+  test('shows "No dark night" while the Elapsed time exceeds 24 hours', () => {
+    expect(present(noDarkNight(start + DAY + 59 * SECOND), ELAPSED).bar.text).toBe("24h 00m");
+    expect(present(noDarkNight(start + DAY + MINUTE), ELAPSED).bar.text).toBe("No dark night");
+  });
+
+  test("says it the French way", () => {
+    expect(present(noDarkNight("2026-06-21T21:00:00Z"), FRENCH).bar.text).toBe("Pas de nuit noire");
+  });
+
+  test("lists Dawn, Sunrise, Sunset and Dusk in the order they happen", () => {
+    const rows = present(noDarkNight("2026-06-21T21:00:00Z"), OPTIONS).menu.rows;
+
+    expect(rows.slice(0, 5)).toEqual([
+      { label: "Dawn", value: "Fri 12 Jun at 01:54" },
+      { label: "Sunset", value: "21:58" },
+      { label: "Sunrise", value: "tomorrow at 05:47" },
+      { label: "Dusk", value: "Wed 1 Jul at 01:46" },
+      { label: "Day length", value: "18d 23h" },
+    ]);
+  });
+
+  test("measures the Night from Dusk to Dawn", () => {
+    const night = { start: "2026-06-21T20:41:00Z", end: "2026-06-22T03:04:00Z" };
+    const snapshot = {
+      ...snapshotOf("night", night, "2026-06-21T21:00:00Z"),
+      sunset: new Date("2026-06-21T19:58:00Z"),
+      dusk: new Date(night.start),
+      dawn: new Date(night.end),
+      sunrise: new Date("2026-06-22T03:47:00Z"),
+    };
+
+    expect(present(snapshot, OPTIONS).menu.rows.slice(0, 6)).toEqual([
+      { label: "Sunset", value: "21:58" },
+      { label: "Dusk", value: "22:41" },
+      { label: "Dawn", value: "tomorrow at 05:04" },
+      { label: "Sunrise", value: "tomorrow at 05:47" },
+      { label: "Night length", value: "6h 23m" },
+      { label: "Elapsed time", value: "19 min" },
+    ]);
   });
 });
 

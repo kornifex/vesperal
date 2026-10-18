@@ -1,7 +1,14 @@
 // The year at a Location: its Solstices and Equinoxes, and its Day length date by date.
 import { epochMsOf, julianCenturiesSinceJ2000, radians } from "./astronomy.ts";
 import { civilDayNumber, startOfCivilDay } from "./civilTime.ts";
-import { AltitudeCrossings, SOLAR_EVENT_ALTITUDE } from "./clock.ts";
+import {
+  AltitudeCrossings,
+  PHASE_BOUNDS,
+  type PhaseBounds,
+  phaseBoundsAltitude,
+  TWILIGHTS,
+  type Twilight,
+} from "./clock.ts";
 import type { Location } from "./location.ts";
 import { MS_PER_DAY, MS_PER_SECOND } from "./time.ts";
 
@@ -94,15 +101,21 @@ export function solsticesAndEquinoxes(year: number): SolsticeOrEquinox[] {
 
 /**
  * For each civil date of a calendar year in `timeZone`, from 1 January, the milliseconds the
- * Sun spends above the horizon at `location` within that date: the Day length, cut at
- * midnight, so that a date of Polar day counts 24 hours and a date of Polar night none.
+ * Sun spends between the Phase bounds at `location` within that date: the Day length, cut at
+ * midnight, so that a date wholly within a Day counts 24 hours and one within a Night none.
  */
-export function dayLengthsByDate(location: Location, year: number, timeZone: string): number[] {
-  const events = new AltitudeCrossings(location, SOLAR_EVENT_ALTITUDE);
+export function dayLengthsByDate(
+  location: Location,
+  year: number,
+  timeZone: string,
+  twilight: Twilight = TWILIGHTS[0],
+  bounds: PhaseBounds = PHASE_BOUNDS[0],
+): number[] {
+  const events = new AltitudeCrossings(location, phaseBoundsAltitude(bounds, twilight));
   const firstDay = Date.UTC(year, 0, 1) / MS_PER_DAY;
   const dayCount = Date.UTC(year + 1, 0, 1) / MS_PER_DAY - firstDay;
 
-  // Walks the Solar events through the year once, from the state of the Sun at its start.
+  // Walks the Phase bounds through the year once, from the state of the Sun at its start.
   let cursor = startOfCivilDay(firstDay, timeZone);
   let above = events.isAbove(cursor);
   let nextEvent = events.earliestAfter(cursor);
@@ -123,13 +136,22 @@ export function dayLengthsByDate(location: Location, year: number, timeZone: str
   return lengths;
 }
 
-/** Reads the year at `location` for the civil year `instant` falls in, in `timeZone`. */
-export function readYear(location: Location, instant: Date, timeZone: string): YearReading {
+/**
+ * Reads the year at `location` for the civil year `instant` falls in, in `timeZone`, between
+ * the chosen Phase `bounds`.
+ */
+export function readYear(
+  location: Location,
+  instant: Date,
+  timeZone: string,
+  twilight: Twilight = TWILIGHTS[0],
+  bounds: PhaseBounds = PHASE_BOUNDS[0],
+): YearReading {
   const year = new Date(civilDayNumber(instant, timeZone) * MS_PER_DAY).getUTCFullYear();
   return {
     instant,
     year,
-    dayLengths: dayLengthsByDate(location, year, timeZone),
+    dayLengths: dayLengthsByDate(location, year, timeZone, twilight, bounds),
     solsticesAndEquinoxes: [...solsticesAndEquinoxes(year), ...solsticesAndEquinoxes(year + 1)],
   };
 }

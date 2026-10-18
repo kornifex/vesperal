@@ -1,7 +1,10 @@
 // Solar computation and its presentation. Must never import GNOME libraries (see ADR 0001).
 export {
   type ClockSnapshot,
+  type LongPhase,
+  PHASE_BOUNDS,
   type Phase,
+  type PhaseBounds,
   type PhaseKind,
   readClock,
   TWILIGHTS,

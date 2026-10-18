@@ -29,6 +29,9 @@ along the night.
 - **The year at a glance**, in the preferences: the day length through the year as a chart, with
   today, the solstices and the equinoxes marked, and how far away the next ones are.
 - **Twilight of your choice** for dawn and dusk: civil, nautical or astronomical.
+- **Sunrise to sunset, or dawn to dusk**: count the day until it actually gets dark, if you
+  prefer. With a deep twilight, summer nights may not get that dark for weeks, even at
+  mid-latitudes: the top bar then says "No dark night".
 - **Anywhere on Earth**: polar days and polar nights are shown as such, with the date of the
   next sunrise or sunset.
 - **Automatic or manual location**: follow the GNOME location services, or pick a city (searched
@@ -91,6 +94,7 @@ for remaining time, the way behind the Moon for elapsed time.
 | Display | Sun arc | Left or right of the duration, when both are shown | Left |
 | Display | Position | Next to the clock, left side or right side of the top bar | Next to the clock |
 | Display | Twilight | Civil (6°), nautical (12°), astronomical (18°) | Civil |
+| Display | Day and night | From sunrise to sunset, or from dawn to dusk | From sunrise to sunset |
 | Location and notifications | Mode | Automatic, or a manual city or coordinates | Automatic |
 | Location and notifications | Notifications | On or off | Off |
 | Location and notifications | Events | Any of dawn, sunrise, sunset and dusk | Sunset |
@@ -99,9 +103,10 @@ for remaining time, the way behind the Moon for elapsed time.
 Changes apply immediately. With no location known, the preferences open on the Location and
 notifications page.
 
-The Year page charts the day length through the current year at the location in use, and gives
-today's day length and the dates of the next solstice and equinox. The preferences never ask the
-system where you are: in automatic mode, the Year page uses the last known location.
+The Year page charts the day length through the current year at the location in use, counted
+from sunrise to sunset or from dawn to dusk as chosen, and gives today's day length and the
+dates of the next solstice and equinox. The preferences never ask the system where you are: in
+automatic mode, the Year page uses the last known location.
 
 ## Privacy
 
