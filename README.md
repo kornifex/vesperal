@@ -138,7 +138,7 @@ To add a language, copy `packages/gnome-extension/po/vesperal.pot` to
 pnpm install
 pnpm check                                                  # lint, typecheck and tests (also a pre-commit hook)
 pnpm format                                                 # apply Biome formatting
-pnpm build                                                  # bundle the extension into packages/gnome-extension/dist
+pnpm build                                                  # build the extension into packages/gnome-extension/dist
 pnpm --filter @vesperal/gnome-extension install-extension   # build and install locally
 pnpm --filter @vesperal/gnome-extension pack-extension      # build the zip for extensions.gnome.org
 pnpm --filter @vesperal/gnome-extension update-po           # refresh po/ after changing messages
