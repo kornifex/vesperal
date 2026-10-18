@@ -2,6 +2,7 @@
 import { civilDayNumber } from "./civilTime.ts";
 import type { ClockSnapshot } from "./clock.ts";
 import type { Location, LocationInUse, LocationSource } from "./location.ts";
+import type { DueNotification, NotifiableEvent } from "./notifications.ts";
 import {
   MINUTES_PER_DAY,
   MINUTES_PER_HOUR,
@@ -117,6 +118,56 @@ export function present(snapshot: ClockSnapshot, options: PresentationOptions): 
   };
 }
 
+export type NotificationPresentationOptions = Pick<
+  PresentationOptions,
+  "timeZone" | "locale" | "translate" | "location"
+>;
+
+/** A notification of an event, as the desktop shows it. */
+export interface NotificationView {
+  /** Which event is coming, and in how long: e.g. "Sunset in 30 min". */
+  readonly title: string;
+  /** When and where: e.g. "21:58 · Paris", or "tomorrow at 03:04 · Paris". */
+  readonly body: string;
+}
+
+/** The notification of an event, sent at `now`. */
+export function presentNotification(
+  notification: DueNotification,
+  now: Date,
+  options: NotificationPresentationOptions,
+): NotificationView {
+  const { translate } = options;
+  const event = eventName(notification.event, translate);
+  // Rounded up, like the Remaining time, so the event never seems closer than it is.
+  const minutes = Math.ceil((notification.instant.getTime() - now.getTime()) / MS_PER_MINUTE);
+  return {
+    title:
+      minutes > 0
+        ? // Translators: a notification, e.g. "Sunset in 30 min".
+          fill(translate("{event} in {duration}"), {
+            event,
+            duration: formatDuration(minutes, translate),
+          })
+        : // Translators: a notification at the moment of an event, e.g. "Sunset now".
+          fill(translate("{event} now"), { event }),
+    body: `${formatCivilTime(notification.instant, now, options)} · ${describeLocation(options)}`,
+  };
+}
+
+function eventName(event: NotifiableEvent, translate: Translate): string {
+  switch (event) {
+    case "dawn":
+      return translate("Dawn");
+    case "sunrise":
+      return translate("Sunrise");
+    case "sunset":
+      return translate("Sunset");
+    case "dusk":
+      return translate("Dusk");
+  }
+}
+
 /** What to display when no Location is known, so the clock cannot be read. */
 export function presentLocationUnknown(translate: Translate): ViewModel {
   return {
@@ -222,10 +273,12 @@ const READING_RULES: Readonly<
 
 function locationRow(options: PresentationOptions): MenuRow {
   const { location, translate } = options;
-  return {
-    label: locationLabel(location.source, translate),
-    value: location.name ?? formatCoordinates(location, options),
-  };
+  return { label: locationLabel(location.source, translate), value: describeLocation(options) };
+}
+
+/** The Location in use, by its name, or by its coordinates when it has none. */
+function describeLocation(options: NotificationPresentationOptions): string {
+  return options.location.name ?? formatCoordinates(options.location, options);
 }
 
 function locationLabel(source: LocationSource, translate: Translate): string {
@@ -239,7 +292,10 @@ function locationLabel(source: LocationSource, translate: Translate): string {
   }
 }
 
-function formatCoordinates(location: Location, options: PresentationOptions): string {
+function formatCoordinates(
+  location: Location,
+  options: Pick<PresentationOptions, "locale" | "translate">,
+): string {
   const { translate } = options;
   const degrees = (angle: number): Record<string, string> => ({
     degrees: new Intl.NumberFormat(options.locale, { maximumFractionDigits: 3 }).format(
@@ -265,7 +321,11 @@ function formatCoordinates(location: Location, options: PresentationOptions): st
  * "Yesterday" and "tomorrow" are messages, so they speak the language of the other messages;
  * the time and the date follow `locale`, which may differ (see `PresentationOptions`).
  */
-function formatCivilTime(instant: Date, now: Date, options: PresentationOptions): string {
+function formatCivilTime(
+  instant: Date,
+  now: Date,
+  options: Pick<PresentationOptions, "locale" | "timeZone" | "translate">,
+): string {
   const { locale, timeZone, translate } = options;
   const time = new Intl.DateTimeFormat(locale, { timeZone, timeStyle: "short" }).format(instant);
   switch (civilDayNumber(instant, timeZone) - civilDayNumber(now, timeZone)) {

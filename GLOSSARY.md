@@ -98,6 +98,12 @@ _Avoid_: Summer solstice, winter solstice (their meaning depends on the hemisphe
 One of the two moments of the year when the Sun crosses the celestial equator: around 20 March and 22 September. It is named by its month: the March equinox, the September equinox.
 _Avoid_: Spring equinox, autumn equinox (their meaning depends on the hemisphere)
 
+## Notifications
+
+**Notification**:
+A message the desktop shows a chosen number of minutes (the lead time) before a Dawn, a Sunrise, a Sunset or a Dusk, for the events the user chose. Each event is announced once.
+_Avoid_: Alert, reminder, alarm
+
 ## Location
 
 **Location**:

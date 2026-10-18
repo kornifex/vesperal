@@ -19,16 +19,26 @@ export {
 } from "./location.ts";
 export { type MoonPhase, moonPhase } from "./moon.ts";
 export {
+  type DueNotification,
+  NOTIFIABLE_EVENTS,
+  type NotifiableEvent,
+  NotificationSchedule,
+  type NotificationSettings,
+} from "./notifications.ts";
+export {
   BAR_CONTENTS,
   type Bar,
   type BarContent,
   type Menu,
   type MenuRow,
   type MoonOnArc,
+  type NotificationPresentationOptions,
+  type NotificationView,
   type PresentationOptions,
   present,
   presentError,
   presentLocationUnknown,
+  presentNotification,
   READINGS,
   type Reading,
   type SunArc,

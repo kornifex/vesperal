@@ -8,6 +8,7 @@ import {
   present,
   presentError,
   presentLocationUnknown,
+  presentNotification,
 } from "./index.ts";
 
 const SECOND = 1_000;
@@ -94,6 +95,8 @@ const FRENCH_CATALOGUE: Readonly<Record<string, string>> = {
   "Location unknown": "Lieu inconnu",
   "Set a location manually…": "Définir un lieu manuellement…",
   Error: "Erreur",
+  "{event} in {duration}": "{event} dans {duration}",
+  "{event} now": "{event} maintenant",
 };
 const FRENCH: PresentationOptions = {
   ...OPTIONS,
@@ -553,5 +556,45 @@ describe("present: Error", () => {
 
   test("speaks French", () => {
     expect(presentError(FRENCH.translate).bar.text).toBe("Erreur");
+  });
+});
+
+describe("presentNotification", () => {
+  const SUNSET = { event: "sunset", instant: new Date("2026-06-21T19:58:00Z") } as const;
+
+  test("says which event is coming, in how long, when, and where", () => {
+    expect(presentNotification(SUNSET, new Date("2026-06-21T19:28:00Z"), OPTIONS)).toEqual({
+      title: "Sunset in 30 min",
+      body: "21:58 · Paris",
+    });
+  });
+
+  test("marks an event after midnight as tomorrow's", () => {
+    const dawn = { event: "dawn", instant: new Date("2026-06-22T01:04:00Z") } as const;
+
+    expect(presentNotification(dawn, new Date("2026-06-21T21:45:00Z"), OPTIONS).body).toBe(
+      "tomorrow at 03:04 · Paris",
+    );
+  });
+
+  test("rounds the Remaining time up", () => {
+    const { title } = presentNotification(SUNSET, new Date("2026-06-21T18:47:30Z"), OPTIONS);
+
+    expect(title).toBe("Sunset in 1h 11m");
+  });
+
+  test("says the event is now once it has come", () => {
+    const { title } = presentNotification(SUNSET, new Date("2026-06-21T19:58:20Z"), OPTIONS);
+
+    expect(title).toBe("Sunset now");
+  });
+
+  test("speaks French", () => {
+    const dawn = { event: "dawn", instant: new Date("2026-06-22T01:04:00Z") } as const;
+
+    expect(presentNotification(dawn, new Date("2026-06-22T00:34:00Z"), FRENCH)).toEqual({
+      title: "Aube dans 30 min",
+      body: "03:04 · Paris",
+    });
   });
 });

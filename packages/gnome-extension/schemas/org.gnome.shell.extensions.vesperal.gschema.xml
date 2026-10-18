@@ -68,5 +68,21 @@
       <summary>Indicator position</summary>
       <description>Where the indicator sits in the top bar: just after the clock, at the end of the left side, or at the start of the right side.</description>
     </key>
+    <key name="notifications" type="b">
+      <default>false</default>
+      <summary>Notifications</summary>
+      <description>Whether to notify ahead of the events chosen in notification-events.</description>
+    </key>
+    <key name="notification-events" type="as">
+      <default>['sunset']</default>
+      <summary>Events to notify of</summary>
+      <description>The events to notify ahead of, among "dawn", "sunrise", "sunset" and "dusk". Dawn and Dusk follow the chosen Twilight.</description>
+    </key>
+    <key name="notification-lead-time" type="i">
+      <range min="0" max="180"/>
+      <default>30</default>
+      <summary>Notification lead time</summary>
+      <description>How many minutes before each event to notify of it; 0 notifies at the event itself.</description>
+    </key>
   </schema>
 </schemalist>

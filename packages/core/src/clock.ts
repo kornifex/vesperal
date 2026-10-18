@@ -19,7 +19,7 @@ export const TWILIGHTS = ["civil", "nautical", "astronomical"] as const;
 export type Twilight = (typeof TWILIGHTS)[number];
 
 /** Geometric altitude of the Sun's centre at Dawn and Dusk, without refraction. */
-const TWILIGHT_ALTITUDE: Readonly<Record<Twilight, number>> = {
+export const TWILIGHT_ALTITUDE: Readonly<Record<Twilight, number>> = {
   civil: -6,
   nautical: -12,
   astronomical: -18,

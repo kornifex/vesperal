@@ -34,6 +34,8 @@ along the night.
 - **Automatic or manual location**: follow the GNOME location services, or pick a city (searched
   offline) or any coordinates. If the location becomes unavailable, Vesperal keeps using the last
   known one.
+- **Notifications**, if you want them: a chosen number of minutes before dawn, sunrise, sunset or
+  dusk, such as "Sunset in 30 min". They follow Do Not Disturb like any other notification.
 - **Offline**: every computation runs on your computer, after the NOAA solar position algorithm.
 - **18 languages**: English and French, plus Catalan, Czech, Danish, Dutch, Finnish, German,
   Greek, Hungarian, Italian, Norwegian Bokmål, Polish, Portuguese, Romanian, Spanish, Swedish
@@ -89,9 +91,13 @@ for remaining time, the way behind the Moon for elapsed time.
 | Display | Sun arc | Left or right of the duration, when both are shown | Left |
 | Display | Position | Next to the clock, left side or right side of the top bar | Next to the clock |
 | Display | Twilight | Civil (6°), nautical (12°), astronomical (18°) | Civil |
-| Location | Mode | Automatic, or a manual city or coordinates | Automatic |
+| Location and notifications | Mode | Automatic, or a manual city or coordinates | Automatic |
+| Location and notifications | Notifications | On or off | Off |
+| Location and notifications | Events | Any of dawn, sunrise, sunset and dusk | Sunset |
+| Location and notifications | Minutes before | 0 (at the event) to 180 | 30 |
 
-Changes apply immediately. With no location known, the preferences open on the Location page.
+Changes apply immediately. With no location known, the preferences open on the Location and
+notifications page.
 
 The Year page charts the day length through the current year at the location in use, and gives
 today's day length and the dates of the next solstice and equinox. The preferences never ask the
@@ -103,6 +109,7 @@ system where you are: in automatic mode, the Year page uses the last known locat
   position, and only while the location services are switched on in the system settings.
 - In **manual** mode, Vesperal never asks the system where you are.
 - The city search uses the database that ships with GNOME, so it works offline.
+- Notifications are made on your computer and go to the GNOME notification list only.
 - Vesperal itself makes no network requests. Your settings and last known location stay in your
   local GNOME settings.
 

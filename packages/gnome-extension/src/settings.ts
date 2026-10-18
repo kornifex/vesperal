@@ -9,6 +9,8 @@ import {
   LOCATION_MODES,
   type LocationMode,
   type NamedLocation,
+  NOTIFIABLE_EVENTS,
+  type NotifiableEvent,
   READINGS,
   type Reading,
   TWILIGHTS,
@@ -73,6 +75,28 @@ export function readIndicatorPosition(settings: Gio.Settings): IndicatorPosition
 
 export function writeIndicatorPosition(settings: Gio.Settings, position: IndicatorPosition): void {
   settings.set_string("indicator-position", position);
+}
+
+export function readNotificationsEnabled(settings: Gio.Settings): boolean {
+  return settings.get_boolean("notifications");
+}
+
+/** The events to notify of, in the order of a day. */
+export function readNotifiedEvents(settings: Gio.Settings): NotifiableEvent[] {
+  const nicks = settings.get_strv("notification-events");
+  return NOTIFIABLE_EVENTS.filter((event) => nicks.includes(event));
+}
+
+export function writeNotifiedEvents(
+  settings: Gio.Settings,
+  events: readonly NotifiableEvent[],
+): void {
+  settings.set_strv("notification-events", [...events]);
+}
+
+/** How many minutes before each event to notify of it. */
+export function readNotificationLeadMinutes(settings: Gio.Settings): number {
+  return settings.get_int("notification-lead-time");
 }
 
 export function readLocationMode(settings: Gio.Settings): LocationMode {

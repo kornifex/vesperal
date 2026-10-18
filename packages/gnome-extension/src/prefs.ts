@@ -1,5 +1,5 @@
 import Adw from "gi://Adw";
-import type Gio from "gi://Gio";
+import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 import Gtk from "gi://Gtk";
 import {
@@ -12,6 +12,8 @@ import {
   LOCATION_MODES,
   type LocationInUse,
   type NamedLocation,
+  NOTIFIABLE_EVENTS,
+  type NotifiableEvent,
   presentYear,
   READINGS,
   readYear,
@@ -28,6 +30,7 @@ import {
   readLastKnownLocation,
   readLocationMode,
   readManualLocation,
+  readNotifiedEvents,
   readReading,
   readSunArcPosition,
   readTwilight,
@@ -36,6 +39,7 @@ import {
   writeIndicatorPosition,
   writeLocationMode,
   writeManualLocation,
+  writeNotifiedEvents,
   writeReading,
   writeSunArcPosition,
   writeTwilight,
@@ -53,7 +57,7 @@ export default class VesperalPreferences extends ExtensionPreferences {
       icon_name: "preferences-desktop-display-symbolic",
     });
     const locationPage = new Adw.PreferencesPage({
-      title: _("Location"),
+      title: _("Location and notifications"),
       icon_name: "mark-location-symbolic",
     });
     const yearPage = new Adw.PreferencesPage({
@@ -72,6 +76,7 @@ export default class VesperalPreferences extends ExtensionPreferences {
       addIndicatorPositionGroup(displayPage, settings),
       addTwilightGroup(displayPage, settings),
       location.disconnect,
+      addNotificationGroup(locationPage, settings),
       addYearGroups(yearPage, settings, location.showCitySearch),
     ];
     window.connect("close-request", () => {
@@ -338,6 +343,61 @@ function addLocationGroups(
     },
     showCitySearch,
   };
+}
+
+/**
+ * Adds the notifications: whether to send them, ahead of which events, and how long ahead.
+ * Returns a function that stops following the settings.
+ */
+function addNotificationGroup(page: Adw.PreferencesPage, settings: Gio.Settings): () => void {
+  const group = new Adw.PreferencesGroup({ title: _("Notifications") });
+  page.add(group);
+  const enabledRow = new Adw.SwitchRow({ title: _("Send notifications") });
+  settings.bind("notifications", enabledRow, "active", Gio.SettingsBindFlags.DEFAULT);
+  group.add(enabledRow);
+
+  const names: Record<NotifiableEvent, string> = {
+    dawn: _("Dawn"),
+    sunrise: _("Sunrise"),
+    sunset: _("Sunset"),
+    dusk: _("Dusk"),
+  };
+  const buttons = new Map<NotifiableEvent, Gtk.CheckButton>();
+  // While the buttons are being set from the settings, their toggles are not choices.
+  let showing = false;
+  for (const event of NOTIFIABLE_EVENTS) {
+    const button = new Gtk.CheckButton({ valign: Gtk.Align.CENTER });
+    button.connect("toggled", () => {
+      if (showing) return;
+      writeNotifiedEvents(
+        settings,
+        NOTIFIABLE_EVENTS.filter((other) => buttons.get(other)?.active),
+      );
+    });
+    const row = new Adw.ActionRow({ title: names[event], activatable_widget: button });
+    row.add_prefix(button);
+    settings.bind("notifications", row, "sensitive", Gio.SettingsBindFlags.GET);
+    group.add(row);
+    buttons.set(event, button);
+  }
+
+  const leadRow = Adw.SpinRow.new_with_range(0, 180, 5);
+  leadRow.title = _("Minutes before");
+  leadRow.subtitle = _("0 notifies at the event itself");
+  settings.bind("notification-lead-time", leadRow, "value", Gio.SettingsBindFlags.DEFAULT);
+  settings.bind("notifications", leadRow, "sensitive", Gio.SettingsBindFlags.GET);
+  group.add(leadRow);
+
+  const showEvents = (): void => {
+    const events = readNotifiedEvents(settings);
+    showing = true;
+    for (const [event, button] of buttons) button.active = events.includes(event);
+    showing = false;
+  };
+  showEvents();
+  const eventsChangedId = settings.connect("changed::notification-events", showEvents);
+  // The bindings go with the widgets when the window closes; the handler has to be let go.
+  return () => settings.disconnect(eventsChangedId);
 }
 
 /**
