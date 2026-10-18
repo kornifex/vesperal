@@ -24,6 +24,8 @@ along the night.
   the day or night; the other duration; and the location in use.
 - **Day length trend**: next to the day length, whether days are getting longer or shorter, and
   by how much: "10h 43m ↓3m", or in seconds near a solstice ("↑45s").
+- **The year at a glance**, in the preferences: the day length through the year as a chart, with
+  today, the solstices and the equinoxes marked, and how far away the next ones are.
 - **Twilight of your choice** for dawn and dusk: civil, nautical or astronomical.
 - **Anywhere on Earth**: polar days and polar nights are shown as such, with the date of the
   next sunrise or sunset.
@@ -88,6 +90,10 @@ for remaining time, the way behind the Moon for elapsed time.
 | Location | Mode | Automatic, or a manual city or coordinates | Automatic |
 
 Changes apply immediately. With no location known, the preferences open on the Location page.
+
+The Year page charts the day length through the current year at the location in use, and gives
+today's day length and the dates of the next solstice and equinox. The preferences never ask the
+system where you are: in automatic mode, the Year page uses the last known location.
 
 ## Privacy
 

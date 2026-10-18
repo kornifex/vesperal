@@ -31,5 +31,19 @@ export {
   type Reading,
   type SunArc,
   type Translate,
+  type TranslatePlural,
   type ViewModel,
 } from "./presentation.ts";
+export {
+  dayLengthsByDate,
+  readYear,
+  type SolsticeOrEquinox,
+  solsticesAndEquinoxes,
+  type YearReading,
+} from "./year.ts";
+export {
+  presentYear,
+  type YearMonth,
+  type YearPresentationOptions,
+  type YearView,
+} from "./yearPresentation.ts";

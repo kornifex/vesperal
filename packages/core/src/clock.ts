@@ -4,11 +4,11 @@ import { culmination, culminationIndexAt, solarAltitude } from "./solar.ts";
 import { MS_PER_DAY } from "./time.ts";
 
 /** Solar altitude of Sunrise and Sunset: the upper limb plus standard refraction. */
-const SOLAR_EVENT_ALTITUDE = -0.833;
+export const SOLAR_EVENT_ALTITUDE = -0.833;
 
 // Searching a little over a year each way reaches the next and previous Solar events even at
 // the poles, where there is one Sunrise and one Sunset a year: 2 culminations a day for 370
-// days. Written as a literal so that bundles which do not search, like the preferences, drop it.
+// days.
 const SEARCH_HORIZON_CULMINATIONS = 740;
 
 /** Every Twilight the user can choose, the default first. */
@@ -130,7 +130,7 @@ export function readClock(
  * The intervals do not depend on the instant read, so a crossing always lands on the same
  * millisecond.
  */
-class AltitudeCrossings {
+export class AltitudeCrossings {
   readonly #location: Location;
   readonly #altitude: number;
 

@@ -1,18 +1,25 @@
 import Adw from "gi://Adw";
 import type Gio from "gi://Gio";
+import GLib from "gi://GLib";
 import Gtk from "gi://Gtk";
 import {
   gettext as _,
   ExtensionPreferences,
+  ngettext,
 } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
 import {
   BAR_CONTENTS,
   LOCATION_MODES,
+  type LocationInUse,
   type NamedLocation,
+  presentYear,
   READINGS,
+  readYear,
+  resolveLocation,
   TWILIGHTS,
 } from "@vesperal/core";
 import { type City, CitySearch } from "./citySearch.ts";
+import { civilTimeLocale } from "./locale.ts";
 import {
   followLocationServices,
   INDICATOR_POSITIONS,
@@ -33,6 +40,7 @@ import {
   writeSunArcPosition,
   writeTwilight,
 } from "./settings.ts";
+import { YearChart } from "./yearChart.ts";
 
 const MAX_SEARCH_RESULTS = 8;
 
@@ -48,16 +56,23 @@ export default class VesperalPreferences extends ExtensionPreferences {
       title: _("Location"),
       icon_name: "mark-location-symbolic",
     });
+    const yearPage = new Adw.PreferencesPage({
+      title: _("Year"),
+      icon_name: "x-office-calendar-symbolic",
+    });
     window.add(displayPage);
     window.add(locationPage);
+    window.add(yearPage);
 
+    const location = addLocationGroups(locationPage, settings, window);
     const disconnects = [
       addReadingGroup(displayPage, settings),
       addBarContentGroup(displayPage, settings),
       addSunArcGroup(displayPage, settings),
       addIndicatorPositionGroup(displayPage, settings),
       addTwilightGroup(displayPage, settings),
-      addLocationGroups(locationPage, settings, window),
+      location.disconnect,
+      addYearGroups(yearPage, settings, location.showCitySearch),
     ];
     window.connect("close-request", () => {
       for (const disconnect of disconnects) disconnect();
@@ -194,13 +209,14 @@ function addTwilightGroup(page: Adw.PreferencesPage, settings: Gio.Settings): ()
 /**
  * Adds the choice between Automatic and Manual location, and the Manual location: an offline
  * city search, and direct latitude and longitude entry. Choosing a Manual location also
- * chooses Manual mode. Returns a function that stops following the settings.
+ * chooses Manual mode. Returns a function that stops following the settings, and one that
+ * shows the city search.
  */
 function addLocationGroups(
   page: Adw.PreferencesPage,
   settings: Gio.Settings,
   window: Adw.PreferencesWindow,
-): () => void {
+): { disconnect: () => void; showCitySearch: () => void } {
   const group = new Adw.PreferencesGroup({ title: _("Location") });
   page.add(group);
   const modes = addChoiceRows(
@@ -221,12 +237,13 @@ function addLocationGroups(
   const manualRow = modes.rows.get("manual");
   const searchRow = new Adw.EntryRow({ title: _("Search for a city") });
   group.add(searchRow);
-  // With no Location to fall back on, the clock reads "Location unknown" and its menu leads
-  // here to set one: open this page, on the city search.
-  if (!readManualLocation(settings) && !readLastKnownLocation(settings)) {
+  const showCitySearch = (): void => {
     window.visible_page = page;
     searchRow.grab_focus();
-  }
+  };
+  // With no Location to fall back on, the clock reads "Location unknown" and its menu leads
+  // here to set one: open on the city search.
+  if (!readManualLocation(settings) && !readLastKnownLocation(settings)) showCitySearch();
 
   const resultsGroup = new Adw.PreferencesGroup({ visible: false });
   page.add(resultsGroup);
@@ -313,11 +330,88 @@ function addLocationGroups(
   const stopFollowingLocationServices = followLocationServices(showLocationServices);
   showManualLocation();
   const manualLocationChangedId = settings.connect("changed::manual-location", showManualLocation);
-  return () => {
-    modes.disconnect();
-    stopFollowingLocationServices();
-    settings.disconnect(manualLocationChangedId);
+  return {
+    disconnect: () => {
+      modes.disconnect();
+      stopFollowingLocationServices();
+      settings.disconnect(manualLocationChangedId);
+    },
+    showCitySearch,
   };
+}
+
+/**
+ * Adds the year at the Location in use: a chart of the Day length through the year, then
+ * today's Day length and the next Solstice and Equinox. With no Location known, offers to set
+ * one instead, through `showCitySearch`. Returns a function that stops following the settings.
+ */
+function addYearGroups(
+  page: Adw.PreferencesPage,
+  settings: Gio.Settings,
+  showCitySearch: () => void,
+): () => void {
+  const chartGroup = new Adw.PreferencesGroup({ title: _("Day length through the year") });
+  const chart = new YearChart();
+  chartGroup.add(chart.widget);
+  const rowsGroup = new Adw.PreferencesGroup();
+  let rows: Adw.ActionRow[] = [];
+
+  const setLocationButton = new Gtk.Button({
+    label: _("Set a location"),
+    halign: Gtk.Align.CENTER,
+    css_classes: ["pill", "suggested-action"],
+  });
+  setLocationButton.connect("clicked", showCitySearch);
+  const unknownGroup = new Adw.PreferencesGroup();
+  unknownGroup.add(
+    new Adw.StatusPage({
+      icon_name: "mark-location-symbolic",
+      title: _("Location unknown"),
+      description: _("Set a location to see its year"),
+      child: setLocationButton,
+    }),
+  );
+  for (const group of [chartGroup, rowsGroup, unknownGroup]) page.add(group);
+
+  const show = (): void => {
+    const location = locationInUse(settings);
+    chartGroup.visible = rowsGroup.visible = location !== null;
+    unknownGroup.visible = location === null;
+    if (!location) return;
+
+    const timeZone = GLib.TimeZone.new_local().get_identifier();
+    const view = presentYear(readYear(location, new Date(), timeZone), {
+      timeZone,
+      locale: civilTimeLocale(),
+      translate: _,
+      translatePlural: ngettext,
+    });
+    chart.view = view;
+    for (const row of rows) rowsGroup.remove(row);
+    rows = view.rows.map(({ label, value }) => {
+      const row = new Adw.ActionRow({ title: label, subtitle: value, css_classes: ["property"] });
+      rowsGroup.add(row);
+      return row;
+    });
+  };
+  show();
+  const changedIds = ["location-mode", "manual-location", "last-known-location"].map((key) =>
+    settings.connect(`changed::${key}`, show),
+  );
+  return () => {
+    for (const id of changedIds) settings.disconnect(id);
+    chart.disconnect();
+  };
+}
+
+/**
+ * The Location in use, as the clock resolves it, except that the preferences never ask the
+ * system where the user is: in Automatic mode, they use the Last known location.
+ */
+function locationInUse(settings: Gio.Settings): LocationInUse | null {
+  const mode = readLocationMode(settings);
+  const fromMode = mode === "manual" ? readManualLocation(settings) : null;
+  return resolveLocation(mode, fromMode, readLastKnownLocation(settings));
 }
 
 /**

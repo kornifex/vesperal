@@ -84,6 +84,16 @@ _Avoid_: Progress bar, gauge
 Ordinary clock time in the user's time zone, used only to tell when Solar events happen.
 _Avoid_: Normal time, wall clock, real time
 
+## The year
+
+**Solstice**:
+One of the two moments of the year when the Sun is furthest north or south of the celestial equator: around 21 June and 21 December. It brings the longest Day of the year to one hemisphere and the shortest to the other, so it is named by its month: the June solstice, the December solstice.
+_Avoid_: Summer solstice, winter solstice (their meaning depends on the hemisphere)
+
+**Equinox**:
+One of the two moments of the year when the Sun crosses the celestial equator: around 20 March and 22 September. It is named by its month: the March equinox, the September equinox.
+_Avoid_: Spring equinox, autumn equinox (their meaning depends on the hemisphere)
+
 ## Location
 
 **Location**:

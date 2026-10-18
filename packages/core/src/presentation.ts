@@ -1,10 +1,10 @@
 // Turning a clock snapshot into what the front ends display.
+import { civilDayNumber } from "./civilTime.ts";
 import type { ClockSnapshot } from "./clock.ts";
 import type { Location, LocationInUse, LocationSource } from "./location.ts";
 import {
   MINUTES_PER_DAY,
   MINUTES_PER_HOUR,
-  MS_PER_DAY,
   MS_PER_MINUTE,
   MS_PER_SECOND,
   SECONDS_PER_MINUTE,
@@ -24,6 +24,12 @@ export type BarContent = (typeof BAR_CONTENTS)[number];
 
 /** Translates an English source message; front ends inject gettext or an equivalent. */
 export type Translate = (message: string) => string;
+
+/**
+ * Translates an English source message with a singular and a plural form, for `count`; front
+ * ends inject ngettext or an equivalent.
+ */
+export type TranslatePlural = (singular: string, plural: string, count: number) => string;
 
 export interface PresentationOptions {
   readonly reading: Reading;
@@ -156,9 +162,7 @@ function menuRows(snapshot: ClockSnapshot, options: PresentationOptions): MenuRo
   if (!isDay) {
     rows.push({
       label: translate("Day length"),
-      value:
-        formatDuration(Math.round(snapshot.lastDayLength / MS_PER_MINUTE), translate) +
-        dayLengthTrend(snapshot, translate),
+      value: lastDayLengthWithTrend(snapshot, translate),
     });
   }
   rows.push(locationRow(options));
@@ -266,20 +270,7 @@ function formatCivilTime(instant: Date, now: Date, options: PresentationOptions)
   }
 }
 
-/** Days since the epoch of the civil date of `instant` in `timeZone`. */
-function civilDayNumber(instant: Date, timeZone: string): number {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone,
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-  }).formatToParts(instant);
-  const part = (type: Intl.DateTimeFormatPartTypes): number =>
-    Number(parts.find((candidate) => candidate.type === type)?.value);
-  return Date.UTC(part("year"), part("month") - 1, part("day")) / MS_PER_DAY;
-}
-
-function formatDuration(totalMinutes: number, translate: Translate): string {
+export function formatDuration(totalMinutes: number, translate: Translate): string {
   if (totalMinutes > MINUTES_PER_DAY) {
     // Translators: a duration over 24 hours, e.g. "68d 23h", for a Polar day or Polar night.
     return fill(translate("{days}d {hours}h"), {
@@ -298,13 +289,28 @@ function formatDuration(totalMinutes: number, translate: Translate): string {
   });
 }
 
+/** The Day length of the most recent Day, with its trend: e.g. "10h 43m ↓3m". */
+function lastDayLengthWithTrend(snapshot: ClockSnapshot, translate: Translate): string {
+  return (
+    formatDuration(Math.round(snapshot.lastDayLength / MS_PER_MINUTE), translate) +
+    dayLengthTrend(snapshot, translate)
+  );
+}
+
 /**
  * How the most recent Day length compares with the Day before, to follow its value: e.g. " ↑3m"
  * for a Day 3 minutes longer.
  */
 function dayLengthTrend(snapshot: ClockSnapshot, translate: Translate): string {
   if (snapshot.previousDayLength === null) return "";
-  const change = snapshot.lastDayLength - snapshot.previousDayLength;
+  return formatDayLengthChange(snapshot.lastDayLength - snapshot.previousDayLength, translate);
+}
+
+/**
+ * A change of Day length in milliseconds, to follow a Day length: e.g. " ↑3m" for 3 minutes
+ * longer, or nothing when the change rounds to no second.
+ */
+export function formatDayLengthChange(change: number, translate: Translate): string {
   const seconds = Math.round(Math.abs(change) / MS_PER_SECOND);
   if (seconds === 0) return "";
   const arrow = change > 0 ? "↑" : "↓";
@@ -322,6 +328,6 @@ function dayLengthTrend(snapshot: ClockSnapshot, translate: Translate): string {
 }
 
 /** Replaces each `{name}` placeholder of a translated template. */
-function fill(template: string, values: Readonly<Record<string, string>>): string {
+export function fill(template: string, values: Readonly<Record<string, string>>): string {
   return template.replace(/\{(\w+)\}/g, (placeholder, name: string) => values[name] ?? placeholder);
 }

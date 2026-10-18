@@ -10,8 +10,8 @@ export const root = join(import.meta.dirname, "..");
 export const poDirectory = join(root, "po");
 const repositoryRoot = join(root, "../..");
 
-// Translatable messages: `_()` in the extension, and `translate()` in the core, which receives
-// gettext by injection.
+// Translatable messages: `_()` and `ngettext()` in the extension, and `translate()` and
+// `translatePlural()` in the core, which receives them by injection.
 const SOURCE_DIRECTORIES = [join(root, "src"), join(repositoryRoot, "packages/core/src")];
 
 export async function gettextDomain(): Promise<string> {
@@ -45,6 +45,8 @@ export async function extractMessages(output: string): Promise<void> {
       "--from-code=UTF-8",
       "--keyword=_",
       "--keyword=translate",
+      "--keyword=ngettext:1,2",
+      "--keyword=translatePlural:1,2",
       "--add-comments=Translators:",
       `--package-name=${await gettextDomain()}`,
       "--sort-by-file",
