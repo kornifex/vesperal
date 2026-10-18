@@ -4,7 +4,7 @@ import * as Main from "resource:///org/gnome/shell/ui/main.js";
 import * as PanelMenu from "resource:///org/gnome/shell/ui/panelMenu.js";
 import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js";
 import type { MenuRow, ViewModel } from "@vesperal/core";
-import type { SunArcPosition } from "./settings.ts";
+import type { IndicatorPosition, SunArcPosition } from "./settings.ts";
 import { SunArcIcon } from "./sunArcIcon.ts";
 
 /** The panel indicator and its menu, rendering a view model. */
@@ -48,15 +48,28 @@ export class VesperalIndicator {
     menu.addAction(actions.preferences.label, actions.preferences.activate);
   }
 
-  /** Adds the indicator to the centre of the panel, at the given index, under the given role. */
-  addToPanel(role: string, index: number): void {
-    if (this.#button) Main.panel.addToStatusArea(role, this.#button, index, "center");
+  /** Adds the indicator to the panel, at the given position, under the given role. */
+  addToPanel(role: string, position: IndicatorPosition): void {
+    if (!this.#button) return;
+    switch (position) {
+      case "next-to-clock":
+        Main.panel.addToStatusArea(role, this.#button, indexRightOfClock(), "center");
+        break;
+      case "left":
+        // Out of range, so appended: after everything already on the left side.
+        Main.panel.addToStatusArea(role, this.#button, -1, "left");
+        break;
+      case "right":
+        Main.panel.addToStatusArea(role, this.#button, 0, "right");
+        break;
+    }
   }
 
   show(view: ViewModel): void {
     if (view.bar.arc) this.#arcIcon.arc = view.bar.arc;
     this.#arcIcon.actor.visible = view.bar.arc !== null;
-    this.#label.text = view.bar.text;
+    this.#label.text = view.bar.text ?? "";
+    this.#label.visible = view.bar.text !== null;
     this.#showRows(view.menu.rows);
     this.#manualLocationEntry.label.text = view.menu.manualLocationEntry ?? "";
     this.#manualLocationEntry.visible = view.menu.manualLocationEntry !== null;
@@ -88,4 +101,11 @@ export class VesperalIndicator {
       this.#rows.addMenuItem(item);
     }
   }
+}
+
+/** The index in the panel's centre box just after the GNOME clock. */
+function indexRightOfClock(): number {
+  const clock = Main.panel.statusArea.dateMenu?.container;
+  const siblings = clock?.get_parent()?.get_children() ?? [];
+  return clock ? siblings.indexOf(clock) + 1 : 0;
 }

@@ -5,10 +5,19 @@ import {
   gettext as _,
   ExtensionPreferences,
 } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
-import { LOCATION_MODES, type NamedLocation, READINGS, TWILIGHTS } from "@vesperal/core";
+import {
+  BAR_CONTENTS,
+  LOCATION_MODES,
+  type NamedLocation,
+  READINGS,
+  TWILIGHTS,
+} from "@vesperal/core";
 import { type City, CitySearch } from "./citySearch.ts";
 import {
   followLocationServices,
+  INDICATOR_POSITIONS,
+  readBarContent,
+  readIndicatorPosition,
   readLastKnownLocation,
   readLocationMode,
   readManualLocation,
@@ -16,6 +25,8 @@ import {
   readSunArcPosition,
   readTwilight,
   SUN_ARC_POSITIONS,
+  writeBarContent,
+  writeIndicatorPosition,
   writeLocationMode,
   writeManualLocation,
   writeReading,
@@ -42,7 +53,9 @@ export default class VesperalPreferences extends ExtensionPreferences {
 
     const disconnects = [
       addReadingGroup(displayPage, settings),
+      addBarContentGroup(displayPage, settings),
       addSunArcGroup(displayPage, settings),
+      addIndicatorPositionGroup(displayPage, settings),
       addTwilightGroup(displayPage, settings),
       addLocationGroups(locationPage, settings, window),
     ];
@@ -73,13 +86,42 @@ function addReadingGroup(page: Adw.PreferencesPage, settings: Gio.Settings): () 
   return disconnect;
 }
 
-/** Adds the choice of Sun arc position; returns a function that stops following the settings. */
+/** Adds the choice of what the bar shows; returns a function that stops following the settings. */
+function addBarContentGroup(page: Adw.PreferencesPage, settings: Gio.Settings): () => void {
+  const group = new Adw.PreferencesGroup({
+    title: _("Content"),
+    description: _("What the top bar shows"),
+  });
+  page.add(group);
+
+  const { disconnect } = addChoiceRows(
+    group,
+    settings,
+    { key: "bar-content", values: BAR_CONTENTS, read: readBarContent, write: writeBarContent },
+    {
+      "arc-and-duration": { title: _("Sun arc and duration"), subtitle: "" },
+      arc: { title: _("Sun arc only"), subtitle: "" },
+      duration: { title: _("Duration only"), subtitle: "" },
+    },
+  );
+  return disconnect;
+}
+
+/**
+ * Adds the choice of Sun arc position, offered only when the bar shows both the Sun arc and the
+ * duration. Returns a function that stops following the settings.
+ */
 function addSunArcGroup(page: Adw.PreferencesPage, settings: Gio.Settings): () => void {
   const group = new Adw.PreferencesGroup({
     title: _("Sun arc"),
     description: _("Its side of the Reading in the top bar"),
   });
   page.add(group);
+  const followBarContent = (): void => {
+    group.sensitive = readBarContent(settings) === "arc-and-duration";
+  };
+  followBarContent();
+  const barContentChangedId = settings.connect("changed::bar-content", followBarContent);
 
   const { disconnect } = addChoiceRows(
     group,
@@ -93,6 +135,36 @@ function addSunArcGroup(page: Adw.PreferencesPage, settings: Gio.Settings): () =
     {
       left: { title: _("Left"), subtitle: "" },
       right: { title: _("Right"), subtitle: "" },
+    },
+  );
+  return () => {
+    disconnect();
+    settings.disconnect(barContentChangedId);
+  };
+}
+
+/** Adds the choice of indicator position; returns a function that stops following the settings. */
+function addIndicatorPositionGroup(page: Adw.PreferencesPage, settings: Gio.Settings): () => void {
+  const group = new Adw.PreferencesGroup({
+    // Translators: where the indicator sits in the top bar, not a geographic position.
+    title: _("Position"),
+    description: _("Where the indicator sits in the top bar"),
+  });
+  page.add(group);
+
+  const { disconnect } = addChoiceRows(
+    group,
+    settings,
+    {
+      key: "indicator-position",
+      values: INDICATOR_POSITIONS,
+      read: readIndicatorPosition,
+      write: writeIndicatorPosition,
+    },
+    {
+      "next-to-clock": { title: _("Next to the clock"), subtitle: "" },
+      left: { title: _("Left side"), subtitle: _("After the workspace indicator") },
+      right: { title: _("Right side"), subtitle: _("Before the system indicators") },
     },
   );
   return disconnect;

@@ -17,7 +17,8 @@ const HORIZON_OVERHANG = 0.6;
  * a horizon, a flattened half arc above it, and the Sun or the Moon at the current Progress.
  *
  * The horizon lies on the baseline of `text`, so the Reading stands on the same ground as the
- * Sun whatever the font; the drawing area spans the full height of the bar to allow it.
+ * Sun whatever the font; the drawing area spans the full height of the bar to allow it. When
+ * `text` is hidden, the drawing is centred in the bar instead.
  */
 export class SunArcIcon {
   readonly actor = new St.DrawingArea({
@@ -59,9 +60,11 @@ export class SunArcIcon {
     // flattened to stay low beside the text, within the room above the baseline.
     const lineWidth = Math.max(1, width / 18);
     const bodyRadius = width / 7;
-    const horizonY = Math.min(this.#baselineY() ?? height, height) - lineWidth / 2;
     const centreX = width / 2;
     const radiusX = centreX - bodyRadius - lineWidth;
+    const horizonY = this.#text.visible
+      ? Math.min(this.#baselineY() ?? height, height) - lineWidth / 2
+      : (height + radiusX * ARC_FLATNESS + bodyRadius + lineWidth) / 2;
     const radiusY = Math.min(radiusX * ARC_FLATNESS, horizonY - bodyRadius - lineWidth);
 
     // The horizon runs a little past each end of the arc.

@@ -1,7 +1,6 @@
 import type Gio from "gi://Gio";
 import GnomeDesktop from "gi://GnomeDesktop";
 import { gettext as _, Extension } from "resource:///org/gnome/shell/extensions/extension.js";
-import * as Main from "resource:///org/gnome/shell/ui/main.js";
 import {
   type LocationMode,
   type NamedLocation,
@@ -16,6 +15,8 @@ import { AutomaticLocation } from "./automaticLocation.ts";
 import { VesperalIndicator } from "./indicator.ts";
 import { civilTimeLocale } from "./locale.ts";
 import {
+  readBarContent,
+  readIndicatorPosition,
   readLastKnownLocation,
   readLocationMode,
   readManualLocation,
@@ -32,6 +33,7 @@ export default class VesperalExtension extends Extension {
   #settingsChangedId = 0;
   #locationModeChangedId = 0;
   #sunArcPositionChangedId = 0;
+  #indicatorPositionChangedId = 0;
   // Only exists in Automatic mode, so that Manual mode never asks the system for a Location.
   #automaticLocation: AutomaticLocation | null = null;
   // GNOME's WallClock notifies on each minute boundary and after suspend/resume, time-zone
@@ -40,15 +42,8 @@ export default class VesperalExtension extends Extension {
   #wallClockChangedId = 0;
 
   override enable(): void {
-    this.#indicator = new VesperalIndicator(this.metadata.name, {
-      preferences: { label: _("Preferences"), activate: () => this.openPreferences() },
-      // The preferences open on the city search when no Location is known (see prefs.ts).
-      manualLocationEntry: { activate: () => this.openPreferences() },
-      secondaryClick: () => this.#switchReading(),
-    });
-    this.#indicator.addToPanel(this.uuid, positionRightOfClock());
-
     this.#settings = this.getSettings();
+    this.#placeIndicator();
     // Connected first, so that the Automatic location follows the mode before the refresh.
     this.#locationModeChangedId = this.#settings.connect("changed::location-mode", () =>
       this.#followLocationMode(),
@@ -56,12 +51,15 @@ export default class VesperalExtension extends Extension {
     this.#sunArcPositionChangedId = this.#settings.connect("changed::sun-arc-position", () =>
       this.#placeSunArc(),
     );
+    // Connected before the refresh, so that the new indicator shows the clock at once.
+    this.#indicatorPositionChangedId = this.#settings.connect("changed::indicator-position", () =>
+      this.#placeIndicator(),
+    );
     this.#settingsChangedId = this.#settings.connect("changed", (_settings, key: string) => {
       // Only #update writes the Last known location, and it does not need refreshing for it.
       if (key !== "last-known-location") this.#refresh();
     });
     this.#followLocationMode();
-    this.#placeSunArc();
     this.#wallClock = new GnomeDesktop.WallClock();
     this.#wallClockChangedId = this.#wallClock.connect("notify::clock", () => this.#refresh());
 
@@ -75,10 +73,28 @@ export default class VesperalExtension extends Extension {
     this.#automaticLocation = null;
     this.#settings?.disconnect(this.#locationModeChangedId);
     this.#settings?.disconnect(this.#sunArcPositionChangedId);
+    this.#settings?.disconnect(this.#indicatorPositionChangedId);
     this.#settings?.disconnect(this.#settingsChangedId);
     this.#settings = null;
     this.#indicator?.destroy();
     this.#indicator = null;
+  }
+
+  /**
+   * Places the indicator in the panel at the chosen position. A new indicator replaces the one
+   * already there, since the panel only places an indicator when it is added.
+   */
+  #placeIndicator(): void {
+    if (!this.#settings) return;
+    this.#indicator?.destroy();
+    this.#indicator = new VesperalIndicator(this.metadata.name, {
+      preferences: { label: _("Preferences"), activate: () => this.openPreferences() },
+      // The preferences open on the city search when no Location is known (see prefs.ts).
+      manualLocationEntry: { activate: () => this.openPreferences() },
+      secondaryClick: () => this.#switchReading(),
+    });
+    this.#indicator.addToPanel(this.uuid, readIndicatorPosition(this.#settings));
+    this.#placeSunArc();
   }
 
   #followLocationMode(): void {
@@ -129,6 +145,7 @@ export default class VesperalExtension extends Extension {
       location
         ? present(readClock(location, new Date(), readTwilight(this.#settings)), {
             reading: readReading(this.#settings),
+            barContent: readBarContent(this.#settings),
             timeZone: this.#wallClock.timezone.get_identifier(),
             locale: civilTimeLocale(),
             translate,
@@ -143,11 +160,4 @@ export default class VesperalExtension extends Extension {
     if (mode === "manual") return readManualLocation(settings);
     return this.#automaticLocation?.location ?? null;
   }
-}
-
-/** The index in the panel's centre box just after the GNOME clock. */
-function positionRightOfClock(): number {
-  const clock = Main.panel.statusArea.dateMenu?.container;
-  const siblings = clock?.get_parent()?.get_children() ?? [];
-  return clock ? siblings.indexOf(clock) + 1 : 0;
 }

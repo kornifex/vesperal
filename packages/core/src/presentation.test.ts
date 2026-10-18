@@ -17,6 +17,7 @@ const PARIS = { name: "Paris", latitude: 48.8566, longitude: 2.3522 };
 
 const OPTIONS: PresentationOptions = {
   reading: "remaining",
+  barContent: "arc-and-duration",
   timeZone: "Europe/Paris",
   locale: "en-GB",
   translate: (message) => message,
@@ -55,7 +56,7 @@ function dayWithRemaining(remaining: number): ClockSnapshot {
   return phaseWithRemaining("day", remaining);
 }
 
-function barText(remaining: number, options: PresentationOptions = OPTIONS): string {
+function barText(remaining: number, options: PresentationOptions = OPTIONS): string | null {
   return present(dayWithRemaining(remaining), options).bar.text;
 }
 
@@ -129,7 +130,7 @@ describe("present: Elapsed time in the bar", () => {
   const ELAPSED: PresentationOptions = { ...OPTIONS, reading: "elapsed" };
   const PHASE_LENGTH = 14 * HOUR;
 
-  function elapsedText(elapsed: number): string {
+  function elapsedText(elapsed: number): string | null {
     return present(dayWithRemaining(PHASE_LENGTH - elapsed), ELAPSED).bar.text;
   }
 
@@ -182,6 +183,23 @@ describe("present: Sun arc", () => {
     expect(present(snapshot, OPTIONS).bar.arc?.emphasis).toBe("ahead");
     // Elapsed time: the way already behind it.
     expect(present(snapshot, { ...OPTIONS, reading: "elapsed" }).bar.arc?.emphasis).toBe("behind");
+  });
+});
+
+describe("present: what the bar shows", () => {
+  test("shows the Sun arc alone, with no text, when the user chose the arc only", () => {
+    const bar = present(dayWithRemaining(3 * HOUR), { ...OPTIONS, barContent: "arc" }).bar;
+
+    expect(bar).toEqual({
+      arc: { body: "sun", progress: 11 / 14, emphasis: "ahead" },
+      text: null,
+    });
+  });
+
+  test("shows the duration alone, with no Sun arc, when the user chose the duration only", () => {
+    const bar = present(dayWithRemaining(3 * HOUR), { ...OPTIONS, barContent: "duration" }).bar;
+
+    expect(bar).toEqual({ arc: null, text: "3h 00m" });
   });
 });
 
@@ -374,6 +392,15 @@ describe("present: Polar day and Polar night", () => {
 
     expect(present(snapshot, OPTIONS).bar.text).toBe("Polar night");
     expect(present(snapshot, FRENCH).bar.text).toBe("Nuit polaire");
+  });
+
+  test("shows only the part of the bar the user chose", () => {
+    const arcOnly = polarDayRemaining(30 * DAY, { ...OPTIONS, barContent: "arc" }).bar;
+    const durationOnly = polarDayRemaining(30 * DAY, { ...OPTIONS, barContent: "duration" }).bar;
+
+    expect(arcOnly.text).toBeNull();
+    expect(arcOnly.arc?.body).toBe("sun");
+    expect(durationOnly).toEqual({ arc: null, text: "Polar day" });
   });
 
   test("keeps the Sun arc at the Progress of the long Phase", () => {

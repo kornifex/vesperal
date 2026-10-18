@@ -9,11 +9,18 @@ export const READINGS = ["remaining", "elapsed"] as const;
 /** The duration the clock displays. */
 export type Reading = (typeof READINGS)[number];
 
+/** Every choice of what the bar shows, the default first. */
+export const BAR_CONTENTS = ["arc-and-duration", "arc", "duration"] as const;
+
+/** What the bar shows: the Sun arc and the Reading, or only one of them. */
+export type BarContent = (typeof BAR_CONTENTS)[number];
+
 /** Translates an English source message; front ends inject gettext or an equivalent. */
 export type Translate = (message: string) => string;
 
 export interface PresentationOptions {
   readonly reading: Reading;
+  readonly barContent: BarContent;
   /** IANA time zone in which Civil times are shown. */
   readonly timeZone: string;
   /**
@@ -38,13 +45,13 @@ export interface SunArc {
 }
 
 export interface Bar {
-  /** The Sun arc, or null when no Location is known. */
+  /** The Sun arc, or null when no Location is known or the user chose the duration only. */
   readonly arc: SunArc | null;
   /**
    * The Reading as a duration, the polar state once that duration exceeds 24 hours, or the
-   * "Location unknown" state.
+   * "Location unknown" or "Error" state; null when the user chose the Sun arc only.
    */
-  readonly text: string;
+  readonly text: string | null;
 }
 
 /** A line of the menu: what it is about, and its value. */
@@ -71,12 +78,15 @@ export interface ViewModel {
 export function present(snapshot: ClockSnapshot, options: PresentationOptions): ViewModel {
   return {
     bar: {
-      arc: {
-        body: snapshot.phase.kind === "day" ? "sun" : "moon",
-        progress: snapshot.progress,
-        emphasis: READING_RULES[options.reading].emphasis,
-      },
-      text: barText(snapshot, options),
+      arc:
+        options.barContent === "duration"
+          ? null
+          : {
+              body: snapshot.phase.kind === "day" ? "sun" : "moon",
+              progress: snapshot.progress,
+              emphasis: READING_RULES[options.reading].emphasis,
+            },
+      text: options.barContent === "arc" ? null : barText(snapshot, options),
     },
     menu: { rows: menuRows(snapshot, options), manualLocationEntry: null },
   };

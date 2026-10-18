@@ -3,6 +3,8 @@
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 import {
+  BAR_CONTENTS,
+  type BarContent,
   isValidLocation,
   LOCATION_MODES,
   type LocationMode,
@@ -44,6 +46,33 @@ export function readSunArcPosition(settings: Gio.Settings): SunArcPosition {
 
 export function writeSunArcPosition(settings: Gio.Settings, position: SunArcPosition): void {
   settings.set_string("sun-arc-position", position);
+}
+
+/** Every place the indicator can sit in the top bar, the default first. */
+export const INDICATOR_POSITIONS = ["next-to-clock", "left", "right"] as const;
+
+/**
+ * Where the indicator sits in the top bar: just after the clock, at the end of the left side,
+ * or at the start of the right side.
+ */
+export type IndicatorPosition = (typeof INDICATOR_POSITIONS)[number];
+
+export function readBarContent(settings: Gio.Settings): BarContent {
+  const nick = settings.get_string("bar-content");
+  return BAR_CONTENTS.find((content) => content === nick) ?? BAR_CONTENTS[0];
+}
+
+export function writeBarContent(settings: Gio.Settings, content: BarContent): void {
+  settings.set_string("bar-content", content);
+}
+
+export function readIndicatorPosition(settings: Gio.Settings): IndicatorPosition {
+  const nick = settings.get_string("indicator-position");
+  return INDICATOR_POSITIONS.find((position) => position === nick) ?? INDICATOR_POSITIONS[0];
+}
+
+export function writeIndicatorPosition(settings: Gio.Settings, position: IndicatorPosition): void {
+  settings.set_string("indicator-position", position);
 }
 
 export function readLocationMode(settings: Gio.Settings): LocationMode {

@@ -17,6 +17,16 @@
     <value nick="left" value="0"/>
     <value nick="right" value="1"/>
   </enum>
+  <enum id="org.gnome.shell.extensions.vesperal.BarContent">
+    <value nick="arc-and-duration" value="0"/>
+    <value nick="arc" value="1"/>
+    <value nick="duration" value="2"/>
+  </enum>
+  <enum id="org.gnome.shell.extensions.vesperal.IndicatorPosition">
+    <value nick="next-to-clock" value="0"/>
+    <value nick="left" value="1"/>
+    <value nick="right" value="2"/>
+  </enum>
   <schema id="org.gnome.shell.extensions.vesperal" path="/org/gnome/shell/extensions/vesperal/">
     <key name="location-mode" enum="org.gnome.shell.extensions.vesperal.LocationMode">
       <default>'automatic'</default>
@@ -47,6 +57,16 @@
       <default>'left'</default>
       <summary>Sun arc position</summary>
       <description>Which side of the Reading the Sun arc sits on in the top bar.</description>
+    </key>
+    <key name="bar-content" enum="org.gnome.shell.extensions.vesperal.BarContent">
+      <default>'arc-and-duration'</default>
+      <summary>Top bar content</summary>
+      <description>What the indicator shows in the top bar: the Sun arc and the Reading, the Sun arc only, or the Reading only. The "Location unknown" and "Error" states always show their text.</description>
+    </key>
+    <key name="indicator-position" enum="org.gnome.shell.extensions.vesperal.IndicatorPosition">
+      <default>'next-to-clock'</default>
+      <summary>Indicator position</summary>
+      <description>Where the indicator sits in the top bar: just after the clock, at the end of the left side, or at the start of the right side.</description>
     </key>
   </schema>
 </schemalist>

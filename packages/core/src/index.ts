@@ -18,7 +18,9 @@ export {
   resolveLocation,
 } from "./location.ts";
 export {
+  BAR_CONTENTS,
   type Bar,
+  type BarContent,
   type Menu,
   type MenuRow,
   type PresentationOptions,

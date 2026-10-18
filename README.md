@@ -79,7 +79,9 @@ for remaining time, the way behind the Moon for elapsed time.
 | Page | Setting | Choices | Default |
 |---|---|---|---|
 | Display | Reading | Remaining time, elapsed time | Remaining time |
-| Display | Sun arc | Left or right of the duration | Left |
+| Display | Content | Sun arc and duration, Sun arc only, duration only | Sun arc and duration |
+| Display | Sun arc | Left or right of the duration, when both are shown | Left |
+| Display | Position | Next to the clock, left side or right side of the top bar | Next to the clock |
 | Display | Twilight | Civil (6°), nautical (12°), astronomical (18°) | Civil |
 | Location | Mode | Automatic, or a manual city or coordinates | Automatic |
 
