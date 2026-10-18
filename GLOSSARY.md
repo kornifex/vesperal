@@ -80,6 +80,10 @@ _Avoid_: Percentage, completion
 The visual representation of Progress: a half arc on which the Sun (during a Day) or the Moon (during a Night) sits at the current Progress. The part of the arc the Reading measures is emphasised: the way still ahead of the body for Remaining time, the way already behind it for Elapsed time.
 _Avoid_: Progress bar, gauge
 
+**Moon phase**:
+How much of the Moon's disc is lit, and whether that part is growing (waxing, from New Moon to Full Moon) or shrinking (waning). The Moon on the Sun arc shows it, lit on the side of the Sun as seen from the Location's hemisphere: on the right of a waxing Moon in the northern hemisphere, on its left in the southern one.
+_Avoid_: Lunar phase, Moon age
+
 **Civil time**:
 Ordinary clock time in the user's time zone, used only to tell when Solar events happen.
 _Avoid_: Normal time, wall clock, real time

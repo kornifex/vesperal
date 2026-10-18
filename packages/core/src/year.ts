@@ -1,17 +1,13 @@
 // The year at a Location: its Solstices and Equinoxes, and its Day length date by date.
+import { epochMsOf, julianCenturiesSinceJ2000, radians } from "./astronomy.ts";
 import { civilDayNumber, startOfCivilDay } from "./civilTime.ts";
 import { AltitudeCrossings, SOLAR_EVENT_ALTITUDE } from "./clock.ts";
 import type { Location } from "./location.ts";
 import { MS_PER_DAY, MS_PER_SECOND } from "./time.ts";
 
-const UNIX_EPOCH_JULIAN_DAY = 2_440_587.5;
-const J2000_JULIAN_DAY = 2_451_545;
-const DAYS_PER_JULIAN_CENTURY = 36_525;
 // The difference between Terrestrial Time, in which the instants below come out, and UTC. It
 // was 69 s in the 2020s and drifts by about a second a year: negligible next to the minute.
 const DELTA_T_MS = 69 * MS_PER_SECOND;
-
-const radians = (angle: number): number => (angle * Math.PI) / 180;
 
 /** The year at a Location, as the Year page shows it. */
 export interface YearReading {
@@ -83,7 +79,7 @@ export function solsticesAndEquinoxes(year: number): SolsticeOrEquinox[] {
   const millennia = (year - 2000) / 1000;
   return MEAN_INSTANTS.map(({ kind, month, terms }) => {
     const meanJulianDay = terms.reduce((sum, term, power) => sum + term * millennia ** power, 0);
-    const t = (meanJulianDay - J2000_JULIAN_DAY) / DAYS_PER_JULIAN_CENTURY;
+    const t = julianCenturiesSinceJ2000(meanJulianDay);
     const w = radians(35999.373 * t - 2.47);
     const lambdaCorrection = 1 + 0.0334 * Math.cos(w) + 0.0007 * Math.cos(2 * w);
     const periodic = PERIODIC_TERMS.reduce(
@@ -91,7 +87,7 @@ export function solsticesAndEquinoxes(year: number): SolsticeOrEquinox[] {
       0,
     );
     const julianDay = meanJulianDay + (0.00001 * periodic) / lambdaCorrection;
-    const epochMs = (julianDay - UNIX_EPOCH_JULIAN_DAY) * MS_PER_DAY - DELTA_T_MS;
+    const epochMs = epochMsOf(julianDay) - DELTA_T_MS;
     return { kind, month, instant: new Date(Math.round(epochMs)) };
   });
 }

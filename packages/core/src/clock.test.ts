@@ -182,6 +182,15 @@ describe("readClock", () => {
     expect(readClock(TROMSØ, new Date("2026-06-21T12:00:00Z")).previousDayLength).toBeNull();
   });
 
+  test("gives the Moon phase at the instant read", () => {
+    const instant = new Date("2026-01-26T04:47:00Z");
+
+    // USNO: First Quarter.
+    const { moon } = readClock(PARIS, instant);
+    expect(moon.illuminated).toBeCloseTo(0.5, 2);
+    expect(moon.waxing).toBe(true);
+  });
+
   test("records the instant it was read at", () => {
     const instant = new Date("2026-06-21T12:00:00Z");
 

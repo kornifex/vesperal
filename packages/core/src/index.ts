@@ -17,12 +17,14 @@ export {
   type NamedLocation,
   resolveLocation,
 } from "./location.ts";
+export { type MoonPhase, moonPhase } from "./moon.ts";
 export {
   BAR_CONTENTS,
   type Bar,
   type BarContent,
   type Menu,
   type MenuRow,
+  type MoonOnArc,
   type PresentationOptions,
   present,
   presentError,

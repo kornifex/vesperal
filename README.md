@@ -20,6 +20,8 @@ along the night.
 - **Sun arc**: the Sun by day and the Moon by night, placed at the progress of the day or night.
   The part of the arc that the displayed duration measures is drawn in full, so you can tell at
   a glance which one you are reading.
+- **Moon phase**: by night, the Moon shows its real phase, lit on the side you see it lit from
+  your hemisphere. A new moon still shows as an outline.
 - **Day details** in the menu, in your local time: dawn, sunrise, sunset and dusk; the length of
   the day or night; the other duration; and the location in use.
 - **Day length trend**: next to the day length, whether days are getting longer or shorter, and

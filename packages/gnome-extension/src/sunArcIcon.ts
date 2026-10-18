@@ -1,7 +1,7 @@
 import Clutter from "gi://Clutter";
 import Pango from "gi://Pango";
 import St from "gi://St";
-import type { SunArc } from "@vesperal/core";
+import type { MoonOnArc, SunArc } from "@vesperal/core";
 import Cairo from "cairo";
 
 // How the part of the arc the Reading does not measure is drawn, relative to the rest.
@@ -11,6 +11,9 @@ const FADED_OPACITY = 0.4;
 const ARC_FLATNESS = 0.55;
 // How far the horizon runs past each end of the arc, as a fraction of the body's radius.
 const HORIZON_OVERHANG = 0.6;
+// Below and above these illuminated fractions, the Moon is drawn New or Full.
+const NEW_MOON_BELOW = 0.02;
+const FULL_MOON_ABOVE = 0.98;
 
 /**
  * Draws the Sun arc in the panel's foreground colour, so it renders like a symbolic icon:
@@ -103,18 +106,12 @@ export class SunArcIcon {
     cr.fill();
     cr.setOperator(Cairo.Operator.OVER);
 
-    // The body is drawn in a group of its own, so that carving the Moon's crescent clears only
-    // the disc: clearing through an antialiased clip would leave a faint sliver of its edge.
-    cr.pushGroup();
-    cr.arc(bodyX, bodyY, bodyRadius, 0, 2 * Math.PI);
-    cr.fill();
-    if (arc.body === "moon") {
-      cr.setOperator(Cairo.Operator.CLEAR);
-      cr.arc(bodyX + bodyRadius * 0.5, bodyY - bodyRadius * 0.35, bodyRadius * 0.8, 0, 2 * Math.PI);
+    if (arc.body === "sun") {
+      cr.arc(bodyX, bodyY, bodyRadius, 0, 2 * Math.PI);
       cr.fill();
+    } else {
+      drawMoon(cr, arc, bodyX, bodyY, bodyRadius, Math.max(1, lineWidth * FADED_WIDTH));
     }
-    cr.popGroupToSource();
-    cr.paint();
 
     cr.$dispose();
   }
@@ -131,4 +128,47 @@ export class SunArcIcon {
     const areaY = this.actor.get_allocation_box().y1;
     return textY - areaY + text.get_layout().get_baseline() / Pango.SCALE;
   }
+}
+
+/**
+ * Draws the Moon in its phase, centred on (x, y): the whole disc as a thin outline, so that a
+ * New Moon still shows, and the lit part filled. The lit part runs from the edge of the disc on
+ * the lit side to the terminator, a half ellipse whose width follows the phase: it bulges
+ * towards the lit side for a crescent, and away from it past the quarter.
+ */
+function drawMoon(
+  cr: Cairo.Context,
+  moon: MoonOnArc,
+  x: number,
+  y: number,
+  radius: number,
+  outlineWidth: number,
+): void {
+  cr.setLineWidth(outlineWidth);
+  cr.arc(x, y, radius - outlineWidth / 2, 0, 2 * Math.PI);
+  cr.stroke();
+
+  // At panel size, a thin crescent, or the thin dark edge of a nearly Full Moon, would vanish
+  // under the outline: both are kept two pixels wider than it, short of New and Full Moon.
+  const smallestPart = Math.min(0.5, (outlineWidth + 2) / (2 * radius));
+  const illuminated =
+    moon.illuminated < NEW_MOON_BELOW || moon.illuminated > FULL_MOON_ABOVE
+      ? Math.round(moon.illuminated)
+      : Math.min(Math.max(moon.illuminated, smallestPart), 1 - smallestPart);
+
+  cr.save();
+  cr.translate(x, y);
+  // Drawn lit on the right, and mirrored when the Moon is lit on the left.
+  if (moon.litSide === "left") cr.scale(-1, 1);
+  // The lit part is bounded by half the disc's edge, then the terminator.
+  cr.arc(0, 0, radius, -Math.PI / 2, Math.PI / 2);
+  // The terminator, back up to the top; a flat ellipse at the quarters would not draw.
+  cr.save();
+  cr.scale(Math.max(Math.abs(1 - 2 * illuminated), 0.001), 1);
+  if (illuminated < 0.5) cr.arcNegative(0, 0, radius, Math.PI / 2, -Math.PI / 2);
+  else cr.arc(0, 0, radius, Math.PI / 2, (3 * Math.PI) / 2);
+  cr.restore();
+  cr.closePath();
+  cr.fill();
+  cr.restore();
 }

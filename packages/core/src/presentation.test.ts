@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import {
   type ClockSnapshot,
   type MenuRow,
+  type MoonPhase,
   type PhaseKind,
   type PresentationOptions,
   present,
@@ -30,6 +31,7 @@ function snapshotOf(
   instant: string | number,
   lastDayLength = 16 * HOUR,
   previousDayLength: number | null = null,
+  moon: MoonPhase = { illuminated: 0.25, waxing: true },
 ): ClockSnapshot {
   const start = Date.parse(phase.start);
   const end = Date.parse(phase.end);
@@ -42,6 +44,7 @@ function snapshotOf(
     progress: (now - start) / (end - start),
     lastDayLength,
     previousDayLength,
+    moon,
     dawn: null,
     dusk: null,
   };
@@ -169,10 +172,37 @@ describe("present: Sun arc", () => {
     expect(arc).toEqual({ body: "sun", progress: 0.75, emphasis: "ahead" });
   });
 
-  test("puts the Moon on the arc during a Night", () => {
+  test("puts the Moon on the arc during a Night, in its phase", () => {
     const { arc } = present(phaseWithRemaining("night", 7 * HOUR), OPTIONS).bar;
 
-    expect(arc).toEqual({ body: "moon", progress: 0.5, emphasis: "ahead" });
+    // A waxing crescent, a quarter lit, seen from Paris: lit on the right.
+    expect(arc).toEqual({
+      body: "moon",
+      progress: 0.5,
+      emphasis: "ahead",
+      illuminated: 0.25,
+      litSide: "right",
+    });
+  });
+
+  test("lights the Moon on the side the Sun is, as seen from each hemisphere", () => {
+    const night = { start: "2026-06-21T19:58:00Z", end: "2026-06-22T03:47:00Z" };
+    const litSide = (moon: MoonPhase, latitude: number) => {
+      const snapshot = snapshotOf("night", night, "2026-06-22T00:00:00Z", 16 * HOUR, null, moon);
+      const location = { ...OPTIONS.location, latitude };
+      const { arc } = present(snapshot, { ...OPTIONS, location }).bar;
+      return arc?.body === "moon" ? arc.litSide : undefined;
+    };
+    const waxing = { illuminated: 0.6, waxing: true };
+    const waning = { illuminated: 0.6, waxing: false };
+
+    expect(litSide(waxing, 48.86)).toBe("right");
+    expect(litSide(waning, 48.86)).toBe("left");
+    // Sydney: the Moon is seen upside down.
+    expect(litSide(waxing, -33.87)).toBe("left");
+    expect(litSide(waning, -33.87)).toBe("right");
+    // The equator counts as north.
+    expect(litSide(waxing, 0)).toBe("right");
   });
 
   test("covers the whole Phase, from its very start to just before its end", () => {

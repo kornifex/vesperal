@@ -1,5 +1,6 @@
 // Reading the clock at an instant and a Location.
 import type { Location } from "./location.ts";
+import { type MoonPhase, moonPhase } from "./moon.ts";
 import { culmination, culminationIndexAt, solarAltitude } from "./solar.ts";
 import { MS_PER_DAY } from "./time.ts";
 
@@ -54,6 +55,8 @@ export interface ClockSnapshot {
    * between them is a Polar night.
    */
   readonly previousDayLength: number | null;
+  /** The Moon phase at the instant read. */
+  readonly moon: MoonPhase;
   /**
    * The Dawn before the Sunrise that opens or closes the Phase, or null if the Sun does not get
    * that far below the horizon in the Night before that Sunrise.
@@ -114,6 +117,7 @@ export function readClock(
     progress: (now - start) / (end - start),
     lastDayLength,
     previousDayLength: previousDayKnown ? previousSunset - previousSunrise : null,
+    moon: moonPhase(instant),
     dawn: dawn > nightBeforeSunrise ? new Date(dawn) : null,
     dusk: dusk < nightAfterSunset ? new Date(dusk) : null,
   };

@@ -45,9 +45,13 @@ export interface PresentationOptions {
   readonly location: LocationInUse;
 }
 
-/** The Sun arc: the Sun (during a Day) or the Moon (during a Night) placed at the Progress. */
-export interface SunArc {
-  readonly body: "sun" | "moon";
+/**
+ * The Sun arc: the Sun (during a Day) or the Moon in its phase (during a Night) placed at the
+ * Progress.
+ */
+export type SunArc = SunOnArc | MoonOnArc;
+
+interface BodyOnArc {
   /** From 0 (rising end of the arc) to 1 (setting end). */
   readonly progress: number;
   /**
@@ -55,6 +59,21 @@ export interface SunArc {
    * it shows: the way still ahead of the body, or the way already behind it.
    */
   readonly emphasis: "ahead" | "behind";
+}
+
+export interface SunOnArc extends BodyOnArc {
+  readonly body: "sun";
+}
+
+export interface MoonOnArc extends BodyOnArc {
+  readonly body: "moon";
+  /** The illuminated fraction of the Moon's disc, from 0 (New Moon) to 1 (Full Moon). */
+  readonly illuminated: number;
+  /**
+   * The side of the disc that is lit, as seen from the Location: the side of the Sun, which
+   * is the right of a waxing Moon in the northern hemisphere and its left in the southern one.
+   */
+  readonly litSide: "left" | "right";
 }
 
 export interface Bar {
@@ -91,14 +110,7 @@ export interface ViewModel {
 export function present(snapshot: ClockSnapshot, options: PresentationOptions): ViewModel {
   return {
     bar: {
-      arc:
-        options.barContent === "duration"
-          ? null
-          : {
-              body: snapshot.phase.kind === "day" ? "sun" : "moon",
-              progress: snapshot.progress,
-              emphasis: READING_RULES[options.reading].emphasis,
-            },
+      arc: options.barContent === "duration" ? null : sunArc(snapshot, options),
       text: options.barContent === "arc" ? null : barText(snapshot, options),
     },
     menu: { rows: menuRows(snapshot, options), manualLocationEntry: null },
@@ -120,6 +132,15 @@ export function presentError(translate: Translate): ViewModel {
     bar: { arc: null, text: translate("Error") },
     menu: { rows: [], manualLocationEntry: null },
   };
+}
+
+function sunArc(snapshot: ClockSnapshot, options: PresentationOptions): SunArc {
+  const onArc = { progress: snapshot.progress, emphasis: READING_RULES[options.reading].emphasis };
+  if (snapshot.phase.kind === "day") return { body: "sun", ...onArc };
+  const { illuminated, waxing } = snapshot.moon;
+  // Seen from the south, the Moon is upside down; the equator counts as north.
+  const north = options.location.latitude >= 0;
+  return { body: "moon", ...onArc, illuminated, litSide: waxing === north ? "right" : "left" };
 }
 
 function barText(snapshot: ClockSnapshot, options: PresentationOptions): string {
