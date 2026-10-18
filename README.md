@@ -120,7 +120,7 @@ automatic mode, the Year page uses the last known location.
 
 ## Compatibility
 
-GNOME Shell 50.
+GNOME Shell 49, 50 and 51.
 
 ## Translations
 

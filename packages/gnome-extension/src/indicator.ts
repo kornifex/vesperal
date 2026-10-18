@@ -29,16 +29,7 @@ export class VesperalIndicator {
     this.#box.add_child(this.#label);
     this.#button = new PanelMenu.Button(0.5, name);
     this.#button.add_child(this.#box);
-    // The button's own gesture opens the menu on a press of any button: keep it to the primary
-    // one (touch counts as primary), and give the secondary one its own gesture.
-    this.#button._clickGesture.required_button = Clutter.BUTTON_PRIMARY;
-    const secondaryClick = new Clutter.ClickGesture({
-      required_button: Clutter.BUTTON_SECONDARY,
-      recognize_on_press: true,
-    });
-    // Tracked on the button, so the handler goes with it when it is destroyed.
-    secondaryClick.connectObject("recognize", actions.secondaryClick, this.#button);
-    this.#button.add_action(secondaryClick);
+    splitClicks(this.#button, actions.secondaryClick);
 
     const menu = this.#button.menu as PopupMenu.PopupMenu;
     menu.addMenuItem(this.#rows);
@@ -101,6 +92,39 @@ export class VesperalIndicator {
       this.#rows.addMenuItem(item);
     }
   }
+}
+
+/**
+ * Keeps the button's menu to the primary button (touch counts as primary), and runs
+ * `secondaryClick` on a press of the secondary button instead. The button opens its menu on a
+ * press of any button: from a click gesture since GNOME Shell 50, from its event handler on
+ * GNOME Shell 49.
+ */
+function splitClicks(button: PanelMenu.Button, secondaryClick: () => void): void {
+  const { _clickGesture: clickGesture } = button as { _clickGesture?: Clutter.ClickGesture };
+  if (clickGesture) {
+    clickGesture.required_button = Clutter.BUTTON_PRIMARY;
+    const secondaryGesture = new Clutter.ClickGesture({
+      required_button: Clutter.BUTTON_SECONDARY,
+      recognize_on_press: true,
+    });
+    // Tracked on the button, so the handler goes with it when it is destroyed.
+    secondaryGesture.connectObject("recognize", secondaryClick, button);
+    button.add_action(secondaryGesture);
+    return;
+  }
+  // GNOME Shell 49: handlers of the "event" signal run before the button's own, and stopping
+  // the secondary press there keeps the menu closed.
+  button.connect("event", (_actor, event: Clutter.Event) => {
+    if (
+      event.type() !== Clutter.EventType.BUTTON_PRESS ||
+      event.get_button() !== Clutter.BUTTON_SECONDARY
+    ) {
+      return Clutter.EVENT_PROPAGATE;
+    }
+    secondaryClick();
+    return Clutter.EVENT_STOP;
+  });
 }
 
 /** The index in the panel's centre box just after the GNOME clock. */
