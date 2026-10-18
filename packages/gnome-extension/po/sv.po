@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vesperal\n"
 "Report-Msgid-Bugs-To: https://github.com/kornifex/vesperal/issues\n"
-"POT-Creation-Date: 2026-10-17 19:16+0200\n"
+"POT-Creation-Date: 2026-10-18 12:45+0200\n"
 "PO-Revision-Date: 2026-10-17 12:00+0200\n"
 "Last-Translator: Claude Code (machine translation, unreviewed)\n"
 "Language-Team: none\n"
@@ -63,12 +63,12 @@ msgid "Night length"
 msgstr "Nattlängd"
 
 #: packages/core/src/presentation.ts:166
-#: packages/gnome-extension/src/prefs.ts:60
+#: packages/gnome-extension/src/prefs.ts:69
 msgid "Remaining time"
 msgstr "Återstående tid"
 
 #: packages/core/src/presentation.ts:172
-#: packages/gnome-extension/src/prefs.ts:61
+#: packages/gnome-extension/src/prefs.ts:70
 msgid "Elapsed time"
 msgstr "Förfluten tid"
 
@@ -135,118 +135,124 @@ msgstr "{hours} h {minutes} min"
 msgid "Preferences"
 msgstr "Inställningar"
 
-#: packages/gnome-extension/src/prefs.ts:50
-msgid "Reading"
-msgstr "Visad tid"
+#. Translators: a page of the preferences, about what the top bar and the menu show.
+#: packages/gnome-extension/src/prefs.ts:33
+msgid "Display"
+msgstr "Visning"
 
-#: packages/gnome-extension/src/prefs.ts:51
-msgid "The duration shown in the top bar"
-msgstr "I systemraden"
-
-#: packages/gnome-extension/src/prefs.ts:60
-msgid "Until the next sunrise or sunset"
-msgstr "Till nästa soluppgång eller solnedgång"
-
-#: packages/gnome-extension/src/prefs.ts:61
-msgid "Since the last sunrise or sunset"
-msgstr "Sedan senaste soluppgång eller solnedgång"
-
-#: packages/gnome-extension/src/prefs.ts:70
-msgid "Sun arc"
-msgstr "Solbåge"
-
-#: packages/gnome-extension/src/prefs.ts:71
-msgid "Its side of the Reading in the top bar"
-msgstr "På vilken sida av tiden, i systemraden"
-
-#: packages/gnome-extension/src/prefs.ts:85
-msgid "Left"
-msgstr "Till vänster"
-
-#: packages/gnome-extension/src/prefs.ts:86
-msgid "Right"
-msgstr "Till höger"
-
-#: packages/gnome-extension/src/prefs.ts:95
-msgid "Twilight"
-msgstr "Gryning och skymning"
-
-#: packages/gnome-extension/src/prefs.ts:96
-msgid "When Dawn and Dusk fall, as shown in the menu"
-msgstr "Deras tider, som visas i menyn"
-
-#: packages/gnome-extension/src/prefs.ts:105
-msgid "Civil"
-msgstr "Borgerlig"
-
-#: packages/gnome-extension/src/prefs.ts:105
-msgid "Sun 6° below the horizon"
-msgstr "Solen 6° under horisonten"
-
-#: packages/gnome-extension/src/prefs.ts:106
-msgid "Nautical"
-msgstr "Nautisk"
-
-#: packages/gnome-extension/src/prefs.ts:106
-msgid "Sun 12° below the horizon"
-msgstr "Solen 12° under horisonten"
-
-#: packages/gnome-extension/src/prefs.ts:107
-msgid "Astronomical"
-msgstr "Astronomisk"
-
-#: packages/gnome-extension/src/prefs.ts:107
-msgid "Sun 18° below the horizon"
-msgstr "Solen 18° under horisonten"
-
-#: packages/gnome-extension/src/prefs.ts:123
+#: packages/gnome-extension/src/prefs.ts:37
+#: packages/gnome-extension/src/prefs.ts:132
 msgid "Location"
 msgstr "Plats"
 
-#: packages/gnome-extension/src/prefs.ts:135
+#: packages/gnome-extension/src/prefs.ts:59
+msgid "Reading"
+msgstr "Visad tid"
+
+#: packages/gnome-extension/src/prefs.ts:60
+msgid "The duration shown in the top bar"
+msgstr "I systemraden"
+
+#: packages/gnome-extension/src/prefs.ts:69
+msgid "Until the next sunrise or sunset"
+msgstr "Till nästa soluppgång eller solnedgång"
+
+#: packages/gnome-extension/src/prefs.ts:70
+msgid "Since the last sunrise or sunset"
+msgstr "Sedan senaste soluppgång eller solnedgång"
+
+#: packages/gnome-extension/src/prefs.ts:79
+msgid "Sun arc"
+msgstr "Solbåge"
+
+#: packages/gnome-extension/src/prefs.ts:80
+msgid "Its side of the Reading in the top bar"
+msgstr "På vilken sida av tiden, i systemraden"
+
+#: packages/gnome-extension/src/prefs.ts:94
+msgid "Left"
+msgstr "Till vänster"
+
+#: packages/gnome-extension/src/prefs.ts:95
+msgid "Right"
+msgstr "Till höger"
+
+#: packages/gnome-extension/src/prefs.ts:104
+msgid "Twilight"
+msgstr "Gryning och skymning"
+
+#: packages/gnome-extension/src/prefs.ts:105
+msgid "When Dawn and Dusk fall, as shown in the menu"
+msgstr "Deras tider, som visas i menyn"
+
+#: packages/gnome-extension/src/prefs.ts:114
+msgid "Civil"
+msgstr "Borgerlig"
+
+#: packages/gnome-extension/src/prefs.ts:114
+msgid "Sun 6° below the horizon"
+msgstr "Solen 6° under horisonten"
+
+#: packages/gnome-extension/src/prefs.ts:115
+msgid "Nautical"
+msgstr "Nautisk"
+
+#: packages/gnome-extension/src/prefs.ts:115
+msgid "Sun 12° below the horizon"
+msgstr "Solen 12° under horisonten"
+
+#: packages/gnome-extension/src/prefs.ts:116
+msgid "Astronomical"
+msgstr "Astronomisk"
+
+#: packages/gnome-extension/src/prefs.ts:116
+msgid "Sun 18° below the horizon"
+msgstr "Solen 18° under horisonten"
+
+#: packages/gnome-extension/src/prefs.ts:144
 msgid "Automatic"
 msgstr "Automatisk"
 
-#: packages/gnome-extension/src/prefs.ts:136
+#: packages/gnome-extension/src/prefs.ts:145
 msgid "Manual"
 msgstr "Manuell"
 
-#: packages/gnome-extension/src/prefs.ts:141
+#: packages/gnome-extension/src/prefs.ts:150
 msgid "Search for a city"
 msgstr "Sök efter en stad"
 
-#: packages/gnome-extension/src/prefs.ts:152
+#: packages/gnome-extension/src/prefs.ts:164
 msgid "Coordinates"
 msgstr "Koordinater"
 
-#: packages/gnome-extension/src/prefs.ts:153
+#: packages/gnome-extension/src/prefs.ts:165
 msgid "For any point on Earth, in decimal degrees"
 msgstr "För vilken punkt som helst på jorden, i decimalgrader"
 
-#: packages/gnome-extension/src/prefs.ts:157
+#: packages/gnome-extension/src/prefs.ts:169
 msgid "Latitude (north positive)"
 msgstr "Latitud (norr positiv)"
 
-#: packages/gnome-extension/src/prefs.ts:162
+#: packages/gnome-extension/src/prefs.ts:174
 msgid "Longitude (east positive)"
 msgstr "Longitud (öster positiv)"
 
-#: packages/gnome-extension/src/prefs.ts:172
+#: packages/gnome-extension/src/prefs.ts:184
 msgid "From the system's location services"
 msgstr "Från systemets platstjänster"
 
-#: packages/gnome-extension/src/prefs.ts:173
+#: packages/gnome-extension/src/prefs.ts:185
 msgid "Location services are off"
 msgstr "Platstjänster är avstängda"
 
-#: packages/gnome-extension/src/prefs.ts:179
+#: packages/gnome-extension/src/prefs.ts:191
 msgid "No location set"
 msgstr "Ingen plats angiven"
 
-#: packages/gnome-extension/src/prefs.ts:218
+#: packages/gnome-extension/src/prefs.ts:230
 msgid "Latitude must be between −90 and 90"
 msgstr "Latituden måste vara mellan −90 och 90"
 
-#: packages/gnome-extension/src/prefs.ts:221
+#: packages/gnome-extension/src/prefs.ts:233
 msgid "Longitude must be between −180 and 180"
 msgstr "Longituden måste vara mellan −180 och 180"

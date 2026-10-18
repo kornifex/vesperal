@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vesperal\n"
 "Report-Msgid-Bugs-To: https://github.com/kornifex/vesperal/issues\n"
-"POT-Creation-Date: 2026-10-17 19:16+0200\n"
+"POT-Creation-Date: 2026-10-18 12:45+0200\n"
 "PO-Revision-Date: 2026-10-17 12:00+0200\n"
 "Last-Translator: Claude Code (machine translation, unreviewed)\n"
 "Language-Team: none\n"
@@ -63,12 +63,12 @@ msgid "Night length"
 msgstr "Duración de la noche"
 
 #: packages/core/src/presentation.ts:166
-#: packages/gnome-extension/src/prefs.ts:60
+#: packages/gnome-extension/src/prefs.ts:69
 msgid "Remaining time"
 msgstr "Tiempo restante"
 
 #: packages/core/src/presentation.ts:172
-#: packages/gnome-extension/src/prefs.ts:61
+#: packages/gnome-extension/src/prefs.ts:70
 msgid "Elapsed time"
 msgstr "Tiempo transcurrido"
 
@@ -135,118 +135,124 @@ msgstr "{hours} h {minutes} min"
 msgid "Preferences"
 msgstr "Preferencias"
 
-#: packages/gnome-extension/src/prefs.ts:50
-msgid "Reading"
-msgstr "Duración mostrada"
+#. Translators: a page of the preferences, about what the top bar and the menu show.
+#: packages/gnome-extension/src/prefs.ts:33
+msgid "Display"
+msgstr "Visualización"
 
-#: packages/gnome-extension/src/prefs.ts:51
-msgid "The duration shown in the top bar"
-msgstr "En la barra superior"
-
-#: packages/gnome-extension/src/prefs.ts:60
-msgid "Until the next sunrise or sunset"
-msgstr "Hasta la próxima salida o puesta del sol"
-
-#: packages/gnome-extension/src/prefs.ts:61
-msgid "Since the last sunrise or sunset"
-msgstr "Desde la última salida o puesta del sol"
-
-#: packages/gnome-extension/src/prefs.ts:70
-msgid "Sun arc"
-msgstr "Arco solar"
-
-#: packages/gnome-extension/src/prefs.ts:71
-msgid "Its side of the Reading in the top bar"
-msgstr "De qué lado de la duración, en la barra superior"
-
-#: packages/gnome-extension/src/prefs.ts:85
-msgid "Left"
-msgstr "A la izquierda"
-
-#: packages/gnome-extension/src/prefs.ts:86
-msgid "Right"
-msgstr "A la derecha"
-
-#: packages/gnome-extension/src/prefs.ts:95
-msgid "Twilight"
-msgstr "Alba y anochecer"
-
-#: packages/gnome-extension/src/prefs.ts:96
-msgid "When Dawn and Dusk fall, as shown in the menu"
-msgstr "Sus horas, mostradas en el menú"
-
-#: packages/gnome-extension/src/prefs.ts:105
-msgid "Civil"
-msgstr "Civil"
-
-#: packages/gnome-extension/src/prefs.ts:105
-msgid "Sun 6° below the horizon"
-msgstr "Sol 6° bajo el horizonte"
-
-#: packages/gnome-extension/src/prefs.ts:106
-msgid "Nautical"
-msgstr "Náutico"
-
-#: packages/gnome-extension/src/prefs.ts:106
-msgid "Sun 12° below the horizon"
-msgstr "Sol 12° bajo el horizonte"
-
-#: packages/gnome-extension/src/prefs.ts:107
-msgid "Astronomical"
-msgstr "Astronómico"
-
-#: packages/gnome-extension/src/prefs.ts:107
-msgid "Sun 18° below the horizon"
-msgstr "Sol 18° bajo el horizonte"
-
-#: packages/gnome-extension/src/prefs.ts:123
+#: packages/gnome-extension/src/prefs.ts:37
+#: packages/gnome-extension/src/prefs.ts:132
 msgid "Location"
 msgstr "Ubicación"
 
-#: packages/gnome-extension/src/prefs.ts:135
+#: packages/gnome-extension/src/prefs.ts:59
+msgid "Reading"
+msgstr "Duración mostrada"
+
+#: packages/gnome-extension/src/prefs.ts:60
+msgid "The duration shown in the top bar"
+msgstr "En la barra superior"
+
+#: packages/gnome-extension/src/prefs.ts:69
+msgid "Until the next sunrise or sunset"
+msgstr "Hasta la próxima salida o puesta del sol"
+
+#: packages/gnome-extension/src/prefs.ts:70
+msgid "Since the last sunrise or sunset"
+msgstr "Desde la última salida o puesta del sol"
+
+#: packages/gnome-extension/src/prefs.ts:79
+msgid "Sun arc"
+msgstr "Arco solar"
+
+#: packages/gnome-extension/src/prefs.ts:80
+msgid "Its side of the Reading in the top bar"
+msgstr "De qué lado de la duración, en la barra superior"
+
+#: packages/gnome-extension/src/prefs.ts:94
+msgid "Left"
+msgstr "A la izquierda"
+
+#: packages/gnome-extension/src/prefs.ts:95
+msgid "Right"
+msgstr "A la derecha"
+
+#: packages/gnome-extension/src/prefs.ts:104
+msgid "Twilight"
+msgstr "Alba y anochecer"
+
+#: packages/gnome-extension/src/prefs.ts:105
+msgid "When Dawn and Dusk fall, as shown in the menu"
+msgstr "Sus horas, mostradas en el menú"
+
+#: packages/gnome-extension/src/prefs.ts:114
+msgid "Civil"
+msgstr "Civil"
+
+#: packages/gnome-extension/src/prefs.ts:114
+msgid "Sun 6° below the horizon"
+msgstr "Sol 6° bajo el horizonte"
+
+#: packages/gnome-extension/src/prefs.ts:115
+msgid "Nautical"
+msgstr "Náutico"
+
+#: packages/gnome-extension/src/prefs.ts:115
+msgid "Sun 12° below the horizon"
+msgstr "Sol 12° bajo el horizonte"
+
+#: packages/gnome-extension/src/prefs.ts:116
+msgid "Astronomical"
+msgstr "Astronómico"
+
+#: packages/gnome-extension/src/prefs.ts:116
+msgid "Sun 18° below the horizon"
+msgstr "Sol 18° bajo el horizonte"
+
+#: packages/gnome-extension/src/prefs.ts:144
 msgid "Automatic"
 msgstr "Automática"
 
-#: packages/gnome-extension/src/prefs.ts:136
+#: packages/gnome-extension/src/prefs.ts:145
 msgid "Manual"
 msgstr "Manual"
 
-#: packages/gnome-extension/src/prefs.ts:141
+#: packages/gnome-extension/src/prefs.ts:150
 msgid "Search for a city"
 msgstr "Buscar una ciudad"
 
-#: packages/gnome-extension/src/prefs.ts:152
+#: packages/gnome-extension/src/prefs.ts:164
 msgid "Coordinates"
 msgstr "Coordenadas"
 
-#: packages/gnome-extension/src/prefs.ts:153
+#: packages/gnome-extension/src/prefs.ts:165
 msgid "For any point on Earth, in decimal degrees"
 msgstr "Para cualquier punto de la Tierra, en grados decimales"
 
-#: packages/gnome-extension/src/prefs.ts:157
+#: packages/gnome-extension/src/prefs.ts:169
 msgid "Latitude (north positive)"
 msgstr "Latitud (positiva al norte)"
 
-#: packages/gnome-extension/src/prefs.ts:162
+#: packages/gnome-extension/src/prefs.ts:174
 msgid "Longitude (east positive)"
 msgstr "Longitud (positiva al este)"
 
-#: packages/gnome-extension/src/prefs.ts:172
+#: packages/gnome-extension/src/prefs.ts:184
 msgid "From the system's location services"
 msgstr "Mediante los servicios de ubicación del sistema"
 
-#: packages/gnome-extension/src/prefs.ts:173
+#: packages/gnome-extension/src/prefs.ts:185
 msgid "Location services are off"
 msgstr "Los servicios de ubicación están desactivados"
 
-#: packages/gnome-extension/src/prefs.ts:179
+#: packages/gnome-extension/src/prefs.ts:191
 msgid "No location set"
 msgstr "Ninguna ubicación establecida"
 
-#: packages/gnome-extension/src/prefs.ts:218
+#: packages/gnome-extension/src/prefs.ts:230
 msgid "Latitude must be between −90 and 90"
 msgstr "La latitud debe estar entre −90 y 90"
 
-#: packages/gnome-extension/src/prefs.ts:221
+#: packages/gnome-extension/src/prefs.ts:233
 msgid "Longitude must be between −180 and 180"
 msgstr "La longitud debe estar entre −180 y 180"

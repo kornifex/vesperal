@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vesperal\n"
 "Report-Msgid-Bugs-To: https://github.com/kornifex/vesperal/issues\n"
-"POT-Creation-Date: 2026-10-17 19:16+0200\n"
+"POT-Creation-Date: 2026-10-18 12:45+0200\n"
 "PO-Revision-Date: 2026-10-17 12:00+0200\n"
 "Last-Translator: Claude Code (machine translation, unreviewed)\n"
 "Language-Team: none\n"
@@ -15,7 +15,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #: packages/core/src/presentation.ts:88
 msgid "Location unknown"
@@ -63,12 +64,12 @@ msgid "Night length"
 msgstr "Тривалість ночі"
 
 #: packages/core/src/presentation.ts:166
-#: packages/gnome-extension/src/prefs.ts:60
+#: packages/gnome-extension/src/prefs.ts:69
 msgid "Remaining time"
 msgstr "Час, що залишився"
 
 #: packages/core/src/presentation.ts:172
-#: packages/gnome-extension/src/prefs.ts:61
+#: packages/gnome-extension/src/prefs.ts:70
 msgid "Elapsed time"
 msgstr "Час, що минув"
 
@@ -135,118 +136,124 @@ msgstr "{hours} год {minutes} хв"
 msgid "Preferences"
 msgstr "Налаштування"
 
-#: packages/gnome-extension/src/prefs.ts:50
-msgid "Reading"
-msgstr "Показувана тривалість"
+#. Translators: a page of the preferences, about what the top bar and the menu show.
+#: packages/gnome-extension/src/prefs.ts:33
+msgid "Display"
+msgstr "Відображення"
 
-#: packages/gnome-extension/src/prefs.ts:51
-msgid "The duration shown in the top bar"
-msgstr "На верхній панелі"
-
-#: packages/gnome-extension/src/prefs.ts:60
-msgid "Until the next sunrise or sunset"
-msgstr "До наступного сходу чи заходу сонця"
-
-#: packages/gnome-extension/src/prefs.ts:61
-msgid "Since the last sunrise or sunset"
-msgstr "Від останнього сходу чи заходу сонця"
-
-#: packages/gnome-extension/src/prefs.ts:70
-msgid "Sun arc"
-msgstr "Сонячна дуга"
-
-#: packages/gnome-extension/src/prefs.ts:71
-msgid "Its side of the Reading in the top bar"
-msgstr "З якого боку тривалості, на верхній панелі"
-
-#: packages/gnome-extension/src/prefs.ts:85
-msgid "Left"
-msgstr "Ліворуч"
-
-#: packages/gnome-extension/src/prefs.ts:86
-msgid "Right"
-msgstr "Праворуч"
-
-#: packages/gnome-extension/src/prefs.ts:95
-msgid "Twilight"
-msgstr "Світанок і смеркання"
-
-#: packages/gnome-extension/src/prefs.ts:96
-msgid "When Dawn and Dusk fall, as shown in the menu"
-msgstr "Їхній час, показаний у меню"
-
-#: packages/gnome-extension/src/prefs.ts:105
-msgid "Civil"
-msgstr "Громадянські"
-
-#: packages/gnome-extension/src/prefs.ts:105
-msgid "Sun 6° below the horizon"
-msgstr "Сонце на 6° нижче горизонту"
-
-#: packages/gnome-extension/src/prefs.ts:106
-msgid "Nautical"
-msgstr "Навігаційні"
-
-#: packages/gnome-extension/src/prefs.ts:106
-msgid "Sun 12° below the horizon"
-msgstr "Сонце на 12° нижче горизонту"
-
-#: packages/gnome-extension/src/prefs.ts:107
-msgid "Astronomical"
-msgstr "Астрономічні"
-
-#: packages/gnome-extension/src/prefs.ts:107
-msgid "Sun 18° below the horizon"
-msgstr "Сонце на 18° нижче горизонту"
-
-#: packages/gnome-extension/src/prefs.ts:123
+#: packages/gnome-extension/src/prefs.ts:37
+#: packages/gnome-extension/src/prefs.ts:132
 msgid "Location"
 msgstr "Розташування"
 
-#: packages/gnome-extension/src/prefs.ts:135
+#: packages/gnome-extension/src/prefs.ts:59
+msgid "Reading"
+msgstr "Показувана тривалість"
+
+#: packages/gnome-extension/src/prefs.ts:60
+msgid "The duration shown in the top bar"
+msgstr "На верхній панелі"
+
+#: packages/gnome-extension/src/prefs.ts:69
+msgid "Until the next sunrise or sunset"
+msgstr "До наступного сходу чи заходу сонця"
+
+#: packages/gnome-extension/src/prefs.ts:70
+msgid "Since the last sunrise or sunset"
+msgstr "Від останнього сходу чи заходу сонця"
+
+#: packages/gnome-extension/src/prefs.ts:79
+msgid "Sun arc"
+msgstr "Сонячна дуга"
+
+#: packages/gnome-extension/src/prefs.ts:80
+msgid "Its side of the Reading in the top bar"
+msgstr "З якого боку тривалості, на верхній панелі"
+
+#: packages/gnome-extension/src/prefs.ts:94
+msgid "Left"
+msgstr "Ліворуч"
+
+#: packages/gnome-extension/src/prefs.ts:95
+msgid "Right"
+msgstr "Праворуч"
+
+#: packages/gnome-extension/src/prefs.ts:104
+msgid "Twilight"
+msgstr "Світанок і смеркання"
+
+#: packages/gnome-extension/src/prefs.ts:105
+msgid "When Dawn and Dusk fall, as shown in the menu"
+msgstr "Їхній час, показаний у меню"
+
+#: packages/gnome-extension/src/prefs.ts:114
+msgid "Civil"
+msgstr "Громадянські"
+
+#: packages/gnome-extension/src/prefs.ts:114
+msgid "Sun 6° below the horizon"
+msgstr "Сонце на 6° нижче горизонту"
+
+#: packages/gnome-extension/src/prefs.ts:115
+msgid "Nautical"
+msgstr "Навігаційні"
+
+#: packages/gnome-extension/src/prefs.ts:115
+msgid "Sun 12° below the horizon"
+msgstr "Сонце на 12° нижче горизонту"
+
+#: packages/gnome-extension/src/prefs.ts:116
+msgid "Astronomical"
+msgstr "Астрономічні"
+
+#: packages/gnome-extension/src/prefs.ts:116
+msgid "Sun 18° below the horizon"
+msgstr "Сонце на 18° нижче горизонту"
+
+#: packages/gnome-extension/src/prefs.ts:144
 msgid "Automatic"
 msgstr "Автоматично"
 
-#: packages/gnome-extension/src/prefs.ts:136
+#: packages/gnome-extension/src/prefs.ts:145
 msgid "Manual"
 msgstr "Вручну"
 
-#: packages/gnome-extension/src/prefs.ts:141
+#: packages/gnome-extension/src/prefs.ts:150
 msgid "Search for a city"
 msgstr "Шукати місто"
 
-#: packages/gnome-extension/src/prefs.ts:152
+#: packages/gnome-extension/src/prefs.ts:164
 msgid "Coordinates"
 msgstr "Координати"
 
-#: packages/gnome-extension/src/prefs.ts:153
+#: packages/gnome-extension/src/prefs.ts:165
 msgid "For any point on Earth, in decimal degrees"
 msgstr "Для будь-якої точки Землі, у десяткових градусах"
 
-#: packages/gnome-extension/src/prefs.ts:157
+#: packages/gnome-extension/src/prefs.ts:169
 msgid "Latitude (north positive)"
 msgstr "Широта (північ додатна)"
 
-#: packages/gnome-extension/src/prefs.ts:162
+#: packages/gnome-extension/src/prefs.ts:174
 msgid "Longitude (east positive)"
 msgstr "Довгота (схід додатний)"
 
-#: packages/gnome-extension/src/prefs.ts:172
+#: packages/gnome-extension/src/prefs.ts:184
 msgid "From the system's location services"
 msgstr "Зі служб визначення розташування системи"
 
-#: packages/gnome-extension/src/prefs.ts:173
+#: packages/gnome-extension/src/prefs.ts:185
 msgid "Location services are off"
 msgstr "Служби визначення розташування вимкнено"
 
-#: packages/gnome-extension/src/prefs.ts:179
+#: packages/gnome-extension/src/prefs.ts:191
 msgid "No location set"
 msgstr "Розташування не вказано"
 
-#: packages/gnome-extension/src/prefs.ts:218
+#: packages/gnome-extension/src/prefs.ts:230
 msgid "Latitude must be between −90 and 90"
 msgstr "Широта має бути від −90 до 90"
 
-#: packages/gnome-extension/src/prefs.ts:221
+#: packages/gnome-extension/src/prefs.ts:233
 msgid "Longitude must be between −180 and 180"
 msgstr "Довгота має бути від −180 до 180"

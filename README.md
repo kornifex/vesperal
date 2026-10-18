@@ -76,14 +76,14 @@ for remaining time, the way behind the Moon for elapsed time.
 
 ![Vesperal preferences](docs/screenshots/preferences.png)
 
-| Setting | Choices | Default |
-|---|---|---|
-| Reading | Remaining time, elapsed time | Remaining time |
-| Sun arc | Left or right of the duration | Left |
-| Twilight | Civil (6°), nautical (12°), astronomical (18°) | Civil |
-| Location | Automatic, or a manual city or coordinates | Automatic |
+| Page | Setting | Choices | Default |
+|---|---|---|---|
+| Display | Reading | Remaining time, elapsed time | Remaining time |
+| Display | Sun arc | Left or right of the duration | Left |
+| Display | Twilight | Civil (6°), nautical (12°), astronomical (18°) | Civil |
+| Location | Mode | Automatic, or a manual city or coordinates | Automatic |
 
-Changes apply immediately.
+Changes apply immediately. With no location known, the preferences open on the Location page.
 
 ## Privacy
 

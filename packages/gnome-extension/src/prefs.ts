@@ -28,14 +28,23 @@ const MAX_SEARCH_RESULTS = 8;
 export default class VesperalPreferences extends ExtensionPreferences {
   override async fillPreferencesWindow(window: Adw.PreferencesWindow): Promise<void> {
     const settings = this.getSettings();
-    const page = new Adw.PreferencesPage();
-    window.add(page);
+    const displayPage = new Adw.PreferencesPage({
+      // Translators: a page of the preferences, about what the top bar and the menu show.
+      title: _("Display"),
+      icon_name: "preferences-desktop-display-symbolic",
+    });
+    const locationPage = new Adw.PreferencesPage({
+      title: _("Location"),
+      icon_name: "mark-location-symbolic",
+    });
+    window.add(displayPage);
+    window.add(locationPage);
 
     const disconnects = [
-      addReadingGroup(page, settings),
-      addSunArcGroup(page, settings),
-      addTwilightGroup(page, settings),
-      addLocationGroups(page, settings, window),
+      addReadingGroup(displayPage, settings),
+      addSunArcGroup(displayPage, settings),
+      addTwilightGroup(displayPage, settings),
+      addLocationGroups(locationPage, settings, window),
     ];
     window.connect("close-request", () => {
       for (const disconnect of disconnects) disconnect();
@@ -141,8 +150,11 @@ function addLocationGroups(
   const searchRow = new Adw.EntryRow({ title: _("Search for a city") });
   group.add(searchRow);
   // With no Location to fall back on, the clock reads "Location unknown" and its menu leads
-  // here to set one: start on the city search.
-  if (!readManualLocation(settings) && !readLastKnownLocation(settings)) searchRow.grab_focus();
+  // here to set one: open this page, on the city search.
+  if (!readManualLocation(settings) && !readLastKnownLocation(settings)) {
+    window.visible_page = page;
+    searchRow.grab_focus();
+  }
 
   const resultsGroup = new Adw.PreferencesGroup({ visible: false });
   page.add(resultsGroup);
