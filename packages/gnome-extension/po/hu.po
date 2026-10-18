@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vesperal\n"
 "Report-Msgid-Bugs-To: https://github.com/kornifex/vesperal/issues\n"
-"POT-Creation-Date: 2026-10-18 12:59+0200\n"
+"POT-Creation-Date: 2026-10-18 13:06+0200\n"
 "PO-Revision-Date: 2026-10-17 12:00+0200\n"
 "Last-Translator: Claude Code (machine translation, unreviewed)\n"
 "Language-Team: none\n"
@@ -17,119 +17,131 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: packages/core/src/presentation.ts:98
+#: packages/core/src/presentation.ts:105
 msgid "Location unknown"
 msgstr "Ismeretlen hely"
 
-#: packages/core/src/presentation.ts:99
+#: packages/core/src/presentation.ts:106
 msgid "Set a location manually…"
 msgstr "Hely kézi megadása…"
 
 #. Translators: shown in the top bar instead of the Reading when something went wrong.
-#: packages/core/src/presentation.ts:107
+#: packages/core/src/presentation.ts:114
 msgid "Error"
 msgstr "Hiba"
 
-#: packages/core/src/presentation.ts:116
+#: packages/core/src/presentation.ts:123
 msgid "Polar day"
 msgstr "Sarki nappal"
 
-#: packages/core/src/presentation.ts:116
+#: packages/core/src/presentation.ts:123
 msgid "Polar night"
 msgstr "Sarki éjszaka"
 
-#: packages/core/src/presentation.ts:128
+#: packages/core/src/presentation.ts:135
 msgid "Dawn"
 msgstr "Hajnal"
 
-#: packages/core/src/presentation.ts:129
+#: packages/core/src/presentation.ts:136
 msgid "Sunrise"
 msgstr "Napkelte"
 
-#: packages/core/src/presentation.ts:130
+#: packages/core/src/presentation.ts:137
 msgid "Sunset"
 msgstr "Napnyugta"
 
-#: packages/core/src/presentation.ts:131
+#: packages/core/src/presentation.ts:138
 msgid "Dusk"
 msgstr "Alkony"
 
-#: packages/core/src/presentation.ts:139 packages/core/src/presentation.ts:150
+#: packages/core/src/presentation.ts:146 packages/core/src/presentation.ts:158
 msgid "Day length"
 msgstr "Nappal hossza"
 
-#: packages/core/src/presentation.ts:139
+#: packages/core/src/presentation.ts:146
 msgid "Night length"
 msgstr "Éjszaka hossza"
 
-#: packages/core/src/presentation.ts:176
+#: packages/core/src/presentation.ts:186
 #: packages/gnome-extension/src/prefs.ts:82
 msgid "Remaining time"
 msgstr "Hátralévő idő"
 
-#: packages/core/src/presentation.ts:182
+#: packages/core/src/presentation.ts:192
 #: packages/gnome-extension/src/prefs.ts:83
 msgid "Elapsed time"
 msgstr "Eltelt idő"
 
-#: packages/core/src/presentation.ts:199
+#: packages/core/src/presentation.ts:209
 msgid "Automatic location"
 msgstr "Automatikus hely"
 
-#: packages/core/src/presentation.ts:201
+#: packages/core/src/presentation.ts:211
 msgid "Manual location"
 msgstr "Kézi hely"
 
-#: packages/core/src/presentation.ts:203
+#: packages/core/src/presentation.ts:213
 msgid "Last known location"
 msgstr "Utolsó ismert hely"
 
-#: packages/core/src/presentation.ts:216
+#: packages/core/src/presentation.ts:226
 msgid "{degrees}° N"
 msgstr "{degrees}° É"
 
-#: packages/core/src/presentation.ts:216
+#: packages/core/src/presentation.ts:226
 msgid "{degrees}° S"
 msgstr "{degrees}° D"
 
-#: packages/core/src/presentation.ts:220
+#: packages/core/src/presentation.ts:230
 msgid "{degrees}° E"
 msgstr "{degrees}° K"
 
-#: packages/core/src/presentation.ts:220
+#: packages/core/src/presentation.ts:230
 msgid "{degrees}° W"
 msgstr "{degrees}° Ny"
 
 #. Translators: a Civil time on the day before today, e.g. "yesterday at 21:58".
-#: packages/core/src/presentation.ts:241
+#: packages/core/src/presentation.ts:251
 msgid "yesterday at {time}"
 msgstr "tegnap {time}"
 
 #. Translators: a Civil time on the day after today, e.g. "tomorrow at 05:47".
-#: packages/core/src/presentation.ts:244
+#: packages/core/src/presentation.ts:254
 msgid "tomorrow at {time}"
 msgstr "holnap {time}"
 
 #. Translators: a Civil time further away than yesterday or tomorrow, e.g. "Thu 18 Jun at
 #. 21:58"; {date} follows the locale of dates and times.
-#: packages/core/src/presentation.ts:254
+#: packages/core/src/presentation.ts:264
 msgid "{date} at {time}"
 msgstr "{date} {time}"
 
 #. Translators: a duration over 24 hours, e.g. "68d 23h", for a Polar day or Polar night.
-#: packages/core/src/presentation.ts:275
+#: packages/core/src/presentation.ts:285
 msgid "{days}d {hours}h"
 msgstr "{days} n {hours} ó"
 
 #. Translators: a duration under one hour, e.g. "42 min".
-#: packages/core/src/presentation.ts:282
+#: packages/core/src/presentation.ts:292
 msgid "{minutes} min"
 msgstr "{minutes} perc"
 
 #. Translators: a duration over one hour, e.g. "3h 05m"; {minutes} always has two digits.
-#: packages/core/src/presentation.ts:285
+#: packages/core/src/presentation.ts:295
 msgid "{hours}h {minutes}m"
 msgstr "{hours} ó {minutes} p"
+
+#. Translators: how much longer or shorter a Day is than the Day before, under a
+#. minute, after an arrow: e.g. "↑45s".
+#: packages/core/src/presentation.ts:315
+msgid "{seconds}s"
+msgstr "{seconds} mp"
+
+#. Translators: how much longer or shorter a Day is than the Day before, after an
+#. arrow: e.g. "↓3m".
+#: packages/core/src/presentation.ts:318
+msgid "{minutes}m"
+msgstr "{minutes} p"
 
 #: packages/gnome-extension/src/extension.ts:91
 msgid "Preferences"

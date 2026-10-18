@@ -1,7 +1,14 @@
 // Turning a clock snapshot into what the front ends display.
 import type { ClockSnapshot } from "./clock.ts";
 import type { Location, LocationInUse, LocationSource } from "./location.ts";
-import { MINUTES_PER_DAY, MINUTES_PER_HOUR, MS_PER_DAY, MS_PER_MINUTE } from "./time.ts";
+import {
+  MINUTES_PER_DAY,
+  MINUTES_PER_HOUR,
+  MS_PER_DAY,
+  MS_PER_MINUTE,
+  MS_PER_SECOND,
+  SECONDS_PER_MINUTE,
+} from "./time.ts";
 
 /** Every Reading the user can choose, the default first. */
 export const READINGS = ["remaining", "elapsed"] as const;
@@ -137,7 +144,8 @@ function menuRows(snapshot: ClockSnapshot, options: PresentationOptions): MenuRo
       : [...sunset, ...dusk, ...dawn, ...sunrise]),
     {
       label: isDay ? translate("Day length") : translate("Night length"),
-      value: formatDuration(phaseLength, translate),
+      value:
+        formatDuration(phaseLength, translate) + (isDay ? dayLengthTrend(snapshot, translate) : ""),
     },
     {
       label: otherReading.label(translate),
@@ -148,7 +156,9 @@ function menuRows(snapshot: ClockSnapshot, options: PresentationOptions): MenuRo
   if (!isDay) {
     rows.push({
       label: translate("Day length"),
-      value: formatDuration(Math.round(snapshot.lastDayLength / MS_PER_MINUTE), translate),
+      value:
+        formatDuration(Math.round(snapshot.lastDayLength / MS_PER_MINUTE), translate) +
+        dayLengthTrend(snapshot, translate),
     });
   }
   rows.push(locationRow(options));
@@ -286,6 +296,29 @@ function formatDuration(totalMinutes: number, translate: Translate): string {
     hours: String(Math.floor(totalMinutes / MINUTES_PER_HOUR)),
     minutes: String(totalMinutes % MINUTES_PER_HOUR).padStart(2, "0"),
   });
+}
+
+/**
+ * How the most recent Day length compares with the Day before, to follow its value: e.g. " ↑3m"
+ * for a Day 3 minutes longer.
+ */
+function dayLengthTrend(snapshot: ClockSnapshot, translate: Translate): string {
+  if (snapshot.previousDayLength === null) return "";
+  const change = snapshot.lastDayLength - snapshot.previousDayLength;
+  const seconds = Math.round(Math.abs(change) / MS_PER_SECOND);
+  if (seconds === 0) return "";
+  const arrow = change > 0 ? "↑" : "↓";
+  const amount =
+    seconds < SECONDS_PER_MINUTE
+      ? // Translators: how much longer or shorter a Day is than the Day before, under a
+        // minute, after an arrow: e.g. "↑45s".
+        fill(translate("{seconds}s"), { seconds: String(seconds) })
+      : // Translators: how much longer or shorter a Day is than the Day before, after an
+        // arrow: e.g. "↓3m".
+        fill(translate("{minutes}m"), {
+          minutes: String(Math.round(Math.abs(change) / MS_PER_MINUTE)),
+        });
+  return ` ${arrow}${amount}`;
 }
 
 /** Replaces each `{name}` placeholder of a translated template. */

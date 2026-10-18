@@ -49,6 +49,12 @@ export interface ClockSnapshot {
   /** Milliseconds from Sunrise to Sunset of the most recent Day (the current one if any). */
   readonly lastDayLength: number;
   /**
+   * Milliseconds from Sunrise to Sunset of the Day before the most recent Day, or null when
+   * that Day does not fall on the previous date: when either Day is a Polar day, or the Night
+   * between them is a Polar night.
+   */
+  readonly previousDayLength: number | null;
+  /**
    * The Dawn before the Sunrise that opens or closes the Phase, or null if the Sun does not get
    * that far below the horizon in the Night before that Sunrise.
    */
@@ -82,6 +88,20 @@ export function readClock(
   const [sunrise, nightBeforeSunrise] = kind === "day" ? [start, previous] : [end, start];
   const [sunset, nightAfterSunset] =
     kind === "day" ? [end, events.earliestAfter(end)] : [start, end];
+  // The most recent Day (the current one during a Day), and the Sunset that ends the Day
+  // before it.
+  const [lastSunrise, lastSunset, previousSunset] =
+    kind === "day"
+      ? [start, end, previous]
+      : [previous, start, events.latestAtOrBefore(previous - 1)];
+  const previousSunrise = events.latestAtOrBefore(previousSunset - 1);
+  const lastDayLength = lastSunset - lastSunrise;
+  const previousDayKnown = [
+    lastDayLength,
+    lastSunrise - previousSunset,
+    previousSunset - previousSunrise,
+  ].every((length) => length <= MS_PER_DAY);
+
   const twilightCrossings = new AltitudeCrossings(location, TWILIGHT_ALTITUDE[twilight]);
   const dawn = twilightCrossings.latestAtOrBefore(sunrise);
   const dusk = twilightCrossings.earliestAfter(sunset);
@@ -92,7 +112,8 @@ export function readClock(
     remaining: end - now,
     elapsed: now - start,
     progress: (now - start) / (end - start),
-    lastDayLength: kind === "day" ? end - start : start - previous,
+    lastDayLength,
+    previousDayLength: previousDayKnown ? previousSunset - previousSunrise : null,
     dawn: dawn > nightBeforeSunrise ? new Date(dawn) : null,
     dusk: dusk < nightAfterSunset ? new Date(dusk) : null,
   };

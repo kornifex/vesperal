@@ -29,6 +29,7 @@ function snapshotOf(
   phase: { start: string; end: string },
   instant: string | number,
   lastDayLength = 16 * HOUR,
+  previousDayLength: number | null = null,
 ): ClockSnapshot {
   const start = Date.parse(phase.start);
   const end = Date.parse(phase.end);
@@ -40,6 +41,7 @@ function snapshotOf(
     elapsed: now - start,
     progress: (now - start) / (end - start),
     lastDayLength,
+    previousDayLength,
     dawn: null,
     dusk: null,
   };
@@ -64,6 +66,8 @@ function barText(remaining: number, options: PresentationOptions = OPTIONS): str
 const FRENCH_CATALOGUE: Readonly<Record<string, string>> = {
   "{hours}h {minutes}m": "{hours} h {minutes}",
   "{minutes} min": "{minutes} min",
+  "{minutes}m": "{minutes} min",
+  "{seconds}s": "{seconds} s",
   Sunrise: "Lever du soleil",
   Sunset: "Coucher du soleil",
   "yesterday at {time}": "hier à {time}",
@@ -354,6 +358,61 @@ describe("present: Phase menu", () => {
       label: "Lever du soleil",
       value: "demain à 05:47",
     });
+  });
+});
+
+describe("present: Day length trend", () => {
+  // A Day in Paris (CEST) from Sunrise at 05:47 to Sunset at 21:58: 16 h 11.
+  const DAY = { start: "2026-06-21T03:47:00Z", end: "2026-06-21T19:58:00Z" };
+  const DAY_LENGTH = 16 * HOUR + 11 * MINUTE;
+
+  function dayLengthValue(previousDayLength: number | null, options = OPTIONS) {
+    const snapshot = snapshotOf("day", DAY, "2026-06-21T12:00:00Z", DAY_LENGTH, previousDayLength);
+    return present(snapshot, options).menu.rows.find(
+      (row) => row.label === options.translate("Day length"),
+    )?.value;
+  }
+
+  test("marks a Day longer than the Day before, by the minute", () => {
+    expect(dayLengthValue(DAY_LENGTH - 3 * MINUTE - 12 * SECOND)).toBe("16h 11m ↑3m");
+  });
+
+  test("marks a Day shorter than the Day before", () => {
+    expect(dayLengthValue(DAY_LENGTH + 2 * MINUTE + 40 * SECOND)).toBe("16h 11m ↓3m");
+  });
+
+  test("gives a change under a minute in seconds, as near a solstice", () => {
+    expect(dayLengthValue(DAY_LENGTH - 45 * SECOND)).toBe("16h 11m ↑45s");
+  });
+
+  test("leaves the trend out when the change rounds to no second", () => {
+    expect(dayLengthValue(DAY_LENGTH - 400)).toBe("16h 11m");
+  });
+
+  test("leaves the trend out when the Day before is not known", () => {
+    expect(dayLengthValue(null)).toBe("16h 11m");
+  });
+
+  test("during a Night, follows the length of the Day that just ended", () => {
+    const night = { start: "2026-06-21T19:58:00Z", end: "2026-06-22T03:47:00Z" };
+    const snapshot = snapshotOf(
+      "night",
+      night,
+      "2026-06-21T21:00:00Z",
+      DAY_LENGTH,
+      DAY_LENGTH + 5 * SECOND,
+    );
+
+    expect(present(snapshot, OPTIONS).menu.rows.slice(2, 5)).toEqual([
+      { label: "Night length", value: "7h 49m" },
+      { label: "Elapsed time", value: "1h 02m" },
+      { label: "Day length", value: "16h 11m ↓5s" },
+    ]);
+  });
+
+  test("speaks French", () => {
+    expect(dayLengthValue(DAY_LENGTH - 3 * MINUTE, FRENCH)).toBe("16 h 11 ↑3 min");
+    expect(dayLengthValue(DAY_LENGTH + 45 * SECOND, FRENCH)).toBe("16 h 11 ↓45 s");
   });
 });
 

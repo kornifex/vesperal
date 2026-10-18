@@ -22,6 +22,8 @@ along the night.
   a glance which one you are reading.
 - **Day details** in the menu, in your local time: dawn, sunrise, sunset and dusk; the length of
   the day or night; the other duration; and the location in use.
+- **Day length trend**: next to the day length, whether days are getting longer or shorter, and
+  by how much: "10h 43m ↓3m", or in seconds near a solstice ("↑45s").
 - **Twilight of your choice** for dawn and dusk: civil, nautical or astronomical.
 - **Anywhere on Earth**: polar days and polar nights are shown as such, with the date of the
   next sunrise or sunset.

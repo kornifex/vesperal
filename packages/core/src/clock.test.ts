@@ -141,6 +141,47 @@ describe("readClock", () => {
     );
   });
 
+  // Paris around the equinoxes, when Day length changes fastest, and the solstices, when it
+  // barely changes. USNO: 19 March 05:56 → 18:02; 20 June 03:47 → 19:58; 22 September
+  // 05:37 → 17:49; 20 December 07:41 → 15:56.
+  test.each([
+    { instant: "2026-03-20T12:00:00Z", hours: 12, minutes: 6 },
+    { instant: "2026-06-21T12:00:00Z", hours: 16, minutes: 11 },
+    { instant: "2026-09-23T12:00:00Z", hours: 12, minutes: 12 },
+    { instant: "2026-12-21T12:00:00Z", hours: 8, minutes: 15 },
+  ])("during the Day of $instant, gives the length of the Day before", (reference) => {
+    const { previousDayLength } = readClock(PARIS, new Date(reference.instant));
+
+    const expected = (reference.hours * 60 + reference.minutes) * 60_000;
+    expect(previousDayLength).not.toBeNull();
+    expect(Math.abs((previousDayLength ?? 0) - expected)).toBeLessThanOrEqual(2 * TOLERANCE_MS);
+  });
+
+  // Near a solstice the Day length changes by seconds, well within the reference tolerance:
+  // only the clock's own reading of the day before can tell that Day from the current one.
+  test("gives exactly the Day length the clock read the day before", () => {
+    const yesterday = readClock(PARIS, new Date("2026-06-20T12:00:00Z"));
+    const today = readClock(PARIS, new Date("2026-06-21T12:00:00Z"));
+
+    expect(today.previousDayLength).toBe(yesterday.lastDayLength);
+    expect(today.lastDayLength).not.toBe(yesterday.lastDayLength);
+  });
+
+  test("during a Night, gives the length of the Day before the one that just ended", () => {
+    const { previousDayLength } = readClock(PARIS, new Date("2026-03-20T22:00:00Z"));
+
+    // USNO: 19 March 05:56 → 18:02
+    const expected = (12 * 60 + 6) * 60_000;
+    expect(previousDayLength).not.toBeNull();
+    expect(Math.abs((previousDayLength ?? 0) - expected)).toBeLessThanOrEqual(2 * TOLERANCE_MS);
+  });
+
+  test("gives no Day before the first Day after a Polar night, nor during a Polar day", () => {
+    // Tromsø: the Polar night ends on 15 January at 10:35, and a Polar day runs from 17 May.
+    expect(readClock(TROMSØ, new Date("2027-01-15T10:50:00Z")).previousDayLength).toBeNull();
+    expect(readClock(TROMSØ, new Date("2026-06-21T12:00:00Z")).previousDayLength).toBeNull();
+  });
+
   test("records the instant it was read at", () => {
     const instant = new Date("2026-06-21T12:00:00Z");
 
