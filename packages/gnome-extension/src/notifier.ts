@@ -1,3 +1,4 @@
+import type Gio from "gi://Gio";
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
 import * as MessageTray from "resource:///org/gnome/shell/ui/messageTray.js";
 import type { NotifiableEvent, NotificationView } from "@vesperal/core";
@@ -16,12 +17,15 @@ const ICONS: Readonly<Record<NotifiableEvent, string>> = {
  */
 export class Notifier {
   readonly #title: string;
+  readonly #icon: Gio.Icon;
   // The message tray destroys a source once its last notification is gone: a new one is
   // created for the next notification.
   #source: MessageTray.Source | null = null;
 
-  constructor(title: string) {
+  /** Notifies as a source named `title`, shown with `icon`. */
+  constructor(title: string, icon: Gio.Icon) {
     this.#title = title;
+    this.#icon = icon;
   }
 
   notify(event: NotifiableEvent, view: NotificationView): void {
@@ -44,7 +48,7 @@ export class Notifier {
 
   #sourceToNotify(): MessageTray.Source {
     if (this.#source) return this.#source;
-    const source = new MessageTray.Source({ title: this.#title, iconName: ICONS.sunset });
+    const source = new MessageTray.Source({ title: this.#title, icon: this.#icon });
     source.connect("destroy", () => {
       if (this.#source === source) this.#source = null;
     });

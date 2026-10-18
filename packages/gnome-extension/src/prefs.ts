@@ -9,8 +9,8 @@ import {
 } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
 import {
   BAR_CONTENTS,
+  eventNames,
   LOCATION_MODES,
-  type LocationInUse,
   type NamedLocation,
   NOTIFIABLE_EVENTS,
   type NotifiableEvent,
@@ -18,7 +18,6 @@ import {
   presentYear,
   READINGS,
   readYear,
-  resolveLocation,
   TWILIGHTS,
 } from "@vesperal/core";
 import { type City, CitySearch } from "./citySearch.ts";
@@ -29,6 +28,7 @@ import {
   readBarContent,
   readIndicatorPosition,
   readLastKnownLocation,
+  readLocationInUse,
   readLocationMode,
   readManualLocation,
   readNotifiedEvents,
@@ -407,12 +407,7 @@ function addNotificationGroup(page: Adw.PreferencesPage, settings: Gio.Settings)
   settings.bind("notifications", enabledRow, "active", Gio.SettingsBindFlags.DEFAULT);
   group.add(enabledRow);
 
-  const names: Record<NotifiableEvent, string> = {
-    dawn: _("Dawn"),
-    sunrise: _("Sunrise"),
-    sunset: _("Sunset"),
-    dusk: _("Dusk"),
-  };
+  const names = eventNames(_);
   const buttons = new Map<NotifiableEvent, Gtk.CheckButton>();
   // While the buttons are being set from the settings, their toggles are not choices.
   let showing = false;
@@ -454,7 +449,8 @@ function addNotificationGroup(page: Adw.PreferencesPage, settings: Gio.Settings)
 /**
  * Adds the year at the Location in use: a chart of the Day length through the year, then
  * today's Day length and the next Solstice and Equinox. With no Location known, offers to set
- * one instead, through `showCitySearch`. Returns a function that stops following the settings.
+ * one instead, through `showCitySearch`. Follows the settings and the date, so that today stays
+ * marked while the window is open; returns a function that stops following them.
  */
 function addYearGroups(
   page: Adw.PreferencesPage,
@@ -484,21 +480,26 @@ function addYearGroups(
   );
   for (const group of [chartGroup, rowsGroup, unknownGroup]) page.add(group);
 
+  // The date the page was last shown for.
+  let shownDate = "";
   const show = (): void => {
-    const location = locationInUse(settings);
+    shownDate = localDate();
+    // The preferences never ask the system where the user is: in Automatic mode, they use the
+    // Last known location.
+    const location = readLocationInUse(settings, null);
     chartGroup.visible = rowsGroup.visible = location !== null;
     unknownGroup.visible = location === null;
     if (!location) return;
 
     const timeZone = GLib.TimeZone.new_local().get_identifier();
-    const reading = readYear(
+    const snapshot = readYear(
       location,
       new Date(),
       timeZone,
       readTwilight(settings),
       readPhaseBounds(settings),
     );
-    const view = presentYear(reading, {
+    const view = presentYear(snapshot, {
       timeZone,
       locale: civilTimeLocale(),
       translate: _,
@@ -520,20 +521,22 @@ function addYearGroups(
     "twilight",
     "phase-bounds",
   ].map((key) => settings.connect(`changed::${key}`, show));
+  // Checked every minute rather than timed for midnight, so that a suspend over midnight is
+  // caught up on too.
+  const dateCheckId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 60, () => {
+    if (localDate() !== shownDate) show();
+    return GLib.SOURCE_CONTINUE;
+  });
   return () => {
     for (const id of changedIds) settings.disconnect(id);
+    GLib.source_remove(dateCheckId);
     chart.disconnect();
   };
 }
 
-/**
- * The Location in use, as the clock resolves it, except that the preferences never ask the
- * system where the user is: in Automatic mode, they use the Last known location.
- */
-function locationInUse(settings: Gio.Settings): LocationInUse | null {
-  const mode = readLocationMode(settings);
-  const fromMode = mode === "manual" ? readManualLocation(settings) : null;
-  return resolveLocation(mode, fromMode, readLastKnownLocation(settings));
+/** Today's date in the local time zone, as YYYY-MM-DD. */
+function localDate(): string {
+  return GLib.DateTime.new_now_local().format("%F") ?? "";
 }
 
 /**

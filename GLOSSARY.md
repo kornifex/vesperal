@@ -60,6 +60,10 @@ _Avoid_: Endless night
 With Dawn and Dusk as Phase bounds, a Day lasting longer than 24 hours although the Sun still sets: it does not get below the Twilight altitude between its Sunsets and Sunrises. It happens at mid-latitudes in summer with a nautical or astronomical Twilight.
 _Avoid_: White night, midnight twilight
 
+**Long Phase**:
+A Phase lasting longer than 24 hours: a Polar night, a Polar day or a No dark night. The bar names it instead of showing a Reading over 24 hours.
+_Avoid_: Polar state, long period
+
 **Day length**:
 The duration of a Day, between its Phase bounds.
 

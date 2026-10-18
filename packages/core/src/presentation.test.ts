@@ -468,7 +468,7 @@ describe("present: Polar day and Polar night", () => {
     return present(snapshot, { ...OPTIONS, reading: "elapsed" });
   }
 
-  test("shows the polar state while the Remaining time exceeds 24 hours", () => {
+  test("names the Long Phase while the Remaining time exceeds 24 hours", () => {
     expect(polarDayRemaining(DAY + 1).bar.text).toBe("Polar day");
     expect(polarDayRemaining(30 * DAY).bar.text).toBe("Polar day");
   });

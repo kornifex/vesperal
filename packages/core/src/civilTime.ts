@@ -7,6 +7,11 @@ export function civilDayNumber(instant: Date, timeZone: string): number {
   return Date.UTC(year, month - 1, day) / MS_PER_DAY;
 }
 
+/** How many civil dates `instant` is after the date of `now` in `timeZone`; negative if before. */
+export function civilDaysBetween(now: Date, instant: Date, timeZone: string): number {
+  return civilDayNumber(instant, timeZone) - civilDayNumber(now, timeZone);
+}
+
 /**
  * The instant, in milliseconds since the epoch, at which a civil date begins in `timeZone`.
  * The date is a count of days since 1 January 1970.

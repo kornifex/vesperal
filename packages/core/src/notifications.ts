@@ -1,10 +1,5 @@
 // When to notify the user ahead of Dawn, Sunrise, Sunset and Dusk.
-import {
-  AltitudeCrossings,
-  SOLAR_EVENT_ALTITUDE,
-  TWILIGHT_ALTITUDE,
-  type Twilight,
-} from "./clock.ts";
+import { type AltitudeCrossings, solarEventCrossings, type Twilight } from "./clock.ts";
 import type { Location } from "./location.ts";
 import { MS_PER_MINUTE } from "./time.ts";
 
@@ -39,9 +34,9 @@ const SAME_EVENT_WITHIN_MS = 6 * 60 * MS_PER_MINUTE;
 /**
  * Decides, minute tick after minute tick, which events to notify of: each one once, on the
  * first tick at or after its lead time, or on the first tick after a gap (such as a suspend,
- * or the extension being enabled again on unlock) if it is still to come. It remembers the
- * previous tick and the events already notified of, so that changing the settings never
- * announces an event twice.
+ * or the screen being locked) if it is still to come. It remembers the previous tick and the
+ * events already notified of, so that neither a gap nor a change of settings ever announces an
+ * event twice.
  */
 export class NotificationSchedule {
   #previousTick: number | null = null;
@@ -88,17 +83,22 @@ function eventsBetween(
   from: number,
   to: number,
 ): DueNotification[] {
-  const crossings: [AltitudeCrossings, NotifiableEvent, NotifiableEvent][] = [
-    [new AltitudeCrossings(location, SOLAR_EVENT_ALTITUDE), "sunrise", "sunset"],
-    [new AltitudeCrossings(location, TWILIGHT_ALTITUDE[settings.twilight]), "dawn", "dusk"],
+  const { horizon, twilight } = solarEventCrossings(location, settings.twilight);
+  const altitudes: {
+    crossings: AltitudeCrossings;
+    rising: NotifiableEvent;
+    falling: NotifiableEvent;
+  }[] = [
+    { crossings: horizon, rising: "sunrise", falling: "sunset" },
+    { crossings: twilight, rising: "dawn", falling: "dusk" },
   ];
   const events: DueNotification[] = [];
-  for (const [altitudeCrossings, rising, setting] of crossings) {
-    if (!settings.events.includes(rising) && !settings.events.includes(setting)) continue;
-    for (let instant = altitudeCrossings.earliestAfter(from); instant <= to; ) {
-      const event = altitudeCrossings.isAbove(instant) ? rising : setting;
+  for (const { crossings, rising, falling } of altitudes) {
+    if (!settings.events.includes(rising) && !settings.events.includes(falling)) continue;
+    for (let instant = crossings.earliestAfter(from); instant <= to; ) {
+      const event = crossings.isAbove(instant) ? rising : falling;
       if (settings.events.includes(event)) events.push({ event, instant: new Date(instant) });
-      instant = altitudeCrossings.earliestAfter(instant);
+      instant = crossings.earliestAfter(instant);
     }
   }
   return events.sort((a, b) => a.instant.getTime() - b.instant.getTime());

@@ -17,7 +17,7 @@ import { MS_PER_DAY, MS_PER_SECOND } from "./time.ts";
 const DELTA_T_MS = 69 * MS_PER_SECOND;
 
 /** The year at a Location, as the Year page shows it. */
-export interface YearReading {
+export interface YearSnapshot {
   /** The instant the year was read at. */
   readonly instant: Date;
   /** The civil year of the instant read, in the time zone it was read for. */
@@ -146,7 +146,7 @@ export function readYear(
   timeZone: string,
   twilight: Twilight = TWILIGHTS[0],
   bounds: PhaseBounds = PHASE_BOUNDS[0],
-): YearReading {
+): YearSnapshot {
   const year = new Date(civilDayNumber(instant, timeZone) * MS_PER_DAY).getUTCFullYear();
   return {
     instant,

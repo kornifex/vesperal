@@ -1,5 +1,5 @@
 // Transpiles the extension and the parts of @vesperal/core it uses, one file per module, and
-// copies its GSettings schema and its compiled translations into dist/.
+// copies its GSettings schema, its icon and its compiled translations into dist/.
 // With --install, also copies dist/ into the user's GNOME Shell extensions directory and compiles
 // the schema there.
 // With --pack, also zips dist/ into <uuid>.shell-extension.zip, for extensions.gnome.org.
@@ -71,6 +71,9 @@ await build({
 
 await cp(join(root, "metadata.json"), join(dist, "metadata.json"));
 await cp(join(root, "stylesheet.css"), join(dist, "stylesheet.css"));
+// The icon of the notifications' source, the same as the project's.
+await mkdir(join(dist, "icons"));
+await cp(join(root, "../../docs/icon/vesperal.svg"), join(dist, "icons/vesperal.svg"));
 
 await cp(join(root, "schemas"), join(dist, "schemas"), { recursive: true });
 // Only checked: GNOME Shell 45+ compiles the schema on install, so the package must not ship it.

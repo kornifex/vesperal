@@ -1,22 +1,17 @@
 // Turning a year at a Location into what the Year page displays.
-import { civilDayNumber } from "./civilTime.ts";
+import { civilDayNumber, civilDaysBetween } from "./civilTime.ts";
 import {
   fill,
-  formatDayLengthChange,
-  formatDuration,
+  formatDayLength,
+  type Localisation,
   type MenuRow,
   type Translate,
   type TranslatePlural,
 } from "./presentation.ts";
-import { MS_PER_DAY, MS_PER_MINUTE } from "./time.ts";
-import type { SolsticeOrEquinox, YearReading } from "./year.ts";
+import { MS_PER_DAY } from "./time.ts";
+import type { SolsticeOrEquinox, YearSnapshot } from "./year.ts";
 
-export interface YearPresentationOptions {
-  /** IANA time zone in which civil dates are counted and shown. */
-  readonly timeZone: string;
-  /** BCP 47 locale in which dates are shown. */
-  readonly locale: string;
-  readonly translate: Translate;
+export interface YearPresentationOptions extends Localisation {
   readonly translatePlural: TranslatePlural;
 }
 
@@ -39,27 +34,27 @@ export interface YearView {
   readonly rows: readonly MenuRow[];
 }
 
-export function presentYear(reading: YearReading, options: YearPresentationOptions): YearView {
+export function presentYear(snapshot: YearSnapshot, options: YearPresentationOptions): YearView {
   const { timeZone, locale, translate } = options;
-  const firstDay = Date.UTC(reading.year, 0, 1) / MS_PER_DAY;
+  const firstDay = Date.UTC(snapshot.year, 0, 1) / MS_PER_DAY;
   const dateIndex = (instant: Date): number => civilDayNumber(instant, timeZone) - firstDay;
-  const today = dateIndex(reading.instant);
+  const today = dateIndex(snapshot.instant);
   const monthFormat = new Intl.DateTimeFormat(locale, { month: "short", timeZone: "UTC" });
   return {
-    curve: reading.dayLengths.map((length) => length / MS_PER_DAY),
+    curve: snapshot.dayLengths.map((length) => length / MS_PER_DAY),
     today,
-    solsticesAndEquinoxes: reading.solsticesAndEquinoxes
+    solsticesAndEquinoxes: snapshot.solsticesAndEquinoxes
       .map((event) => dateIndex(event.instant))
-      .filter((index) => index >= 0 && index < reading.dayLengths.length),
+      .filter((index) => index >= 0 && index < snapshot.dayLengths.length),
     months: Array.from({ length: 12 }, (_, month) => {
-      const first = new Date(Date.UTC(reading.year, month, 1));
+      const first = new Date(Date.UTC(snapshot.year, month, 1));
       return { index: first.getTime() / MS_PER_DAY - firstDay, label: monthFormat.format(first) };
     }),
     rows: [
-      { label: translate("Day length"), value: todaysDayLength(reading, today, translate) },
-      ...nextSolsticeAndEquinox(reading).map((event) => ({
+      { label: translate("Day length"), value: todaysDayLength(snapshot, today, translate) },
+      ...nextSolsticeAndEquinox(snapshot).map((event) => ({
         label: nameOf(event, translate),
-        value: describeUpcomingDate(event.instant, reading.instant, options),
+        value: describeUpcomingDate(event.instant, snapshot.instant, options),
       })),
     ],
   };
@@ -69,18 +64,17 @@ export function presentYear(reading: YearReading, options: YearPresentationOptio
  * Today's Day length as the chart shows it, with its change since the date before: e.g.
  * "10h 43m ↓3m". On 1 January, the date before belongs to another year, so no change is given.
  */
-function todaysDayLength(reading: YearReading, today: number, translate: Translate): string {
-  const length = reading.dayLengths[today] ?? 0;
-  const before = reading.dayLengths[today - 1];
-  const change = before === undefined ? "" : formatDayLengthChange(length - before, translate);
-  return formatDuration(Math.round(length / MS_PER_MINUTE), translate) + change;
+function todaysDayLength(snapshot: YearSnapshot, today: number, translate: Translate): string {
+  const length = snapshot.dayLengths[today] ?? 0;
+  const before = snapshot.dayLengths[today - 1];
+  return formatDayLength(length, before === undefined ? null : length - before, translate);
 }
 
 /** The next Solstice and the next Equinox after the instant read, the sooner first. */
-function nextSolsticeAndEquinox(reading: YearReading): SolsticeOrEquinox[] {
+function nextSolsticeAndEquinox(snapshot: YearSnapshot): SolsticeOrEquinox[] {
   const next = (kind: SolsticeOrEquinox["kind"]): SolsticeOrEquinox[] =>
-    reading.solsticesAndEquinoxes
-      .filter((event) => event.kind === kind && event.instant > reading.instant)
+    snapshot.solsticesAndEquinoxes
+      .filter((event) => event.kind === kind && event.instant > snapshot.instant)
       .slice(0, 1);
   return [...next("solstice"), ...next("equinox")].sort(
     (a, b) => a.instant.getTime() - b.instant.getTime(),
@@ -99,7 +93,7 @@ function describeUpcomingDate(instant: Date, now: Date, options: YearPresentatio
     day: "numeric",
     month: "long",
   }).format(instant);
-  const days = civilDayNumber(instant, timeZone) - civilDayNumber(now, timeZone);
+  const days = civilDaysBetween(now, instant, timeZone);
   const relative =
     days === 0
       ? translate("today")

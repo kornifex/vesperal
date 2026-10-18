@@ -8,9 +8,8 @@ import { MS_PER_DAY } from "./time.ts";
 export const SOLAR_EVENT_ALTITUDE = -0.833;
 
 // Searching a little over a year each way reaches the next and previous Solar events even at
-// the poles, where there is one Sunrise and one Sunset a year: 2 culminations a day for 370
-// days.
-const SEARCH_HORIZON_CULMINATIONS = 740;
+// the poles, where there is one Sunrise and one Sunset a year: 2 culminations a day.
+const SEARCH_HORIZON_CULMINATIONS = 2 * 370;
 
 /** Every Twilight the user can choose, the default first. */
 export const TWILIGHTS = ["civil", "nautical", "astronomical"] as const;
@@ -99,10 +98,11 @@ export function readClock(
   bounds: PhaseBounds = PHASE_BOUNDS[0],
 ): ClockSnapshot {
   const now = instant.getTime();
-  const horizon = new AltitudeCrossings(location, SOLAR_EVENT_ALTITUDE);
-  const twilightCrossings = new AltitudeCrossings(location, TWILIGHT_ALTITUDE[twilight]);
-  const [phaseCrossings, otherCrossings] =
-    bounds === "sunrise-sunset" ? [horizon, twilightCrossings] : [twilightCrossings, horizon];
+  const crossings = solarEventCrossings(location, twilight);
+  const fromSunriseToSunset = bounds === "sunrise-sunset";
+  const [phaseCrossings, otherCrossings] = fromSunriseToSunset
+    ? [crossings.horizon, crossings.twilight]
+    : [crossings.twilight, crossings.horizon];
   const kind: PhaseKind = phaseCrossings.isAbove(now) ? "day" : "night";
   const start = phaseCrossings.latestAtOrBefore(now);
   const end = phaseCrossings.earliestAfter(now);
@@ -126,22 +126,21 @@ export function readClock(
   // The other altitude is crossed in Nights when it is the lower one (Dawn and Dusk around a
   // Day from Sunrise to Sunset), in Days when it is the higher one (Sunrise and Sunset within
   // a Day from Dawn to Dusk).
-  const othersOutside = (kind === "day") === (bounds === "sunrise-sunset");
+  const othersOutside = (kind === "day") === fromSunriseToSunset;
   const others = othersOutside
     ? crossingsAround(otherCrossings, previous, start, end, next)
     : crossingsWithin(otherCrossings, start, now, end);
   const [rising, falling] = kind === "day" ? [start, end] : [end, start];
   const otherRising = others.find((crossing) => otherCrossings.isAbove(crossing)) ?? null;
   const otherFalling = others.find((crossing) => !otherCrossings.isAbove(crossing)) ?? null;
-  const [dawn, sunrise, sunset, dusk] =
-    bounds === "sunrise-sunset"
-      ? [otherRising, rising, falling, otherFalling]
-      : [rising, otherRising, otherFalling, falling];
+  const [dawn, sunrise, sunset, dusk] = fromSunriseToSunset
+    ? [otherRising, rising, falling, otherFalling]
+    : [rising, otherRising, otherFalling, falling];
 
   return {
     instant,
     phase: { kind, start: new Date(start), end: new Date(end) },
-    longPhase: end - start > MS_PER_DAY ? longPhase(kind, horizon, now) : null,
+    longPhase: end - start > MS_PER_DAY ? longPhase(kind, crossings.horizon, now) : null,
     remaining: end - now,
     elapsed: now - start,
     progress: (now - start) / (end - start),
@@ -195,6 +194,20 @@ function crossingsWithin(
   if (first >= end) return [];
   const second = crossings.earliestAfter(first);
   return second < end ? [first, second] : [crossings.latestAtOrBefore(first - 1), first];
+}
+
+/**
+ * The Sun's crossings of the horizon, at Sunrises and Sunsets, and of the Twilight altitude, at
+ * Dawns and Dusks.
+ */
+export function solarEventCrossings(
+  location: Location,
+  twilight: Twilight,
+): { readonly horizon: AltitudeCrossings; readonly twilight: AltitudeCrossings } {
+  return {
+    horizon: new AltitudeCrossings(location, SOLAR_EVENT_ALTITUDE),
+    twilight: new AltitudeCrossings(location, TWILIGHT_ALTITUDE[twilight]),
+  };
 }
 
 function dateOrNull(epochMs: number | null): Date | null {

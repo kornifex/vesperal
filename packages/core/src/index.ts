@@ -32,6 +32,8 @@ export {
   BAR_CONTENTS,
   type Bar,
   type BarContent,
+  eventNames,
+  type Localisation,
   type Menu,
   type MenuRow,
   type MoonOnArc,
@@ -54,7 +56,7 @@ export {
   readYear,
   type SolsticeOrEquinox,
   solsticesAndEquinoxes,
-  type YearReading,
+  type YearSnapshot,
 } from "./year.ts";
 export {
   presentYear,

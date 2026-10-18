@@ -38,7 +38,8 @@ along the night.
   offline) or any coordinates. If the location becomes unavailable, Vesperal keeps using the last
   known one.
 - **Notifications**, if you want them: a chosen number of minutes before dawn, sunrise, sunset or
-  dusk, such as "Sunset in 30 min". They follow Do Not Disturb like any other notification.
+  dusk, such as "Sunset in 30 min". Each event is announced once, even across a suspend or a
+  screen lock, and they follow Do Not Disturb like any other notification.
 - **Offline**: every computation runs on your computer, after the NOAA solar position algorithm.
 - **18 languages**: English and French, plus Catalan, Czech, Danish, Dutch, Finnish, German,
   Greek, Hungarian, Italian, Norwegian Bokmål, Polish, Portuguese, Romanian, Spanish, Swedish
@@ -105,8 +106,9 @@ notifications page.
 
 The Year page charts the day length through the current year at the location in use, counted
 from sunrise to sunset or from dawn to dusk as chosen, and gives today's day length and the
-dates of the next solstice and equinox. The preferences never ask the system where you are: in
-automatic mode, the Year page uses the last known location.
+dates of the next solstice and equinox. It moves on to the next day at midnight, even with the
+window left open. The preferences never ask the system where you are: in automatic mode, the
+Year page uses the last known location.
 
 ## Privacy
 

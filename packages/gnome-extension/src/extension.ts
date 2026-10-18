@@ -1,10 +1,9 @@
-import type Gio from "gi://Gio";
+import Gio from "gi://Gio";
 import GnomeDesktop from "gi://GnomeDesktop";
 import { gettext as _, Extension } from "resource:///org/gnome/shell/extensions/extension.js";
 import {
+  type Localisation,
   type LocationInUse,
-  type LocationMode,
-  type NamedLocation,
   NotificationSchedule,
   present,
   presentError,
@@ -12,7 +11,6 @@ import {
   presentNotification,
   READINGS,
   readClock,
-  resolveLocation,
 } from "@vesperal/core";
 import { AutomaticLocation } from "./automaticLocation.ts";
 import { VesperalIndicator } from "./indicator.ts";
@@ -21,9 +19,8 @@ import { Notifier } from "./notifier.ts";
 import {
   readBarContent,
   readIndicatorPosition,
-  readLastKnownLocation,
+  readLocationInUse,
   readLocationMode,
-  readManualLocation,
   readNotificationLeadMinutes,
   readNotificationsEnabled,
   readNotifiedEvents,
@@ -48,13 +45,19 @@ export default class VesperalExtension extends Extension {
   // changes and clock adjustments, so the extension needs no timer of its own.
   #wallClock: GnomeDesktop.WallClock | null = null;
   #wallClockChangedId = 0;
+  // Kept while the extension is disabled, as it is when the screen is locked, so that unlocking
+  // does not announce again the events already notified of. It is plain data, with nothing to
+  // disconnect or destroy.
   #notificationSchedule: NotificationSchedule | null = null;
   #notifier: Notifier | null = null;
 
   override enable(): void {
     this.#settings = this.getSettings();
-    this.#notificationSchedule = new NotificationSchedule();
-    this.#notifier = new Notifier(this.metadata.name);
+    this.#notificationSchedule ??= new NotificationSchedule();
+    this.#notifier = new Notifier(
+      this.metadata.name,
+      new Gio.FileIcon({ file: this.dir.resolve_relative_path("icons/vesperal.svg") }),
+    );
     this.#placeIndicator();
     // Connected first, so that the Automatic location follows the mode before the refresh.
     this.#locationModeChangedId = this.#settings.connect("changed::location-mode", () =>
@@ -92,7 +95,6 @@ export default class VesperalExtension extends Extension {
     this.#indicator = null;
     this.#notifier?.destroy();
     this.#notifier = null;
-    this.#notificationSchedule = null;
   }
 
   /**
@@ -151,32 +153,32 @@ export default class VesperalExtension extends Extension {
     if (!this.#indicator || !this.#settings || !this.#wallClock) return;
 
     const now = new Date();
-    const translate = (message: string): string => this.gettext(message);
-    const timeZone = this.#wallClock.timezone.get_identifier();
-    const locale = civilTimeLocale();
-    const mode = readLocationMode(this.#settings);
-    const fromMode = this.#locationFromMode(mode, this.#settings);
-    // Only the Automatic location is remembered: the Manual location stays in its own key.
-    if (mode === "automatic" && fromMode) writeLastKnownLocation(this.#settings, fromMode);
-    const location = resolveLocation(mode, fromMode, readLastKnownLocation(this.#settings));
+    const localisation: Localisation = {
+      timeZone: this.#wallClock.timezone.get_identifier(),
+      locale: civilTimeLocale(),
+      translate: (message) => this.gettext(message),
+    };
+    // Only the Automatic location is remembered: the Manual location stays in its own key. It
+    // only exists in Automatic mode.
+    const automatic = this.#automaticLocation?.location ?? null;
+    if (automatic) writeLastKnownLocation(this.#settings, automatic);
+    const location = readLocationInUse(this.#settings, automatic);
     const twilight = readTwilight(this.#settings);
     this.#indicator.show(
       location
         ? present(readClock(location, now, twilight, readPhaseBounds(this.#settings)), {
             reading: readReading(this.#settings),
             barContent: readBarContent(this.#settings),
-            timeZone,
-            locale,
-            translate,
+            ...localisation,
             location,
           })
-        : presentLocationUnknown(translate),
+        : presentLocationUnknown(localisation.translate),
     );
 
     try {
-      this.#notify(now, location, { timeZone, locale, translate });
+      this.#notify(now, location, localisation);
     } catch (error) {
-      // A notification that fails to go out must not take the clock down with it.
+      // Logged apart from the refresh, so that the clock still shows when a notification fails.
       this.getLogger().warn(error);
     }
   }
@@ -185,11 +187,7 @@ export default class VesperalExtension extends Extension {
    * Sends the notifications due at the tick `now`. Called on every refresh, even with
    * notifications off, so that the schedule always knows the previous tick.
    */
-  #notify(
-    now: Date,
-    location: LocationInUse | null,
-    options: { timeZone: string; locale: string; translate: (message: string) => string },
-  ): void {
+  #notify(now: Date, location: LocationInUse | null, localisation: Localisation): void {
     if (!this.#settings || !this.#notificationSchedule) return;
     const due = this.#notificationSchedule.due(now, location, {
       events: readNotificationsEnabled(this.#settings) ? readNotifiedEvents(this.#settings) : [],
@@ -200,14 +198,8 @@ export default class VesperalExtension extends Extension {
     for (const notification of due) {
       this.#notifier?.notify(
         notification.event,
-        presentNotification(notification, now, { ...options, location }),
+        presentNotification(notification, now, { ...localisation, location }),
       );
     }
-  }
-
-  /** The Location from the active mode, if it has one. */
-  #locationFromMode(mode: LocationMode, settings: Gio.Settings): NamedLocation | null {
-    if (mode === "manual") return readManualLocation(settings);
-    return this.#automaticLocation?.location ?? null;
   }
 }

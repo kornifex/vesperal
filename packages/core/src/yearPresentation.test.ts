@@ -3,7 +3,7 @@ import {
   presentYear,
   type SolsticeOrEquinox,
   type YearPresentationOptions,
-  type YearReading,
+  type YearSnapshot,
 } from "./index.ts";
 
 const MINUTE = 60_000;
@@ -57,7 +57,7 @@ const FRENCH: YearPresentationOptions = {
 };
 
 /** The year 2026 in Paris, read at `instant`. */
-function readingAt(instant: string, dayLengths: readonly number[] = DAY_LENGTHS): YearReading {
+function snapshotAt(instant: string, dayLengths: readonly number[] = DAY_LENGTHS): YearSnapshot {
   return {
     instant: new Date(instant),
     year: 2026,
@@ -68,7 +68,7 @@ function readingAt(instant: string, dayLengths: readonly number[] = DAY_LENGTHS)
 
 describe("presentYear", () => {
   test("draws the Day length of each date as a fraction of 24 hours, and marks today", () => {
-    const view = presentYear(readingAt("2026-10-17T10:00:00Z"), OPTIONS);
+    const view = presentYear(snapshotAt("2026-10-17T10:00:00Z"), OPTIONS);
 
     expect(view.curve).toHaveLength(365);
     expect(view.curve[0]).toBe(1 / 3);
@@ -78,14 +78,14 @@ describe("presentYear", () => {
   });
 
   test("places the year's Solstices and Equinoxes on their dates", () => {
-    const view = presentYear(readingAt("2026-10-17T10:00:00Z"), OPTIONS);
+    const view = presentYear(snapshotAt("2026-10-17T10:00:00Z"), OPTIONS);
 
     // 20 March, 21 June, 23 September (02:05 in Paris) and 21 December.
     expect(view.solsticesAndEquinoxes).toEqual([78, 171, 265, 354]);
   });
 
   test("marks the first date of each month", () => {
-    const { months } = presentYear(readingAt("2026-10-17T10:00:00Z"), OPTIONS);
+    const { months } = presentYear(snapshotAt("2026-10-17T10:00:00Z"), OPTIONS);
 
     expect(months).toHaveLength(12);
     expect(months[0]).toEqual({ index: 0, label: "Jan" });
@@ -94,7 +94,7 @@ describe("presentYear", () => {
   });
 
   test("gives today's Day length with its trend, then the next Solstice and Equinox", () => {
-    const { rows } = presentYear(readingAt("2026-10-17T10:00:00Z"), OPTIONS);
+    const { rows } = presentYear(snapshotAt("2026-10-17T10:00:00Z"), OPTIONS);
 
     // 8 h plus 289 minutes, a minute more than the date before.
     expect(rows).toEqual([
@@ -105,14 +105,14 @@ describe("presentYear", () => {
   });
 
   test("gives today's Day length as the chart shows it, even during a Polar night", () => {
-    const polarNight = presentYear(readingAt("2026-12-21T10:00:00Z", Array(365).fill(0)), OPTIONS);
+    const polarNight = presentYear(snapshotAt("2026-12-21T10:00:00Z", Array(365).fill(0)), OPTIONS);
 
     expect(polarNight.rows[0]).toEqual({ label: "Day length", value: "0 min" });
   });
 
   test('says "tomorrow" the day before a Solstice, and "today" on the day', () => {
-    const dayBefore = presentYear(readingAt("2026-12-20T12:00:00Z"), OPTIONS);
-    const onTheDay = presentYear(readingAt("2026-12-21T10:00:00Z"), OPTIONS);
+    const dayBefore = presentYear(snapshotAt("2026-12-20T12:00:00Z"), OPTIONS);
+    const onTheDay = presentYear(snapshotAt("2026-12-21T10:00:00Z"), OPTIONS);
 
     expect(dayBefore.rows[1]).toEqual({
       label: "December solstice",
@@ -125,17 +125,17 @@ describe("presentYear", () => {
   });
 
   test("speaks French", () => {
-    expect(presentYear(readingAt("2026-10-17T10:00:00Z"), FRENCH).rows).toEqual([
+    expect(presentYear(snapshotAt("2026-10-17T10:00:00Z"), FRENCH).rows).toEqual([
       { label: "Durée du jour", value: "12 h 49 ↑1 min" },
       { label: "Solstice de décembre", value: "lundi 21 décembre, dans 65 jours" },
       { label: "Équinoxe de mars", value: "samedi 20 mars, dans 154 jours" },
     ]);
-    expect(presentYear(readingAt("2026-12-20T12:00:00Z"), FRENCH).rows[1]?.value).toBe(
+    expect(presentYear(snapshotAt("2026-12-20T12:00:00Z"), FRENCH).rows[1]?.value).toBe(
       "lundi 21 décembre, demain",
     );
-    expect(presentYear(readingAt("2026-12-21T10:00:00Z"), FRENCH).rows[1]?.value).toBe(
+    expect(presentYear(snapshotAt("2026-12-21T10:00:00Z"), FRENCH).rows[1]?.value).toBe(
       "lundi 21 décembre, aujourd’hui",
     );
-    expect(presentYear(readingAt("2026-10-17T10:00:00Z"), FRENCH).months[0]?.label).toBe("janv.");
+    expect(presentYear(snapshotAt("2026-10-17T10:00:00Z"), FRENCH).months[0]?.label).toBe("janv.");
   });
 });

@@ -1,8 +1,8 @@
 // Turning a clock snapshot into what the front ends display.
-import { civilDayNumber } from "./civilTime.ts";
+import { civilDaysBetween } from "./civilTime.ts";
 import type { ClockSnapshot } from "./clock.ts";
 import type { Location, LocationInUse, LocationSource } from "./location.ts";
-import type { DueNotification, NotifiableEvent } from "./notifications.ts";
+import { type DueNotification, NOTIFIABLE_EVENTS, type NotifiableEvent } from "./notifications.ts";
 import {
   MINUTES_PER_DAY,
   MINUTES_PER_HOUR,
@@ -32,10 +32,9 @@ export type Translate = (message: string) => string;
  */
 export type TranslatePlural = (singular: string, plural: string, count: number) => string;
 
-export interface PresentationOptions {
-  readonly reading: Reading;
-  readonly barContent: BarContent;
-  /** IANA time zone in which Civil times are shown. */
+/** How to speak to the user: in which language, and with which times and dates. */
+export interface Localisation {
+  /** IANA time zone in which Civil times and dates are counted and shown. */
   readonly timeZone: string;
   /**
    * BCP 47 locale in which Civil times and dates are shown; it may differ from the language
@@ -43,6 +42,11 @@ export interface PresentationOptions {
    */
   readonly locale: string;
   readonly translate: Translate;
+}
+
+export interface PresentationOptions extends Localisation {
+  readonly reading: Reading;
+  readonly barContent: BarContent;
   readonly location: LocationInUse;
 }
 
@@ -81,7 +85,7 @@ export interface Bar {
   /** The Sun arc, or null when no Location is known or the user chose the duration only. */
   readonly arc: SunArc | null;
   /**
-   * The Reading as a duration, the polar state once that duration exceeds 24 hours, or the
+   * The Reading as a duration, the Long Phase once that duration exceeds 24 hours, or the
    * "Location unknown" or "Error" state; null when the user chose the Sun arc only.
    */
   readonly text: string | null;
@@ -118,10 +122,9 @@ export function present(snapshot: ClockSnapshot, options: PresentationOptions): 
   };
 }
 
-export type NotificationPresentationOptions = Pick<
-  PresentationOptions,
-  "timeZone" | "locale" | "translate" | "location"
->;
+export interface NotificationPresentationOptions extends Localisation {
+  readonly location: LocationInUse;
+}
 
 /** A notification of an event, as the desktop shows it. */
 export interface NotificationView {
@@ -138,7 +141,7 @@ export function presentNotification(
   options: NotificationPresentationOptions,
 ): NotificationView {
   const { translate } = options;
-  const event = eventName(notification.event, translate);
+  const event = eventNames(translate)[notification.event];
   // Rounded up, like the Remaining time, so the event never seems closer than it is.
   const minutes = Math.ceil((notification.instant.getTime() - now.getTime()) / MS_PER_MINUTE);
   return {
@@ -151,21 +154,18 @@ export function presentNotification(
           })
         : // Translators: a notification at the moment of an event, e.g. "Sunset now".
           fill(translate("{event} now"), { event }),
-    body: `${formatCivilTime(notification.instant, now, options)} · ${describeLocation(options)}`,
+    body: `${formatCivilTime(notification.instant, now, options)} · ${describeLocation(options.location, options)}`,
   };
 }
 
-function eventName(event: NotifiableEvent, translate: Translate): string {
-  switch (event) {
-    case "dawn":
-      return translate("Dawn");
-    case "sunrise":
-      return translate("Sunrise");
-    case "sunset":
-      return translate("Sunset");
-    case "dusk":
-      return translate("Dusk");
-  }
+/** The name of each of Dawn, Sunrise, Sunset and Dusk. */
+export function eventNames(translate: Translate): Readonly<Record<NotifiableEvent, string>> {
+  return {
+    dawn: translate("Dawn"),
+    sunrise: translate("Sunrise"),
+    sunset: translate("Sunset"),
+    dusk: translate("Dusk"),
+  };
 }
 
 /** What to display when no Location is known, so the clock cannot be read. */
@@ -214,26 +214,31 @@ function menuRows(snapshot: ClockSnapshot, options: PresentationOptions): MenuRo
   const { translate } = options;
   const { phase, instant } = snapshot;
   const isDay = phase.kind === "day";
-  const phaseLength = Math.round((phase.end.getTime() - phase.start.getTime()) / MS_PER_MINUTE);
   const otherReading = READING_RULES[READING_RULES[options.reading].other];
+  const names = eventNames(translate);
+  const phaseLength = phase.end.getTime() - phase.start.getTime();
+  const dayLengthChange =
+    snapshot.previousDayLength === null
+      ? null
+      : snapshot.lastDayLength - snapshot.previousDayLength;
 
-  const events: [string, Date | null][] = [
-    [translate("Dawn"), snapshot.dawn],
-    [translate("Sunrise"), snapshot.sunrise],
-    [translate("Sunset"), snapshot.sunset],
-    [translate("Dusk"), snapshot.dusk],
-  ];
   const rows: MenuRow[] = [
     // In the order they happen, whichever two of them bound the Phase.
-    ...events
-      .flatMap(([label, time]) => (time ? [{ label, time }] : []))
+    ...NOTIFIABLE_EVENTS.flatMap((event) => {
+      const time = snapshot[event];
+      return time ? [{ label: names[event], time }] : [];
+    })
       .sort((a, b) => a.time.getTime() - b.time.getTime())
       .map(({ label, time }) => ({ label, value: formatCivilTime(time, instant, options) })),
-    {
-      label: isDay ? translate("Day length") : translate("Night length"),
-      value:
-        formatDuration(phaseLength, translate) + (isDay ? dayLengthTrend(snapshot, translate) : ""),
-    },
+    isDay
+      ? {
+          label: translate("Day length"),
+          value: formatDayLength(phaseLength, dayLengthChange, translate),
+        }
+      : {
+          label: translate("Night length"),
+          value: formatDuration(Math.round(phaseLength / MS_PER_MINUTE), translate),
+        },
     {
       label: otherReading.label(translate),
       value: formatDuration(otherReading.minutes(snapshot), translate),
@@ -243,7 +248,7 @@ function menuRows(snapshot: ClockSnapshot, options: PresentationOptions): MenuRo
   if (!isDay) {
     rows.push({
       label: translate("Day length"),
-      value: lastDayLengthWithTrend(snapshot, translate),
+      value: formatDayLength(snapshot.lastDayLength, dayLengthChange, translate),
     });
   }
   rows.push(locationRow(options));
@@ -282,12 +287,15 @@ const READING_RULES: Readonly<
 
 function locationRow(options: PresentationOptions): MenuRow {
   const { location, translate } = options;
-  return { label: locationLabel(location.source, translate), value: describeLocation(options) };
+  return {
+    label: locationLabel(location.source, translate),
+    value: describeLocation(location, options),
+  };
 }
 
 /** The Location in use, by its name, or by its coordinates when it has none. */
-function describeLocation(options: NotificationPresentationOptions): string {
-  return options.location.name ?? formatCoordinates(options.location, options);
+function describeLocation(location: LocationInUse, localisation: Localisation): string {
+  return location.name ?? formatCoordinates(location, localisation);
 }
 
 function locationLabel(source: LocationSource, translate: Translate): string {
@@ -303,7 +311,7 @@ function locationLabel(source: LocationSource, translate: Translate): string {
 
 function formatCoordinates(
   location: Location,
-  options: Pick<PresentationOptions, "locale" | "translate">,
+  options: Pick<Localisation, "locale" | "translate">,
 ): string {
   const { translate } = options;
   const degrees = (angle: number): Record<string, string> => ({
@@ -330,14 +338,10 @@ function formatCoordinates(
  * "Yesterday" and "tomorrow" are messages, so they speak the language of the other messages;
  * the time and the date follow `locale`, which may differ (see `PresentationOptions`).
  */
-function formatCivilTime(
-  instant: Date,
-  now: Date,
-  options: Pick<PresentationOptions, "locale" | "timeZone" | "translate">,
-): string {
+function formatCivilTime(instant: Date, now: Date, options: Localisation): string {
   const { locale, timeZone, translate } = options;
   const time = new Intl.DateTimeFormat(locale, { timeZone, timeStyle: "short" }).format(instant);
-  switch (civilDayNumber(instant, timeZone) - civilDayNumber(now, timeZone)) {
+  switch (civilDaysBetween(now, instant, timeZone)) {
     case 0:
       return time;
     case -1:
@@ -379,28 +383,24 @@ export function formatDuration(totalMinutes: number, translate: Translate): stri
   });
 }
 
-/** The Day length of the most recent Day, with its trend: e.g. "10h 43m ↓3m". */
-function lastDayLengthWithTrend(snapshot: ClockSnapshot, translate: Translate): string {
-  return (
-    formatDuration(Math.round(snapshot.lastDayLength / MS_PER_MINUTE), translate) +
-    dayLengthTrend(snapshot, translate)
-  );
-}
-
 /**
- * How the most recent Day length compares with the Day before, to follow its value: e.g. " ↑3m"
- * for a Day 3 minutes longer.
+ * A Day length in milliseconds, with its trend when its `change` since the Day before is known:
+ * e.g. "10h 43m ↓3m".
  */
-function dayLengthTrend(snapshot: ClockSnapshot, translate: Translate): string {
-  if (snapshot.previousDayLength === null) return "";
-  return formatDayLengthChange(snapshot.lastDayLength - snapshot.previousDayLength, translate);
+export function formatDayLength(
+  length: number,
+  change: number | null,
+  translate: Translate,
+): string {
+  const trend = change === null ? "" : formatDayLengthChange(change, translate);
+  return formatDuration(Math.round(length / MS_PER_MINUTE), translate) + trend;
 }
 
 /**
  * A change of Day length in milliseconds, to follow a Day length: e.g. " ↑3m" for 3 minutes
  * longer, or nothing when the change rounds to no second.
  */
-export function formatDayLengthChange(change: number, translate: Translate): string {
+function formatDayLengthChange(change: number, translate: Translate): string {
   const seconds = Math.round(Math.abs(change) / MS_PER_SECOND);
   if (seconds === 0) return "";
   const arrow = change > 0 ? "↑" : "↓";

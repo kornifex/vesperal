@@ -7,6 +7,7 @@ import {
   type BarContent,
   isValidLocation,
   LOCATION_MODES,
+  type LocationInUse,
   type LocationMode,
   type NamedLocation,
   NOTIFIABLE_EVENTS,
@@ -15,6 +16,7 @@ import {
   type PhaseBounds,
   READINGS,
   type Reading,
+  resolveLocation,
   TWILIGHTS,
   type Twilight,
 } from "@vesperal/core";
@@ -26,8 +28,7 @@ export const SUN_ARC_POSITIONS = ["left", "right"] as const;
 export type SunArcPosition = (typeof SUN_ARC_POSITIONS)[number];
 
 export function readReading(settings: Gio.Settings): Reading {
-  const nick = settings.get_string("reading");
-  return READINGS.find((reading) => reading === nick) ?? READINGS[0];
+  return readChoice(settings, "reading", READINGS);
 }
 
 export function writeReading(settings: Gio.Settings, reading: Reading): void {
@@ -35,8 +36,7 @@ export function writeReading(settings: Gio.Settings, reading: Reading): void {
 }
 
 export function readTwilight(settings: Gio.Settings): Twilight {
-  const nick = settings.get_string("twilight");
-  return TWILIGHTS.find((twilight) => twilight === nick) ?? TWILIGHTS[0];
+  return readChoice(settings, "twilight", TWILIGHTS);
 }
 
 export function writeTwilight(settings: Gio.Settings, twilight: Twilight): void {
@@ -44,8 +44,7 @@ export function writeTwilight(settings: Gio.Settings, twilight: Twilight): void 
 }
 
 export function readPhaseBounds(settings: Gio.Settings): PhaseBounds {
-  const nick = settings.get_string("phase-bounds");
-  return PHASE_BOUNDS.find((bounds) => bounds === nick) ?? PHASE_BOUNDS[0];
+  return readChoice(settings, "phase-bounds", PHASE_BOUNDS);
 }
 
 export function writePhaseBounds(settings: Gio.Settings, bounds: PhaseBounds): void {
@@ -53,8 +52,7 @@ export function writePhaseBounds(settings: Gio.Settings, bounds: PhaseBounds): v
 }
 
 export function readSunArcPosition(settings: Gio.Settings): SunArcPosition {
-  const nick = settings.get_string("sun-arc-position");
-  return SUN_ARC_POSITIONS.find((position) => position === nick) ?? SUN_ARC_POSITIONS[0];
+  return readChoice(settings, "sun-arc-position", SUN_ARC_POSITIONS);
 }
 
 export function writeSunArcPosition(settings: Gio.Settings, position: SunArcPosition): void {
@@ -71,8 +69,7 @@ export const INDICATOR_POSITIONS = ["next-to-clock", "left", "right"] as const;
 export type IndicatorPosition = (typeof INDICATOR_POSITIONS)[number];
 
 export function readBarContent(settings: Gio.Settings): BarContent {
-  const nick = settings.get_string("bar-content");
-  return BAR_CONTENTS.find((content) => content === nick) ?? BAR_CONTENTS[0];
+  return readChoice(settings, "bar-content", BAR_CONTENTS);
 }
 
 export function writeBarContent(settings: Gio.Settings, content: BarContent): void {
@@ -80,8 +77,7 @@ export function writeBarContent(settings: Gio.Settings, content: BarContent): vo
 }
 
 export function readIndicatorPosition(settings: Gio.Settings): IndicatorPosition {
-  const nick = settings.get_string("indicator-position");
-  return INDICATOR_POSITIONS.find((position) => position === nick) ?? INDICATOR_POSITIONS[0];
+  return readChoice(settings, "indicator-position", INDICATOR_POSITIONS);
 }
 
 export function writeIndicatorPosition(settings: Gio.Settings, position: IndicatorPosition): void {
@@ -111,8 +107,7 @@ export function readNotificationLeadMinutes(settings: Gio.Settings): number {
 }
 
 export function readLocationMode(settings: Gio.Settings): LocationMode {
-  const nick = settings.get_string("location-mode");
-  return LOCATION_MODES.find((mode) => mode === nick) ?? LOCATION_MODES[0];
+  return readChoice(settings, "location-mode", LOCATION_MODES);
 }
 
 export function writeLocationMode(settings: Gio.Settings, mode: LocationMode): void {
@@ -154,6 +149,29 @@ export function followLocationServices(follow: (enabled: boolean) => void): () =
   );
   follow(locationServices.get_boolean("enabled"));
   return () => locationServices.disconnect(changedId);
+}
+
+/**
+ * The Location in use, as the clock resolves it from the settings and, in Automatic mode, from
+ * the `automatic` location the system gave, if any.
+ */
+export function readLocationInUse(
+  settings: Gio.Settings,
+  automatic: NamedLocation | null,
+): LocationInUse | null {
+  const mode = readLocationMode(settings);
+  const fromMode = mode === "manual" ? readManualLocation(settings) : automatic;
+  return resolveLocation(mode, fromMode, readLastKnownLocation(settings));
+}
+
+/** The value of a key holding one of `values`, or the first of them if it holds another. */
+function readChoice<T extends string>(
+  settings: Gio.Settings,
+  key: string,
+  values: readonly [T, ...T[]],
+): T {
+  const nick = settings.get_string(key);
+  return values.find((value) => value === nick) ?? values[0];
 }
 
 function readStoredLocation(settings: Gio.Settings, key: string): NamedLocation | null {
