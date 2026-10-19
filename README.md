@@ -79,14 +79,14 @@ gnome-extensions enable vesperal@kornifex.github.io
 
 | By day, remaining time | By night, elapsed time |
 |---|---|
-| ![The Sun early on its arc, 9h 27m until sunset](docs/screenshots/top-bar.png) | ![The Moon halfway along its arc, 6h 14m since sunset](docs/screenshots/night.png) |
+| ![The Sun early on its arc, 8h 50m until sunset](docs/screenshots/top-bar.png) | ![The Moon at its first quarter early on its arc, 1h 17m since sunset](docs/screenshots/night.png) |
 
 The part of the arc drawn in full is the part the duration measures: the way ahead of the Sun
 for remaining time, the way behind the Moon for elapsed time.
 
 ## Preferences
 
-![Vesperal preferences](docs/screenshots/preferences.png)
+![The Display page of the preferences](docs/screenshots/preferences.png)
 
 | Page | Setting | Choices | Default |
 |---|---|---|---|
@@ -109,6 +109,8 @@ from sunrise to sunset or from dawn to dusk as chosen, and gives today's day len
 dates of the next solstice and equinox. It moves on to the next day at midnight, even with the
 window left open. The preferences never ask the system where you are: in automatic mode, the
 Year page uses the last known location.
+
+![The Year page: the day length through the year in Paris, with today, the solstices and the equinoxes marked](docs/screenshots/year.png)
 
 ## Privacy
 
