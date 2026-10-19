@@ -14,6 +14,8 @@ const HORIZON_OVERHANG = 0.6;
 // Below and above these illuminated fractions, the Moon is drawn New or Full.
 const NEW_MOON_BELOW = 0.02;
 const FULL_MOON_ABOVE = 0.98;
+// The narrowest a crescent, or the dark edge of a gibbous Moon, is drawn, in pixels.
+const SMALLEST_PART_PX = 2;
 
 /**
  * Draws the Sun arc in the panel's foreground colour, so it renders like a symbolic icon:
@@ -62,7 +64,7 @@ export class SunArcIcon {
     // Sized on the width, so the drawing does not grow with the height of the bar; the arc is
     // flattened to stay low beside the text, within the room above the baseline.
     const lineWidth = Math.max(1, width / 18);
-    const bodyRadius = width / 7;
+    const bodyRadius = width / 8;
     const centreX = width / 2;
     const radiusX = centreX - bodyRadius - lineWidth;
     const horizonY = this.#text.visible
@@ -131,10 +133,10 @@ export class SunArcIcon {
 }
 
 /**
- * Draws the Moon in its phase, centred on (x, y): the whole disc as a thin outline, so that a
- * New Moon still shows, and the lit part filled. The lit part runs from the edge of the disc on
- * the lit side to the terminator, a half ellipse whose width follows the phase: it bulges
- * towards the lit side for a crescent, and away from it past the quarter.
+ * Draws the Moon in its phase, centred on (x, y): its lit part filled, or, at New Moon, the
+ * whole disc as a thin outline, so that it still shows. The lit part runs from the edge of the
+ * disc on the lit side to the terminator, a half ellipse whose width follows the phase: it
+ * bulges towards the lit side for a crescent, and away from it past the quarter.
  */
 function drawMoon(
   cr: Cairo.Context,
@@ -144,16 +146,19 @@ function drawMoon(
   radius: number,
   outlineWidth: number,
 ): void {
-  cr.setLineWidth(outlineWidth);
-  cr.arc(x, y, radius - outlineWidth / 2, 0, 2 * Math.PI);
-  cr.stroke();
+  if (moon.illuminated < NEW_MOON_BELOW) {
+    cr.setLineWidth(outlineWidth);
+    cr.arc(x, y, radius - outlineWidth / 2, 0, 2 * Math.PI);
+    cr.stroke();
+    return;
+  }
 
-  // At panel size, a thin crescent, or the thin dark edge of a nearly Full Moon, would vanish
-  // under the outline: both are kept two pixels wider than it, short of New and Full Moon.
-  const smallestPart = Math.min(0.5, (outlineWidth + 2) / (2 * radius));
+  // At panel size, a thin crescent, or the thin dark edge of a nearly Full Moon, would vanish:
+  // both are kept at least SMALLEST_PART_PX wide, short of Full Moon.
+  const smallestPart = Math.min(0.5, SMALLEST_PART_PX / (2 * radius));
   const illuminated =
-    moon.illuminated < NEW_MOON_BELOW || moon.illuminated > FULL_MOON_ABOVE
-      ? Math.round(moon.illuminated)
+    moon.illuminated > FULL_MOON_ABOVE
+      ? 1
       : Math.min(Math.max(moon.illuminated, smallestPart), 1 - smallestPart);
 
   cr.save();
