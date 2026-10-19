@@ -1,14 +1,15 @@
 import Clutter from "gi://Clutter";
 import St from "gi://St";
+import * as Main from "resource:///org/gnome/shell/ui/main.js";
 import * as PanelMenu from "resource:///org/gnome/shell/ui/panelMenu.js";
 import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js";
 import type { MenuRow, ViewModel } from "@vesperal/core";
-import type { SunArcPosition } from "./settings.ts";
+import type { IndicatorPosition, SunArcPosition } from "./settings.ts";
 import { SunArcIcon } from "./sunArcIcon.ts";
 
 /** The panel indicator and its menu, rendering a view model. */
 export class VesperalIndicator {
-  readonly button: PanelMenu.Button;
+  #button: PanelMenu.Button | null;
   readonly #box = new St.BoxLayout({ style_class: "vesperal-indicator" });
   readonly #label = new St.Label({ y_align: Clutter.ActorAlign.CENTER });
   readonly #arcIcon = new SunArcIcon(this.#label);
@@ -26,19 +27,11 @@ export class VesperalIndicator {
   ) {
     this.#box.add_child(this.#arcIcon.actor);
     this.#box.add_child(this.#label);
-    this.button = new PanelMenu.Button(0.5, name);
-    this.button.add_child(this.#box);
-    // The button's own gesture opens the menu on a press of any button: keep it to the primary
-    // one (touch counts as primary), and give the secondary one its own gesture.
-    this.button._clickGesture.required_button = Clutter.BUTTON_PRIMARY;
-    const secondaryClick = new Clutter.ClickGesture({
-      required_button: Clutter.BUTTON_SECONDARY,
-      recognize_on_press: true,
-    });
-    secondaryClick.connect("recognize", actions.secondaryClick);
-    this.button.add_action(secondaryClick);
+    this.#button = new PanelMenu.Button(0.5, name);
+    this.#button.add_child(this.#box);
+    splitClicks(this.#button, actions.secondaryClick);
 
-    const menu = this.button.menu as PopupMenu.PopupMenu;
+    const menu = this.#button.menu as PopupMenu.PopupMenu;
     menu.addMenuItem(this.#rows);
     this.#manualLocationEntry.connect("activate", actions.manualLocationEntry.activate);
     menu.addMenuItem(this.#manualLocationEntry);
@@ -46,10 +39,28 @@ export class VesperalIndicator {
     menu.addAction(actions.preferences.label, actions.preferences.activate);
   }
 
+  /** Adds the indicator to the panel, at the given position, under the given role. */
+  addToPanel(role: string, position: IndicatorPosition): void {
+    if (!this.#button) return;
+    switch (position) {
+      case "next-to-clock":
+        Main.panel.addToStatusArea(role, this.#button, indexRightOfClock(), "center");
+        break;
+      case "left":
+        // Out of range, so appended: after everything already on the left side.
+        Main.panel.addToStatusArea(role, this.#button, -1, "left");
+        break;
+      case "right":
+        Main.panel.addToStatusArea(role, this.#button, 0, "right");
+        break;
+    }
+  }
+
   show(view: ViewModel): void {
     if (view.bar.arc) this.#arcIcon.arc = view.bar.arc;
     this.#arcIcon.actor.visible = view.bar.arc !== null;
-    this.#label.text = view.bar.text;
+    this.#label.text = view.bar.text ?? "";
+    this.#label.visible = view.bar.text !== null;
     this.#showRows(view.menu.rows);
     this.#manualLocationEntry.label.text = view.menu.manualLocationEntry ?? "";
     this.#manualLocationEntry.visible = view.menu.manualLocationEntry !== null;
@@ -61,7 +72,8 @@ export class VesperalIndicator {
   }
 
   destroy(): void {
-    this.button.destroy();
+    this.#button?.destroy();
+    this.#button = null;
   }
 
   #showRows(rows: readonly MenuRow[]): void {
@@ -80,4 +92,48 @@ export class VesperalIndicator {
       this.#rows.addMenuItem(item);
     }
   }
+}
+
+/**
+ * Keeps the button's menu to the primary button (touch counts as primary), and runs
+ * `secondaryClick` on a press of the secondary button instead. The button opens its menu on a
+ * press of any button: from a click gesture since GNOME Shell 50, from its event handler on
+ * GNOME Shell 49.
+ */
+function splitClicks(button: PanelMenu.Button, secondaryClick: () => void): void {
+  const { _clickGesture: clickGesture } = button as { _clickGesture?: Clutter.ClickGesture };
+  if (clickGesture) {
+    clickGesture.required_button = Clutter.BUTTON_PRIMARY;
+    const secondaryGesture = new Clutter.ClickGesture({
+      required_button: Clutter.BUTTON_SECONDARY,
+      recognize_on_press: true,
+    });
+    // Tracked on the button, so the handler goes with it when it is destroyed.
+    secondaryGesture.connectObject("recognize", secondaryClick, button);
+    button.add_action(secondaryGesture);
+    return;
+  }
+  // GNOME Shell 49: handlers of the "event" signal run before the button's own, and stopping
+  // the secondary press there keeps the menu closed. Tracked on the button, like the gesture.
+  button.connectObject(
+    "event",
+    (_actor: Clutter.Actor, event: Clutter.Event) => {
+      if (
+        event.type() !== Clutter.EventType.BUTTON_PRESS ||
+        event.get_button() !== Clutter.BUTTON_SECONDARY
+      ) {
+        return Clutter.EVENT_PROPAGATE;
+      }
+      secondaryClick();
+      return Clutter.EVENT_STOP;
+    },
+    button,
+  );
+}
+
+/** The index in the panel's centre box just after the GNOME clock. */
+function indexRightOfClock(): number {
+  const clock = Main.panel.statusArea.dateMenu?.container;
+  const siblings = clock?.get_parent()?.get_children() ?? [];
+  return clock ? siblings.indexOf(clock) + 1 : 0;
 }

@@ -1,0 +1,445 @@
+# Czech translations for Vesperal.
+# Machine translation by Claude Code (Anthropic), awaiting review by a native speaker.
+# Copyright (C) 2026 Julien Seren-Rosso
+# This file is distributed under the same license as the Vesperal package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: vesperal\n"
+"Report-Msgid-Bugs-To: https://github.com/kornifex/vesperal/issues\n"
+"POT-Creation-Date: 2026-10-18 15:24+0200\n"
+"PO-Revision-Date: 2026-10-17 12:00+0200\n"
+"Last-Translator: Claude Code (machine translation, unreviewed)\n"
+"Language-Team: none\n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+
+#. Translators: a notification, e.g. "Sunset in 30 min".
+#: packages/core/src/presentation.ts:151
+msgid "{event} in {duration}"
+msgstr "{event} za {duration}"
+
+#. Translators: a notification at the moment of an event, e.g. "Sunset now".
+#: packages/core/src/presentation.ts:156
+msgid "{event} now"
+msgstr "{event} nyní"
+
+#: packages/core/src/presentation.ts:164
+msgid "Dawn"
+msgstr "Svítání"
+
+#: packages/core/src/presentation.ts:165
+msgid "Sunrise"
+msgstr "Východ slunce"
+
+#: packages/core/src/presentation.ts:166
+msgid "Sunset"
+msgstr "Západ slunce"
+
+#: packages/core/src/presentation.ts:167
+msgid "Dusk"
+msgstr "Soumrak"
+
+#: packages/core/src/presentation.ts:174
+#: packages/gnome-extension/src/prefs.ts:476
+msgid "Location unknown"
+msgstr "Neznámá poloha"
+
+#: packages/core/src/presentation.ts:175
+msgid "Set a location manually…"
+msgstr "Nastavit polohu ručně…"
+
+#. Translators: shown in the top bar instead of the Reading when something went wrong.
+#: packages/core/src/presentation.ts:183
+msgid "Error"
+msgstr "Chyba"
+
+#: packages/core/src/presentation.ts:203
+msgid "Polar day"
+msgstr "Polární den"
+
+#: packages/core/src/presentation.ts:205
+msgid "Polar night"
+msgstr "Polární noc"
+
+#. Translators: shown in the top bar instead of the Reading while, counting from Dawn to
+#. Dusk, the Sun does not get far enough below the horizon for Dusk for over 24 hours.
+#: packages/core/src/presentation.ts:209
+msgid "No dark night"
+msgstr "Žádná tmavá noc"
+
+#: packages/core/src/presentation.ts:235 packages/core/src/presentation.ts:250
+#: packages/core/src/yearPresentation.ts:54
+msgid "Day length"
+msgstr "Délka dne"
+
+#: packages/core/src/presentation.ts:239
+msgid "Night length"
+msgstr "Délka noci"
+
+#: packages/core/src/presentation.ts:276
+#: packages/gnome-extension/src/prefs.ts:109
+msgid "Remaining time"
+msgstr "Zbývající čas"
+
+#: packages/core/src/presentation.ts:282
+#: packages/gnome-extension/src/prefs.ts:110
+msgid "Elapsed time"
+msgstr "Uplynulý čas"
+
+#: packages/core/src/presentation.ts:304
+msgid "Automatic location"
+msgstr "Automatická poloha"
+
+#: packages/core/src/presentation.ts:306
+msgid "Manual location"
+msgstr "Ruční poloha"
+
+#: packages/core/src/presentation.ts:308
+msgid "Last known location"
+msgstr "Poslední známá poloha"
+
+#: packages/core/src/presentation.ts:324
+msgid "{degrees}° N"
+msgstr "{degrees}° s. š."
+
+#: packages/core/src/presentation.ts:324
+msgid "{degrees}° S"
+msgstr "{degrees}° j. š."
+
+#: packages/core/src/presentation.ts:328
+msgid "{degrees}° E"
+msgstr "{degrees}° v. d."
+
+#: packages/core/src/presentation.ts:328
+msgid "{degrees}° W"
+msgstr "{degrees}° z. d."
+
+#. Translators: a Civil time on the day before today, e.g. "yesterday at 21:58".
+#: packages/core/src/presentation.ts:349
+msgid "yesterday at {time}"
+msgstr "včera v {time}"
+
+#. Translators: a Civil time on the day after today, e.g. "tomorrow at 05:47".
+#: packages/core/src/presentation.ts:352
+msgid "tomorrow at {time}"
+msgstr "zítra v {time}"
+
+#. Translators: a Civil time further away than yesterday or tomorrow, e.g. "Thu 18 Jun at
+#. 21:58"; {date} follows the locale of dates and times.
+#: packages/core/src/presentation.ts:362
+msgid "{date} at {time}"
+msgstr "{date} v {time}"
+
+#. Translators: a duration over 24 hours, e.g. "68d 23h", for a Polar day or Polar night.
+#: packages/core/src/presentation.ts:370
+msgid "{days}d {hours}h"
+msgstr "{days} d {hours} h"
+
+#. Translators: a duration under one hour, e.g. "42 min".
+#: packages/core/src/presentation.ts:377
+msgid "{minutes} min"
+msgstr "{minutes} min"
+
+#. Translators: a duration over one hour, e.g. "3h 05m"; {minutes} always has two digits.
+#: packages/core/src/presentation.ts:380
+msgid "{hours}h {minutes}m"
+msgstr "{hours} h {minutes} min"
+
+#. Translators: how much longer or shorter a Day is than the Day before, under a
+#. minute, after an arrow: e.g. "↑45s".
+#: packages/core/src/presentation.ts:411
+msgid "{seconds}s"
+msgstr "{seconds} s"
+
+#. Translators: how much longer or shorter a Day is than the Day before, after an
+#. arrow: e.g. "↓3m".
+#: packages/core/src/presentation.ts:414
+msgid "{minutes}m"
+msgstr "{minutes} min"
+
+#: packages/core/src/yearPresentation.ts:99
+msgid "today"
+msgstr "dnes"
+
+#: packages/core/src/yearPresentation.ts:101
+msgid "tomorrow"
+msgstr "zítra"
+
+#. Translators: how far away a date is, in days; never fewer than 2.
+#: packages/core/src/yearPresentation.ts:103
+msgid "in {days} day"
+msgid_plural "in {days} days"
+msgstr[0] "za {days} den"
+msgstr[1] "za {days} dny"
+msgstr[2] "za {days} dní"
+
+#. Translators: a date to come, then how far away it is, e.g. "Monday 21 December, in 65 days";
+#. {date} follows the locale of dates and times.
+#: packages/core/src/yearPresentation.ts:106
+msgid "{date}, {relative}"
+msgstr "{date}, {relative}"
+
+#: packages/core/src/yearPresentation.ts:113
+msgid "March equinox"
+msgstr "Březnová rovnodennost"
+
+#: packages/core/src/yearPresentation.ts:115
+msgid "June solstice"
+msgstr "Červnový slunovrat"
+
+#: packages/core/src/yearPresentation.ts:117
+msgid "September equinox"
+msgstr "Zářijová rovnodennost"
+
+#: packages/core/src/yearPresentation.ts:119
+msgid "December solstice"
+msgstr "Prosincový slunovrat"
+
+#: packages/gnome-extension/src/extension.ts:108
+msgid "Preferences"
+msgstr "Předvolby"
+
+#. Translators: a page of the preferences, about what the top bar and the menu show.
+#: packages/gnome-extension/src/prefs.ts:59
+msgid "Display"
+msgstr "Zobrazení"
+
+#: packages/gnome-extension/src/prefs.ts:63
+msgid "Location and notifications"
+msgstr "Poloha a oznámení"
+
+#: packages/gnome-extension/src/prefs.ts:67
+msgid "Year"
+msgstr "Rok"
+
+#: packages/gnome-extension/src/prefs.ts:99
+msgid "Reading"
+msgstr "Zobrazená doba"
+
+#: packages/gnome-extension/src/prefs.ts:100
+msgid "The duration shown in the top bar"
+msgstr "Na horní liště"
+
+#: packages/gnome-extension/src/prefs.ts:119
+msgid "Until the next dawn or dusk"
+msgstr "Do příštího svítání nebo soumraku"
+
+#: packages/gnome-extension/src/prefs.ts:120
+msgid "Until the next sunrise or sunset"
+msgstr "Do příštího východu nebo západu slunce"
+
+#: packages/gnome-extension/src/prefs.ts:124
+msgid "Since the last dawn or dusk"
+msgstr "Od posledního svítání nebo soumraku"
+
+#: packages/gnome-extension/src/prefs.ts:125
+msgid "Since the last sunrise or sunset"
+msgstr "Od posledního východu nebo západu slunce"
+
+#: packages/gnome-extension/src/prefs.ts:139
+msgid "Content"
+msgstr "Obsah"
+
+#: packages/gnome-extension/src/prefs.ts:140
+msgid "What the top bar shows"
+msgstr "Co zobrazuje horní lišta"
+
+#: packages/gnome-extension/src/prefs.ts:149
+msgid "Sun arc and duration"
+msgstr "Sluneční oblouk a doba"
+
+#: packages/gnome-extension/src/prefs.ts:150
+msgid "Sun arc only"
+msgstr "Jen sluneční oblouk"
+
+#: packages/gnome-extension/src/prefs.ts:151
+msgid "Duration only"
+msgstr "Jen doba"
+
+#: packages/gnome-extension/src/prefs.ts:163
+msgid "Sun arc"
+msgstr "Sluneční oblouk"
+
+#: packages/gnome-extension/src/prefs.ts:164
+msgid "Its side of the Reading in the top bar"
+msgstr "Na které straně doby, na horní liště"
+
+#: packages/gnome-extension/src/prefs.ts:183
+msgid "Left"
+msgstr "Vlevo"
+
+#: packages/gnome-extension/src/prefs.ts:184
+msgid "Right"
+msgstr "Vpravo"
+
+#. Translators: where the indicator sits in the top bar, not a geographic position.
+#: packages/gnome-extension/src/prefs.ts:197
+msgid "Position"
+msgstr "Umístění"
+
+#: packages/gnome-extension/src/prefs.ts:198
+msgid "Where the indicator sits in the top bar"
+msgstr "Kde je ukazatel na horní liště"
+
+#: packages/gnome-extension/src/prefs.ts:212
+msgid "Next to the clock"
+msgstr "Vedle hodin"
+
+#: packages/gnome-extension/src/prefs.ts:213
+msgid "After the workspace indicator"
+msgstr "Za ukazatelem pracovních ploch"
+
+#: packages/gnome-extension/src/prefs.ts:213
+msgid "Left side"
+msgstr "Levá strana"
+
+#: packages/gnome-extension/src/prefs.ts:214
+msgid "Before the system indicators"
+msgstr "Před systémovými ukazateli"
+
+#: packages/gnome-extension/src/prefs.ts:214
+msgid "Right side"
+msgstr "Pravá strana"
+
+#: packages/gnome-extension/src/prefs.ts:223
+msgid "Twilight"
+msgstr "Svítání a soumrak"
+
+#: packages/gnome-extension/src/prefs.ts:224
+msgid "When Dawn and Dusk fall"
+msgstr "Kdy nastávají"
+
+#: packages/gnome-extension/src/prefs.ts:233
+msgid "Civil"
+msgstr "Občanský"
+
+#: packages/gnome-extension/src/prefs.ts:233
+msgid "Sun 6° below the horizon"
+msgstr "Slunce 6° pod obzorem"
+
+#: packages/gnome-extension/src/prefs.ts:234
+msgid "Nautical"
+msgstr "Nautický"
+
+#: packages/gnome-extension/src/prefs.ts:234
+msgid "Sun 12° below the horizon"
+msgstr "Slunce 12° pod obzorem"
+
+#: packages/gnome-extension/src/prefs.ts:235
+msgid "Astronomical"
+msgstr "Astronomický"
+
+#: packages/gnome-extension/src/prefs.ts:235
+msgid "Sun 18° below the horizon"
+msgstr "Slunce 18° pod obzorem"
+
+#: packages/gnome-extension/src/prefs.ts:244
+msgid "Day and night"
+msgstr "Den a noc"
+
+#: packages/gnome-extension/src/prefs.ts:245
+msgid "When the day begins and ends"
+msgstr "Kdy den začíná a končí"
+
+#. Translators: "the twilight above" is the choice of Twilight just above this one.
+#: packages/gnome-extension/src/prefs.ts:250
+msgid ""
+"The day lasts as long as it is light enough outside for the twilight above. "
+"With nautical or astronomical twilight, summer nights may not get that dark "
+"for weeks, even at mid-latitudes."
+msgstr ""
+"Den trvá, dokud je venku dost světla podle soumraku zvoleného výše. S "
+"nautickým nebo astronomickým soumrakem nemusí letní noci celé týdny tolik "
+"ztmavnout, a to ani ve středních zeměpisných šířkách."
+
+#: packages/gnome-extension/src/prefs.ts:258
+msgid "From sunrise to sunset"
+msgstr "Od východu do západu slunce"
+
+#: packages/gnome-extension/src/prefs.ts:259
+msgid "From dawn to dusk"
+msgstr "Od svítání do soumraku"
+
+#: packages/gnome-extension/src/prefs.ts:276
+msgid "Location"
+msgstr "Poloha"
+
+#: packages/gnome-extension/src/prefs.ts:288
+msgid "Automatic"
+msgstr "Automatická"
+
+#: packages/gnome-extension/src/prefs.ts:289
+msgid "Manual"
+msgstr "Ruční"
+
+#: packages/gnome-extension/src/prefs.ts:294
+msgid "Search for a city"
+msgstr "Hledat město"
+
+#: packages/gnome-extension/src/prefs.ts:309
+msgid "Coordinates"
+msgstr "Souřadnice"
+
+#: packages/gnome-extension/src/prefs.ts:310
+msgid "For any point on Earth, in decimal degrees"
+msgstr "Pro libovolné místo na Zemi, v desetinných stupních"
+
+#: packages/gnome-extension/src/prefs.ts:314
+msgid "Latitude (north positive)"
+msgstr "Zeměpisná šířka (sever kladně)"
+
+#: packages/gnome-extension/src/prefs.ts:319
+msgid "Longitude (east positive)"
+msgstr "Zeměpisná délka (východ kladně)"
+
+#: packages/gnome-extension/src/prefs.ts:329
+msgid "From the system's location services"
+msgstr "Ze služeb určování polohy systému"
+
+#: packages/gnome-extension/src/prefs.ts:330
+msgid "Location services are off"
+msgstr "Služby určování polohy jsou vypnuté"
+
+#: packages/gnome-extension/src/prefs.ts:336
+msgid "No location set"
+msgstr "Není nastavena žádná poloha"
+
+#: packages/gnome-extension/src/prefs.ts:375
+msgid "Latitude must be between −90 and 90"
+msgstr "Zeměpisná šířka musí být mezi −90 a 90"
+
+#: packages/gnome-extension/src/prefs.ts:378
+msgid "Longitude must be between −180 and 180"
+msgstr "Zeměpisná délka musí být mezi −180 a 180"
+
+#: packages/gnome-extension/src/prefs.ts:404
+msgid "Notifications"
+msgstr "Oznámení"
+
+#: packages/gnome-extension/src/prefs.ts:406
+msgid "Send notifications"
+msgstr "Posílat oznámení"
+
+#: packages/gnome-extension/src/prefs.ts:431
+msgid "Minutes before"
+msgstr "Minut předem"
+
+#: packages/gnome-extension/src/prefs.ts:432
+msgid "0 notifies at the event itself"
+msgstr "0 upozorní v okamžiku události"
+
+#: packages/gnome-extension/src/prefs.ts:460
+msgid "Day length through the year"
+msgstr "Délka dne v průběhu roku"
+
+#: packages/gnome-extension/src/prefs.ts:467
+msgid "Set a location"
+msgstr "Nastavit polohu"
+
+#: packages/gnome-extension/src/prefs.ts:477
+msgid "Set a location to see its year"
+msgstr "Nastavte polohu a uvidíte její rok"

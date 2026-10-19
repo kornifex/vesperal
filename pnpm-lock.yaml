@@ -202,6 +202,9 @@ importers:
       '@girs/gweather-4.0':
         specifier: ^4.9.0
         version: 4.9.0
+      '@girs/pangocairo-1.0':
+        specifier: ^4.9.0
+        version: 4.9.0
       esbuild:
         specifier: ^0.28.2
         version: 0.28.2

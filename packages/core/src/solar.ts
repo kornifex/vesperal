@@ -1,14 +1,9 @@
 // Solar position after the NOAA Solar Calculator (Meeus, "Astronomical Algorithms").
+import { degrees, julianCenturiesSinceJ2000, julianDayOf, radians } from "./astronomy.ts";
 import type { Location } from "./location.ts";
 import { MINUTES_PER_DAY, MS_PER_DAY, MS_PER_MINUTE } from "./time.ts";
 
 const MINUTES_PER_HALF_DAY = MINUTES_PER_DAY / 2;
-const UNIX_EPOCH_JULIAN_DAY = 2_440_587.5;
-const J2000_JULIAN_DAY = 2_451_545;
-const DAYS_PER_JULIAN_CENTURY = 36_525;
-
-const radians = (angle: number): number => (angle * Math.PI) / 180;
-const degrees = (angle: number): number => (angle * 180) / Math.PI;
 
 /**
  * Geometric altitude of the Sun's centre above the horizon, in degrees, at `epochMs`
@@ -57,8 +52,7 @@ export function culminationIndexAt(location: Location, epochMs: number): number 
 }
 
 function sunAt(epochMs: number): { declination: number; equationOfTimeMinutes: number } {
-  const julianDay = epochMs / MS_PER_DAY + UNIX_EPOCH_JULIAN_DAY;
-  const t = (julianDay - J2000_JULIAN_DAY) / DAYS_PER_JULIAN_CENTURY;
+  const t = julianCenturiesSinceJ2000(julianDayOf(epochMs));
 
   const meanLongitude = (280.46646 + t * (36_000.76983 + t * 0.0003032)) % 360;
   const meanAnomaly = 357.52911 + t * (35_999.05029 - 0.0001537 * t);

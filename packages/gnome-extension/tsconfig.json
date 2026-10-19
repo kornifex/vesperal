@@ -6,7 +6,8 @@
       "@girs/gnome-shell/ambient",
       "@girs/gnome-shell/extensions/global",
       "@girs/geoclue-2.0/ambient",
-      "@girs/gweather-4.0/ambient"
+      "@girs/gweather-4.0/ambient",
+      "@girs/pangocairo-1.0/ambient"
     ]
   },
   "include": ["src"]

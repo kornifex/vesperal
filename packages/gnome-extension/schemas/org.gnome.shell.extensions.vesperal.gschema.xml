@@ -17,6 +17,20 @@
     <value nick="left" value="0"/>
     <value nick="right" value="1"/>
   </enum>
+  <enum id="org.gnome.shell.extensions.vesperal.BarContent">
+    <value nick="arc-and-duration" value="0"/>
+    <value nick="arc" value="1"/>
+    <value nick="duration" value="2"/>
+  </enum>
+  <enum id="org.gnome.shell.extensions.vesperal.IndicatorPosition">
+    <value nick="next-to-clock" value="0"/>
+    <value nick="left" value="1"/>
+    <value nick="right" value="2"/>
+  </enum>
+  <enum id="org.gnome.shell.extensions.vesperal.PhaseBounds">
+    <value nick="sunrise-sunset" value="0"/>
+    <value nick="dawn-dusk" value="1"/>
+  </enum>
   <schema id="org.gnome.shell.extensions.vesperal" path="/org/gnome/shell/extensions/vesperal/">
     <key name="location-mode" enum="org.gnome.shell.extensions.vesperal.LocationMode">
       <default>'automatic'</default>
@@ -41,12 +55,43 @@
     <key name="twilight" enum="org.gnome.shell.extensions.vesperal.Twilight">
       <default>'civil'</default>
       <summary>Twilight</summary>
-      <description>How far below the horizon the Sun must be for the Dawn and Dusk shown in the menu: 6° (civil), 12° (nautical) or 18° (astronomical).</description>
+      <description>How far below the horizon the Sun must be for Dawn and Dusk: 6° (civil), 12° (nautical) or 18° (astronomical).</description>
+    </key>
+    <key name="phase-bounds" enum="org.gnome.shell.extensions.vesperal.PhaseBounds">
+      <default>'sunrise-sunset'</default>
+      <summary>Phase bounds</summary>
+      <description>The events the Day and the Night run between: Sunrise and Sunset, or Dawn and Dusk of the chosen Twilight.</description>
     </key>
     <key name="sun-arc-position" enum="org.gnome.shell.extensions.vesperal.SunArcPosition">
       <default>'left'</default>
       <summary>Sun arc position</summary>
       <description>Which side of the Reading the Sun arc sits on in the top bar.</description>
+    </key>
+    <key name="bar-content" enum="org.gnome.shell.extensions.vesperal.BarContent">
+      <default>'arc-and-duration'</default>
+      <summary>Top bar content</summary>
+      <description>What the indicator shows in the top bar: the Sun arc and the Reading, the Sun arc only, or the Reading only. The "Location unknown" and "Error" states always show their text.</description>
+    </key>
+    <key name="indicator-position" enum="org.gnome.shell.extensions.vesperal.IndicatorPosition">
+      <default>'next-to-clock'</default>
+      <summary>Indicator position</summary>
+      <description>Where the indicator sits in the top bar: just after the clock, at the end of the left side, or at the start of the right side.</description>
+    </key>
+    <key name="notifications" type="b">
+      <default>false</default>
+      <summary>Notifications</summary>
+      <description>Whether to notify ahead of the events chosen in notification-events.</description>
+    </key>
+    <key name="notification-events" type="as">
+      <default>['sunset']</default>
+      <summary>Events to notify of</summary>
+      <description>The events to notify ahead of, among "dawn", "sunrise", "sunset" and "dusk". Dawn and Dusk follow the chosen Twilight.</description>
+    </key>
+    <key name="notification-lead-time" type="i">
+      <range min="0" max="180"/>
+      <default>30</default>
+      <summary>Notification lead time</summary>
+      <description>How many minutes before each event to notify of it; 0 notifies at the event itself.</description>
     </key>
   </schema>
 </schemalist>

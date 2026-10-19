@@ -1,24 +1,30 @@
-import type Gio from "gi://Gio";
+import Gio from "gi://Gio";
 import GnomeDesktop from "gi://GnomeDesktop";
 import { gettext as _, Extension } from "resource:///org/gnome/shell/extensions/extension.js";
-import * as Main from "resource:///org/gnome/shell/ui/main.js";
 import {
-  type LocationMode,
-  type NamedLocation,
+  type Localisation,
+  type LocationInUse,
+  NotificationSchedule,
   present,
   presentError,
   presentLocationUnknown,
+  presentNotification,
   READINGS,
   readClock,
-  resolveLocation,
 } from "@vesperal/core";
 import { AutomaticLocation } from "./automaticLocation.ts";
 import { VesperalIndicator } from "./indicator.ts";
 import { civilTimeLocale } from "./locale.ts";
+import { Notifier } from "./notifier.ts";
 import {
-  readLastKnownLocation,
+  readBarContent,
+  readIndicatorPosition,
+  readLocationInUse,
   readLocationMode,
-  readManualLocation,
+  readNotificationLeadMinutes,
+  readNotificationsEnabled,
+  readNotifiedEvents,
+  readPhaseBounds,
   readReading,
   readSunArcPosition,
   readTwilight,
@@ -32,23 +38,27 @@ export default class VesperalExtension extends Extension {
   #settingsChangedId = 0;
   #locationModeChangedId = 0;
   #sunArcPositionChangedId = 0;
+  #indicatorPositionChangedId = 0;
   // Only exists in Automatic mode, so that Manual mode never asks the system for a Location.
   #automaticLocation: AutomaticLocation | null = null;
   // GNOME's WallClock notifies on each minute boundary and after suspend/resume, time-zone
   // changes and clock adjustments, so the extension needs no timer of its own.
   #wallClock: GnomeDesktop.WallClock | null = null;
   #wallClockChangedId = 0;
+  // Kept while the extension is disabled, as it is when the screen is locked, so that unlocking
+  // does not announce again the events already notified of. It is plain data, with nothing to
+  // disconnect or destroy.
+  #notificationSchedule: NotificationSchedule | null = null;
+  #notifier: Notifier | null = null;
 
   override enable(): void {
-    this.#indicator = new VesperalIndicator(this.metadata.name, {
-      preferences: { label: _("Preferences"), activate: () => this.openPreferences() },
-      // The preferences open on the city search when no Location is known (see prefs.ts).
-      manualLocationEntry: { activate: () => this.openPreferences() },
-      secondaryClick: () => this.#switchReading(),
-    });
-    Main.panel.addToStatusArea(this.uuid, this.#indicator.button, positionRightOfClock(), "center");
-
     this.#settings = this.getSettings();
+    this.#notificationSchedule ??= new NotificationSchedule();
+    this.#notifier = new Notifier(
+      this.metadata.name,
+      new Gio.FileIcon({ file: this.dir.resolve_relative_path("icons/vesperal.svg") }),
+    );
+    this.#placeIndicator();
     // Connected first, so that the Automatic location follows the mode before the refresh.
     this.#locationModeChangedId = this.#settings.connect("changed::location-mode", () =>
       this.#followLocationMode(),
@@ -56,12 +66,15 @@ export default class VesperalExtension extends Extension {
     this.#sunArcPositionChangedId = this.#settings.connect("changed::sun-arc-position", () =>
       this.#placeSunArc(),
     );
+    // Connected before the refresh, so that the new indicator shows the clock at once.
+    this.#indicatorPositionChangedId = this.#settings.connect("changed::indicator-position", () =>
+      this.#placeIndicator(),
+    );
     this.#settingsChangedId = this.#settings.connect("changed", (_settings, key: string) => {
       // Only #update writes the Last known location, and it does not need refreshing for it.
       if (key !== "last-known-location") this.#refresh();
     });
     this.#followLocationMode();
-    this.#placeSunArc();
     this.#wallClock = new GnomeDesktop.WallClock();
     this.#wallClockChangedId = this.#wallClock.connect("notify::clock", () => this.#refresh());
 
@@ -75,10 +88,30 @@ export default class VesperalExtension extends Extension {
     this.#automaticLocation = null;
     this.#settings?.disconnect(this.#locationModeChangedId);
     this.#settings?.disconnect(this.#sunArcPositionChangedId);
+    this.#settings?.disconnect(this.#indicatorPositionChangedId);
     this.#settings?.disconnect(this.#settingsChangedId);
     this.#settings = null;
     this.#indicator?.destroy();
     this.#indicator = null;
+    this.#notifier?.destroy();
+    this.#notifier = null;
+  }
+
+  /**
+   * Places the indicator in the panel at the chosen position. A new indicator replaces the one
+   * already there, since the panel only places an indicator when it is added.
+   */
+  #placeIndicator(): void {
+    if (!this.#settings) return;
+    this.#indicator?.destroy();
+    this.#indicator = new VesperalIndicator(this.metadata.name, {
+      preferences: { label: _("Preferences"), activate: () => this.openPreferences() },
+      // The preferences open on the city search when no Location is known (see prefs.ts).
+      manualLocationEntry: { activate: () => this.openPreferences() },
+      secondaryClick: () => this.#switchReading(),
+    });
+    this.#indicator.addToPanel(this.uuid, readIndicatorPosition(this.#settings));
+    this.#placeSunArc();
   }
 
   #followLocationMode(): void {
@@ -110,7 +143,7 @@ export default class VesperalExtension extends Extension {
     try {
       this.#update();
     } catch (error) {
-      // Never leave a stale or broken Reading in the bar.
+      // Shows an error rather than a stale or broken Reading.
       this.getLogger().error(error);
       this.#indicator?.show(presentError((message) => this.gettext(message)));
     }
@@ -119,35 +152,54 @@ export default class VesperalExtension extends Extension {
   #update(): void {
     if (!this.#indicator || !this.#settings || !this.#wallClock) return;
 
-    const translate = (message: string): string => this.gettext(message);
-    const mode = readLocationMode(this.#settings);
-    const fromMode = this.#locationFromMode(mode, this.#settings);
-    // Only the Automatic location is remembered: the Manual location stays in its own key.
-    if (mode === "automatic" && fromMode) writeLastKnownLocation(this.#settings, fromMode);
-    const location = resolveLocation(mode, fromMode, readLastKnownLocation(this.#settings));
+    const now = new Date();
+    const localisation: Localisation = {
+      timeZone: this.#wallClock.timezone.get_identifier(),
+      locale: civilTimeLocale(),
+      translate: (message) => this.gettext(message),
+    };
+    // Only the Automatic location is remembered: the Manual location stays in its own key. It
+    // only exists in Automatic mode.
+    const automatic = this.#automaticLocation?.location ?? null;
+    if (automatic) writeLastKnownLocation(this.#settings, automatic);
+    const location = readLocationInUse(this.#settings, automatic);
+    const twilight = readTwilight(this.#settings);
     this.#indicator.show(
       location
-        ? present(readClock(location, new Date(), readTwilight(this.#settings)), {
+        ? present(readClock(location, now, twilight, readPhaseBounds(this.#settings)), {
             reading: readReading(this.#settings),
-            timeZone: this.#wallClock.timezone.get_identifier(),
-            locale: civilTimeLocale(),
-            translate,
+            barContent: readBarContent(this.#settings),
+            ...localisation,
             location,
           })
-        : presentLocationUnknown(translate),
+        : presentLocationUnknown(localisation.translate),
     );
+
+    try {
+      this.#notify(now, location, localisation);
+    } catch (error) {
+      // Logged apart from the refresh, so that the clock still shows when a notification fails.
+      this.getLogger().warn(error);
+    }
   }
 
-  /** The Location from the active mode, if it has one. */
-  #locationFromMode(mode: LocationMode, settings: Gio.Settings): NamedLocation | null {
-    if (mode === "manual") return readManualLocation(settings);
-    return this.#automaticLocation?.location ?? null;
+  /**
+   * Sends the notifications due at the tick `now`. Called on every refresh, even with
+   * notifications off, so that the schedule always knows the previous tick.
+   */
+  #notify(now: Date, location: LocationInUse | null, localisation: Localisation): void {
+    if (!this.#settings || !this.#notificationSchedule) return;
+    const due = this.#notificationSchedule.due(now, location, {
+      events: readNotificationsEnabled(this.#settings) ? readNotifiedEvents(this.#settings) : [],
+      leadMinutes: readNotificationLeadMinutes(this.#settings),
+      twilight: readTwilight(this.#settings),
+    });
+    if (!location) return;
+    for (const notification of due) {
+      this.#notifier?.notify(
+        notification.event,
+        presentNotification(notification, now, { ...localisation, location }),
+      );
+    }
   }
-}
-
-/** The index in the panel's centre box just after the GNOME clock. */
-function positionRightOfClock(): number {
-  const clock = Main.panel.statusArea.dateMenu?.container;
-  const siblings = clock?.get_parent()?.get_children() ?? [];
-  return clock ? siblings.indexOf(clock) + 1 : 0;
 }

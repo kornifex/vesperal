@@ -2,11 +2,13 @@ import { describe, expect, test } from "vitest";
 import {
   type ClockSnapshot,
   type MenuRow,
+  type MoonPhase,
   type PhaseKind,
   type PresentationOptions,
   present,
   presentError,
   presentLocationUnknown,
+  presentNotification,
 } from "./index.ts";
 
 const SECOND = 1_000;
@@ -17,6 +19,7 @@ const PARIS = { name: "Paris", latitude: 48.8566, longitude: 2.3522 };
 
 const OPTIONS: PresentationOptions = {
   reading: "remaining",
+  barContent: "arc-and-duration",
   timeZone: "Europe/Paris",
   locale: "en-GB",
   translate: (message) => message,
@@ -28,18 +31,26 @@ function snapshotOf(
   phase: { start: string; end: string },
   instant: string | number,
   lastDayLength = 16 * HOUR,
+  previousDayLength: number | null = null,
+  moon: MoonPhase = { illuminated: 0.25, waxing: true },
 ): ClockSnapshot {
   const start = Date.parse(phase.start);
   const end = Date.parse(phase.end);
   const now = typeof instant === "number" ? instant : Date.parse(instant);
   return {
     instant: new Date(now),
-    phase: { kind, start: new Date(start), end: new Date(end), isPolar: end - start > 24 * HOUR },
+    phase: { kind, start: new Date(start), end: new Date(end) },
+    longPhase: end - start <= 24 * HOUR ? null : kind === "day" ? "polar-day" : "polar-night",
     remaining: end - now,
     elapsed: now - start,
     progress: (now - start) / (end - start),
     lastDayLength,
+    previousDayLength,
+    moon,
+    // Counted from Sunrise to Sunset, with no Dawn or Dusk unless a test adds them.
     dawn: null,
+    sunrise: new Date(kind === "day" ? start : end),
+    sunset: new Date(kind === "day" ? end : start),
     dusk: null,
   };
 }
@@ -55,7 +66,7 @@ function dayWithRemaining(remaining: number): ClockSnapshot {
   return phaseWithRemaining("day", remaining);
 }
 
-function barText(remaining: number, options: PresentationOptions = OPTIONS): string {
+function barText(remaining: number, options: PresentationOptions = OPTIONS): string | null {
   return present(dayWithRemaining(remaining), options).bar.text;
 }
 
@@ -63,6 +74,8 @@ function barText(remaining: number, options: PresentationOptions = OPTIONS): str
 const FRENCH_CATALOGUE: Readonly<Record<string, string>> = {
   "{hours}h {minutes}m": "{hours} h {minutes}",
   "{minutes} min": "{minutes} min",
+  "{minutes}m": "{minutes} min",
+  "{seconds}s": "{seconds} s",
   Sunrise: "Lever du soleil",
   Sunset: "Coucher du soleil",
   "yesterday at {time}": "hier à {time}",
@@ -82,10 +95,13 @@ const FRENCH_CATALOGUE: Readonly<Record<string, string>> = {
   "{degrees}° W": "{degrees}° O",
   "Polar day": "Jour polaire",
   "Polar night": "Nuit polaire",
+  "No dark night": "Pas de nuit noire",
   "{days}d {hours}h": "{days} j {hours} h",
   "Location unknown": "Lieu inconnu",
   "Set a location manually…": "Définir un lieu manuellement…",
   Error: "Erreur",
+  "{event} in {duration}": "{event} dans {duration}",
+  "{event} now": "{event} maintenant",
 };
 const FRENCH: PresentationOptions = {
   ...OPTIONS,
@@ -129,7 +145,7 @@ describe("present: Elapsed time in the bar", () => {
   const ELAPSED: PresentationOptions = { ...OPTIONS, reading: "elapsed" };
   const PHASE_LENGTH = 14 * HOUR;
 
-  function elapsedText(elapsed: number): string {
+  function elapsedText(elapsed: number): string | null {
     return present(dayWithRemaining(PHASE_LENGTH - elapsed), ELAPSED).bar.text;
   }
 
@@ -164,10 +180,37 @@ describe("present: Sun arc", () => {
     expect(arc).toEqual({ body: "sun", progress: 0.75, emphasis: "ahead" });
   });
 
-  test("puts the Moon on the arc during a Night", () => {
+  test("puts the Moon on the arc during a Night, in its phase", () => {
     const { arc } = present(phaseWithRemaining("night", 7 * HOUR), OPTIONS).bar;
 
-    expect(arc).toEqual({ body: "moon", progress: 0.5, emphasis: "ahead" });
+    // A waxing crescent, a quarter lit, seen from Paris: lit on the right.
+    expect(arc).toEqual({
+      body: "moon",
+      progress: 0.5,
+      emphasis: "ahead",
+      illuminated: 0.25,
+      litSide: "right",
+    });
+  });
+
+  test("lights the Moon on the side the Sun is, as seen from each hemisphere", () => {
+    const night = { start: "2026-06-21T19:58:00Z", end: "2026-06-22T03:47:00Z" };
+    const litSide = (moon: MoonPhase, latitude: number) => {
+      const snapshot = snapshotOf("night", night, "2026-06-22T00:00:00Z", 16 * HOUR, null, moon);
+      const location = { ...OPTIONS.location, latitude };
+      const { arc } = present(snapshot, { ...OPTIONS, location }).bar;
+      return arc?.body === "moon" ? arc.litSide : undefined;
+    };
+    const waxing = { illuminated: 0.6, waxing: true };
+    const waning = { illuminated: 0.6, waxing: false };
+
+    expect(litSide(waxing, 48.86)).toBe("right");
+    expect(litSide(waning, 48.86)).toBe("left");
+    // Sydney: the Moon is seen upside down.
+    expect(litSide(waxing, -33.87)).toBe("left");
+    expect(litSide(waning, -33.87)).toBe("right");
+    // The equator counts as north.
+    expect(litSide(waxing, 0)).toBe("right");
   });
 
   test("covers the whole Phase, from its very start to just before its end", () => {
@@ -182,6 +225,23 @@ describe("present: Sun arc", () => {
     expect(present(snapshot, OPTIONS).bar.arc?.emphasis).toBe("ahead");
     // Elapsed time: the way already behind it.
     expect(present(snapshot, { ...OPTIONS, reading: "elapsed" }).bar.arc?.emphasis).toBe("behind");
+  });
+});
+
+describe("present: what the bar shows", () => {
+  test("shows the Sun arc alone, with no text, when the user chose the arc only", () => {
+    const bar = present(dayWithRemaining(3 * HOUR), { ...OPTIONS, barContent: "arc" }).bar;
+
+    expect(bar).toEqual({
+      arc: { body: "sun", progress: 11 / 14, emphasis: "ahead" },
+      text: null,
+    });
+  });
+
+  test("shows the duration alone, with no Sun arc, when the user chose the duration only", () => {
+    const bar = present(dayWithRemaining(3 * HOUR), { ...OPTIONS, barContent: "duration" }).bar;
+
+    expect(bar).toEqual({ arc: null, text: "3h 00m" });
   });
 });
 
@@ -339,6 +399,61 @@ describe("present: Phase menu", () => {
   });
 });
 
+describe("present: Day length trend", () => {
+  // A Day in Paris (CEST) from Sunrise at 05:47 to Sunset at 21:58: 16 h 11.
+  const DAY = { start: "2026-06-21T03:47:00Z", end: "2026-06-21T19:58:00Z" };
+  const DAY_LENGTH = 16 * HOUR + 11 * MINUTE;
+
+  function dayLengthValue(previousDayLength: number | null, options = OPTIONS) {
+    const snapshot = snapshotOf("day", DAY, "2026-06-21T12:00:00Z", DAY_LENGTH, previousDayLength);
+    return present(snapshot, options).menu.rows.find(
+      (row) => row.label === options.translate("Day length"),
+    )?.value;
+  }
+
+  test("marks a Day longer than the Day before, by the minute", () => {
+    expect(dayLengthValue(DAY_LENGTH - 3 * MINUTE - 12 * SECOND)).toBe("16h 11m ↑3m");
+  });
+
+  test("marks a Day shorter than the Day before", () => {
+    expect(dayLengthValue(DAY_LENGTH + 2 * MINUTE + 40 * SECOND)).toBe("16h 11m ↓3m");
+  });
+
+  test("gives a change under a minute in seconds, as near a solstice", () => {
+    expect(dayLengthValue(DAY_LENGTH - 45 * SECOND)).toBe("16h 11m ↑45s");
+  });
+
+  test("leaves the trend out when the change rounds to no second", () => {
+    expect(dayLengthValue(DAY_LENGTH - 400)).toBe("16h 11m");
+  });
+
+  test("leaves the trend out when the Day before is not known", () => {
+    expect(dayLengthValue(null)).toBe("16h 11m");
+  });
+
+  test("during a Night, follows the length of the Day that just ended", () => {
+    const night = { start: "2026-06-21T19:58:00Z", end: "2026-06-22T03:47:00Z" };
+    const snapshot = snapshotOf(
+      "night",
+      night,
+      "2026-06-21T21:00:00Z",
+      DAY_LENGTH,
+      DAY_LENGTH + 5 * SECOND,
+    );
+
+    expect(present(snapshot, OPTIONS).menu.rows.slice(2, 5)).toEqual([
+      { label: "Night length", value: "7h 49m" },
+      { label: "Elapsed time", value: "1h 02m" },
+      { label: "Day length", value: "16h 11m ↓5s" },
+    ]);
+  });
+
+  test("speaks French", () => {
+    expect(dayLengthValue(DAY_LENGTH - 3 * MINUTE, FRENCH)).toBe("16 h 11 ↑3 min");
+    expect(dayLengthValue(DAY_LENGTH + 45 * SECOND, FRENCH)).toBe("16 h 11 ↓45 s");
+  });
+});
+
 describe("present: Polar day and Polar night", () => {
   const DAY = 24 * HOUR;
   // A Polar day in Tromsø, from 17 May to 25 July.
@@ -353,7 +468,7 @@ describe("present: Polar day and Polar night", () => {
     return present(snapshot, { ...OPTIONS, reading: "elapsed" });
   }
 
-  test("shows the polar state while the Remaining time exceeds 24 hours", () => {
+  test("names the Long Phase while the Remaining time exceeds 24 hours", () => {
     expect(polarDayRemaining(DAY + 1).bar.text).toBe("Polar day");
     expect(polarDayRemaining(30 * DAY).bar.text).toBe("Polar day");
   });
@@ -374,6 +489,15 @@ describe("present: Polar day and Polar night", () => {
 
     expect(present(snapshot, OPTIONS).bar.text).toBe("Polar night");
     expect(present(snapshot, FRENCH).bar.text).toBe("Nuit polaire");
+  });
+
+  test("shows only the part of the bar the user chose", () => {
+    const arcOnly = polarDayRemaining(30 * DAY, { ...OPTIONS, barContent: "arc" }).bar;
+    const durationOnly = polarDayRemaining(30 * DAY, { ...OPTIONS, barContent: "duration" }).bar;
+
+    expect(arcOnly.text).toBeNull();
+    expect(arcOnly.arc?.body).toBe("sun");
+    expect(durationOnly).toEqual({ arc: null, text: "Polar day" });
   });
 
   test("keeps the Sun arc at the Progress of the long Phase", () => {
@@ -401,6 +525,74 @@ describe("present: Polar day and Polar night", () => {
     const rows = polarDayRemaining(30 * DAY + 2 * HOUR, FRENCH).menu.rows;
 
     expect(rows[2]).toEqual({ label: "Durée du jour", value: "68 j 23 h" });
+  });
+});
+
+describe("present: from Dawn to Dusk", () => {
+  const DAY = 24 * HOUR;
+  // Paris, counting from the astronomical Dawn on 11 June to the Dusk on 30 June, read on
+  // the evening of 21 June, between its Sunset and the next Sunrise.
+  const NO_DARK_NIGHT = { start: "2026-06-11T23:54:00Z", end: "2026-06-30T23:46:00Z" };
+
+  function noDarkNight(instant: string | number): ClockSnapshot {
+    return {
+      ...snapshotOf("day", NO_DARK_NIGHT, instant),
+      longPhase: "no-dark-night",
+      dawn: new Date(NO_DARK_NIGHT.start),
+      sunrise: new Date("2026-06-22T03:47:00Z"),
+      sunset: new Date("2026-06-21T19:58:00Z"),
+      dusk: new Date(NO_DARK_NIGHT.end),
+    };
+  }
+
+  const ELAPSED: PresentationOptions = { ...OPTIONS, reading: "elapsed" };
+  const end = Date.parse(NO_DARK_NIGHT.end);
+  const start = Date.parse(NO_DARK_NIGHT.start);
+
+  test('shows "No dark night" while the Remaining time exceeds 24 hours', () => {
+    expect(present(noDarkNight(end - DAY - 1), OPTIONS).bar.text).toBe("No dark night");
+    expect(present(noDarkNight(end - DAY), OPTIONS).bar.text).toBe("24h 00m");
+  });
+
+  test('shows "No dark night" while the Elapsed time exceeds 24 hours', () => {
+    expect(present(noDarkNight(start + DAY + 59 * SECOND), ELAPSED).bar.text).toBe("24h 00m");
+    expect(present(noDarkNight(start + DAY + MINUTE), ELAPSED).bar.text).toBe("No dark night");
+  });
+
+  test("says it the French way", () => {
+    expect(present(noDarkNight("2026-06-21T21:00:00Z"), FRENCH).bar.text).toBe("Pas de nuit noire");
+  });
+
+  test("lists Dawn, Sunrise, Sunset and Dusk in the order they happen", () => {
+    const rows = present(noDarkNight("2026-06-21T21:00:00Z"), OPTIONS).menu.rows;
+
+    expect(rows.slice(0, 5)).toEqual([
+      { label: "Dawn", value: "Fri 12 Jun at 01:54" },
+      { label: "Sunset", value: "21:58" },
+      { label: "Sunrise", value: "tomorrow at 05:47" },
+      { label: "Dusk", value: "Wed 1 Jul at 01:46" },
+      { label: "Day length", value: "18d 23h" },
+    ]);
+  });
+
+  test("measures the Night from Dusk to Dawn", () => {
+    const night = { start: "2026-06-21T20:41:00Z", end: "2026-06-22T03:04:00Z" };
+    const snapshot = {
+      ...snapshotOf("night", night, "2026-06-21T21:00:00Z"),
+      sunset: new Date("2026-06-21T19:58:00Z"),
+      dusk: new Date(night.start),
+      dawn: new Date(night.end),
+      sunrise: new Date("2026-06-22T03:47:00Z"),
+    };
+
+    expect(present(snapshot, OPTIONS).menu.rows.slice(0, 6)).toEqual([
+      { label: "Sunset", value: "21:58" },
+      { label: "Dusk", value: "22:41" },
+      { label: "Dawn", value: "tomorrow at 05:04" },
+      { label: "Sunrise", value: "tomorrow at 05:47" },
+      { label: "Night length", value: "6h 23m" },
+      { label: "Elapsed time", value: "19 min" },
+    ]);
   });
 });
 
@@ -437,5 +629,45 @@ describe("present: Error", () => {
 
   test("speaks French", () => {
     expect(presentError(FRENCH.translate).bar.text).toBe("Erreur");
+  });
+});
+
+describe("presentNotification", () => {
+  const SUNSET = { event: "sunset", instant: new Date("2026-06-21T19:58:00Z") } as const;
+
+  test("says which event is coming, in how long, when, and where", () => {
+    expect(presentNotification(SUNSET, new Date("2026-06-21T19:28:00Z"), OPTIONS)).toEqual({
+      title: "Sunset in 30 min",
+      body: "21:58 · Paris",
+    });
+  });
+
+  test("marks an event after midnight as tomorrow's", () => {
+    const dawn = { event: "dawn", instant: new Date("2026-06-22T01:04:00Z") } as const;
+
+    expect(presentNotification(dawn, new Date("2026-06-21T21:45:00Z"), OPTIONS).body).toBe(
+      "tomorrow at 03:04 · Paris",
+    );
+  });
+
+  test("rounds the Remaining time up", () => {
+    const { title } = presentNotification(SUNSET, new Date("2026-06-21T18:47:30Z"), OPTIONS);
+
+    expect(title).toBe("Sunset in 1h 11m");
+  });
+
+  test("says the event is now once it has come", () => {
+    const { title } = presentNotification(SUNSET, new Date("2026-06-21T19:58:20Z"), OPTIONS);
+
+    expect(title).toBe("Sunset now");
+  });
+
+  test("speaks French", () => {
+    const dawn = { event: "dawn", instant: new Date("2026-06-22T01:04:00Z") } as const;
+
+    expect(presentNotification(dawn, new Date("2026-06-22T00:34:00Z"), FRENCH)).toEqual({
+      title: "Aube dans 30 min",
+      body: "03:04 · Paris",
+    });
   });
 });
