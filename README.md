@@ -8,8 +8,7 @@ Vesperal shows how long remains until the next sunrise or sunset, or how long si
 one, next to the GNOME clock. A small arc shows where the Sun stands along the day, or the Moon
 along the night.
 
-<!-- TODO: point the badge at the extension's page once it is published. -->
-[<img alt="Get it on GNOME Extensions" height="100" src="https://raw.githubusercontent.com/andyholmes/gnome-shell-extensions-badge/master/get-it-on-ego.svg">](https://extensions.gnome.org/)
+[<img alt="Get it on GNOME Extensions" height="100" src="https://raw.githubusercontent.com/andyholmes/gnome-shell-extensions-badge/master/get-it-on-ego.svg">](https://extensions.gnome.org/extension/11329/vesperal/)
 
 ![Vesperal in the top bar, with its menu open](docs/screenshots/menu.png)
 
@@ -49,7 +48,7 @@ along the night.
 
 ### From GNOME Extensions
 
-Install Vesperal from [extensions.gnome.org](https://extensions.gnome.org/), or with the
+Install Vesperal from [its page on extensions.gnome.org](https://extensions.gnome.org/extension/11329/vesperal/), or with the
 Extension Manager app.
 
 ### From source
