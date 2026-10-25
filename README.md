@@ -127,7 +127,8 @@ GNOME Shell 49, 50 and 51.
 
 ## Changelog
 
-Versions are numbered by extensions.gnome.org, which skips those superseded before their review.
+Versions are numbered by extensions.gnome.org. Those replaced by a newer upload before their
+review never reached users, and are left out.
 
 ### Version 4 (25 October 2026)
 
