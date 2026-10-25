@@ -1,7 +1,7 @@
 {
   "uuid": "vesperal@kornifex.github.io",
   "name": "Vesperal",
-  "description": "Tell time by the Sun: how long until the next sunrise or sunset, or since the last one, next to the clock.\n\nA small arc shows where the Sun stands along the day, or the Moon in its phase along the night. The menu lists dawn, sunrise, sunset and dusk in your local time. Works anywhere on Earth, polar days and nights included, and fully offline. The location comes from the GNOME location services or is set manually.\n\nOptional notifications come ahead of dawn, sunrise, sunset or dusk. The preferences chart the day length through the year, with the solstices and equinoxes.\n\nRight-click the indicator to switch between remaining and elapsed time.",
+  "description": "Tell time by the Sun: how long until the next sunrise or sunset, since the last one, or both, next to the clock.\n\nA small arc shows where the Sun stands along the day, or the Moon in its phase along the night. The menu lists dawn, sunrise, sunset and dusk in your local time, on the 12-hour or 24-hour clock of your desktop. Works anywhere on Earth, polar days and nights included, and fully offline. The location comes from the GNOME location services or is set manually.\n\nOptional notifications come ahead of dawn, sunrise, sunset or dusk. The preferences chart the day length through the year, with the solstices and equinoxes.\n\nRight-click the indicator to switch between remaining time, elapsed time and both.",
   "shell-version": ["49", "50", "51"],
   "url": "https://github.com/kornifex/vesperal",
   "settings-schema": "org.gnome.shell.extensions.vesperal",
