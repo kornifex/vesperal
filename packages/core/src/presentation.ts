@@ -32,6 +32,12 @@ export type Translate = (message: string) => string;
  */
 export type TranslatePlural = (singular: string, plural: string, count: number) => string;
 
+/** Every format of the desktop clock, in which Civil times are shown. */
+export const CLOCK_FORMATS = ["24h", "12h"] as const;
+
+/** Whether Civil times are shown on a 24-hour or a 12-hour clock, as the desktop clock is. */
+export type ClockFormat = (typeof CLOCK_FORMATS)[number];
+
 /** How to speak to the user: in which language, and with which times and dates. */
 export interface Localisation {
   /** IANA time zone in which Civil times and dates are counted and shown. */
@@ -41,6 +47,8 @@ export interface Localisation {
    * of `translate`, as LC_TIME may from LC_MESSAGES.
    */
   readonly locale: string;
+  /** The desktop clock's format, which Civil times follow whatever the habit of `locale`. */
+  readonly clockFormat: ClockFormat;
   readonly translate: Translate;
 }
 
@@ -336,11 +344,19 @@ function formatCoordinates(
  * "tomorrow", or a date further away.
  *
  * "Yesterday" and "tomorrow" are messages, so they speak the language of the other messages;
- * the time and the date follow `locale`, which may differ (see `PresentationOptions`).
+ * the time and the date follow `locale`, which may differ (see `PresentationOptions`), on the
+ * clock of `clockFormat`.
  */
 function formatCivilTime(instant: Date, now: Date, options: Localisation): string {
   const { locale, timeZone, translate } = options;
-  const time = new Intl.DateTimeFormat(locale, { timeZone, timeStyle: "short" }).format(instant);
+  const time = new Intl.DateTimeFormat(locale, {
+    timeZone,
+    // On a 12-hour clock the hour is not padded ("6:07 PM"), as on the GNOME clock, although
+    // the short style of some locales pads it ("06:07 PM" in French).
+    ...(options.clockFormat === "12h"
+      ? { hour: "numeric", minute: "2-digit", hourCycle: "h12" }
+      : { timeStyle: "short", hourCycle: "h23" }),
+  }).format(instant);
   switch (civilDaysBetween(now, instant, timeZone)) {
     case 0:
       return time;

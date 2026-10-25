@@ -22,6 +22,7 @@ const OPTIONS: PresentationOptions = {
   barContent: "arc-and-duration",
   timeZone: "Europe/Paris",
   locale: "en-GB",
+  clockFormat: "24h",
   translate: (message) => message,
   location: { ...PARIS, source: "manual" },
 };
@@ -629,6 +630,75 @@ describe("present: Error", () => {
 
   test("speaks French", () => {
     expect(presentError(FRENCH.translate).bar.text).toBe("Erreur");
+  });
+});
+
+describe("present: 12-hour and 24-hour clock", () => {
+  // The Night of the Phase menu tests, read at 23:00 CEST, and a longer one around it.
+  const NIGHT = { start: "2026-06-21T19:58:00Z", end: "2026-06-22T03:47:00Z" };
+  const LONG_NIGHT = { start: "2026-06-18T19:58:00Z", end: "2026-06-24T03:47:00Z" };
+
+  // ICU versions differ on which space they put inside a time ("p. m.", "9:58 PM").
+  function civilTimes(
+    phase: { start: string; end: string },
+    instant: string,
+    options: Partial<PresentationOptions>,
+  ): string[] {
+    const snapshot = snapshotOf("night", phase, instant);
+    return present(snapshot, { ...OPTIONS, ...options })
+      .menu.rows.slice(0, 2)
+      .map(({ value }) => value.replace(/\s/g, " "));
+  }
+
+  test.each([
+    ["en-US", ["9:58 PM", "tomorrow at 5:47 AM"]],
+    ["en-GB", ["9:58 pm", "tomorrow at 5:47 am"]],
+    ["fr-FR", ["9:58 PM", "tomorrow at 5:47 AM"]],
+    ["es-ES", ["9:58 p. m.", "tomorrow at 5:47 a. m."]],
+  ])("in %s, shows 12-hour times when the desktop clock does", (locale, expected) => {
+    expect(civilTimes(NIGHT, "2026-06-21T21:00:00Z", { locale, clockFormat: "12h" })).toEqual(
+      expected,
+    );
+  });
+
+  test.each([
+    ["en-US", ["21:58", "tomorrow at 05:47"]],
+    ["en-GB", ["21:58", "tomorrow at 05:47"]],
+    ["fr-FR", ["21:58", "tomorrow at 05:47"]],
+    ["es-ES", ["21:58", "tomorrow at 5:47"]],
+  ])("in %s, shows 24-hour times when the desktop clock does", (locale, expected) => {
+    expect(civilTimes(NIGHT, "2026-06-21T21:00:00Z", { locale, clockFormat: "24h" })).toEqual(
+      expected,
+    );
+  });
+
+  test("keeps the date before a 12-hour time further away than tomorrow", () => {
+    expect(
+      civilTimes(LONG_NIGHT, "2026-06-21T12:00:00Z", { locale: "en-US", clockFormat: "12h" }),
+    ).toEqual(["Thu, Jun 18 at 9:58 PM", "Wed, Jun 24 at 5:47 AM"]);
+  });
+
+  test("marks yesterday's 12-hour time", () => {
+    expect(
+      civilTimes(NIGHT, "2026-06-21T23:00:00Z", { locale: "fr-FR", clockFormat: "12h" }),
+    ).toEqual(["yesterday at 9:58 PM", "5:47 AM"]);
+  });
+
+  test("leaves durations as they are", () => {
+    const snapshot = snapshotOf("night", NIGHT, "2026-06-21T21:00:00Z");
+    const view = present(snapshot, { ...OPTIONS, locale: "en-US", clockFormat: "12h" });
+
+    expect(view.bar.text).toBe("6h 47m");
+    expect(view.menu.rows).toContainEqual({ label: "Night length", value: "7h 49m" });
+  });
+
+  test("shows a notification's time in the same format", () => {
+    const sunset = { event: "sunset", instant: new Date("2026-06-21T19:58:00Z") } as const;
+    const options = { ...OPTIONS, locale: "fr-FR", clockFormat: "12h" } as const;
+
+    expect(presentNotification(sunset, new Date("2026-06-21T19:28:00Z"), options).body).toBe(
+      "9:58 PM · Paris",
+    );
   });
 });
 
