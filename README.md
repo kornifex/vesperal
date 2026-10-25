@@ -127,9 +127,10 @@ GNOME Shell 49, 50 and 51.
 
 ## Changelog
 
-Versions are numbered by extensions.gnome.org.
+Versions are numbered by extensions.gnome.org. Those replaced by a newer upload before their
+review never reached users, and are left out.
 
-### Unreleased
+### Version 4 (25 October 2026)
 
 - ⏳ **Elapsed and remaining time at once**: a third Reading shows both in the top bar,
   "42 min / 3h 15m", with the whole Sun arc drawn in full. Right-click the indicator to go
@@ -137,9 +138,6 @@ Versions are numbered by extensions.gnome.org.
 - 🕒 **12-hour or 24-hour times**: the times in the menu and in notifications now follow the format
   of the GNOME clock (*Settings → System → Date & Time → Time Format*), rather than the habit of
   the locale alone.
-
-### Version 3 (19 October 2026)
-
 - 🌗 **Moon phase**: by night, the Moon on the arc shows its real phase, as seen from your
   hemisphere.
 - 🔔 **Notifications** ahead of dawn, sunrise, sunset or dusk, a chosen number of minutes before.
