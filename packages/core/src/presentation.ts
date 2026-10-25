@@ -12,9 +12,9 @@ import {
 } from "./time.ts";
 
 /** Every Reading the user can choose, the default first. */
-export const READINGS = ["remaining", "elapsed"] as const;
+export const READINGS = ["remaining", "elapsed", "elapsed-and-remaining"] as const;
 
-/** The duration the clock displays. */
+/** What the clock displays: the Remaining time, the Elapsed time, or both. */
 export type Reading = (typeof READINGS)[number];
 
 /** Every choice of what the bar shows, the default first. */
@@ -69,9 +69,10 @@ interface BodyOnArc {
   readonly progress: number;
   /**
    * The part of the arc the Reading measures, to draw emphasised so the bar tells which Reading
-   * it shows: the way still ahead of the body, or the way already behind it.
+   * it shows: the way still ahead of the body, the way already behind it, or the whole arc, in
+   * which case no part stands out.
    */
-  readonly emphasis: "ahead" | "behind";
+  readonly emphasis: "ahead" | "behind" | "whole";
 }
 
 export interface SunOnArc extends BodyOnArc {
@@ -204,8 +205,21 @@ function sunArc(snapshot: ClockSnapshot, options: PresentationOptions): SunArc {
 
 function barText(snapshot: ClockSnapshot, options: PresentationOptions): string {
   const { translate } = options;
-  const minutes = READING_RULES[options.reading].minutes(snapshot);
-  if (minutes <= MINUTES_PER_DAY || !snapshot.longPhase) return formatDuration(minutes, translate);
+  const minutes = (duration: Duration): number => DURATION_RULES[duration].minutes(snapshot);
+  const [first, second] = READING_RULES[options.reading].durations;
+  // A Long Phase is named as soon as either duration exceeds 24 hours.
+  if (
+    Math.max(minutes(first), second ? minutes(second) : 0) <= MINUTES_PER_DAY ||
+    !snapshot.longPhase
+  ) {
+    if (!second) return formatDuration(minutes(first), translate);
+    // Translators: both Readings in the top bar, e.g. "6h 10m / 7h 50m"; the Elapsed time
+    // first, as on a video player.
+    return fill(translate("{elapsed} / {remaining}"), {
+      elapsed: formatDuration(minutes(first), translate),
+      remaining: formatDuration(minutes(second), translate),
+    });
+  }
   switch (snapshot.longPhase) {
     case "polar-day":
       return translate("Polar day");
@@ -222,7 +236,9 @@ function menuRows(snapshot: ClockSnapshot, options: PresentationOptions): MenuRo
   const { translate } = options;
   const { phase, instant } = snapshot;
   const isDay = phase.kind === "day";
-  const otherReading = READING_RULES[READING_RULES[options.reading].other];
+  // The duration the bar does not show, if any.
+  const shown: readonly Duration[] = READING_RULES[options.reading].durations;
+  const hidden = DURATIONS.filter((duration) => !shown.includes(duration));
   const names = eventNames(translate);
   const phaseLength = phase.end.getTime() - phase.start.getTime();
   const dayLengthChange =
@@ -247,10 +263,10 @@ function menuRows(snapshot: ClockSnapshot, options: PresentationOptions): MenuRo
           label: translate("Night length"),
           value: formatDuration(Math.round(phaseLength / MS_PER_MINUTE), translate),
         },
-    {
-      label: otherReading.label(translate),
-      value: formatDuration(otherReading.minutes(snapshot), translate),
-    },
+    ...hidden.map((duration) => ({
+      label: DURATION_RULES[duration].label(translate),
+      value: formatDuration(DURATION_RULES[duration].minutes(snapshot), translate),
+    })),
   ];
   // During a Day, the Phase length above is already the Day length.
   if (!isDay) {
@@ -263,18 +279,19 @@ function menuRows(snapshot: ClockSnapshot, options: PresentationOptions): MenuRo
   return rows;
 }
 
-/** What each Reading measures, and how the bar and the menu show it. */
-const READING_RULES: Readonly<
+/** The durations a Reading is made of. */
+const DURATIONS = ["remaining", "elapsed"] as const;
+
+type Duration = (typeof DURATIONS)[number];
+
+/** How each duration is measured, and named in the menu. */
+const DURATION_RULES: Readonly<
   Record<
-    Reading,
+    Duration,
     {
-      /** The Reading in whole minutes, rounded towards "less time". */
+      /** The duration in whole minutes, rounded towards "less time". */
       readonly minutes: (snapshot: ClockSnapshot) => number;
       readonly label: (translate: Translate) => string;
-      /** The part of the Sun arc the Reading measures. */
-      readonly emphasis: SunArc["emphasis"];
-      /** The Reading the menu shows alongside this one in the bar. */
-      readonly other: Reading;
     }
   >
 > = {
@@ -282,15 +299,28 @@ const READING_RULES: Readonly<
     // Rounded up, so the clock never claims the Solar event has arrived before it has.
     minutes: (snapshot) => Math.ceil(snapshot.remaining / MS_PER_MINUTE),
     label: (translate) => translate("Remaining time"),
-    emphasis: "ahead",
-    other: "elapsed",
   },
   elapsed: {
     minutes: (snapshot) => Math.floor(snapshot.elapsed / MS_PER_MINUTE),
     label: (translate) => translate("Elapsed time"),
-    emphasis: "behind",
-    other: "remaining",
   },
+};
+
+/** What each Reading shows in the bar; the menu shows the duration it leaves out. */
+const READING_RULES: Readonly<
+  Record<
+    Reading,
+    {
+      /** The durations shown, one or two, in the order of the bar. */
+      readonly durations: readonly [Duration] | readonly [Duration, Duration];
+      /** The part of the Sun arc the Reading measures. */
+      readonly emphasis: SunArc["emphasis"];
+    }
+  >
+> = {
+  remaining: { durations: ["remaining"], emphasis: "ahead" },
+  elapsed: { durations: ["elapsed"], emphasis: "behind" },
+  "elapsed-and-remaining": { durations: ["elapsed", "remaining"], emphasis: "whole" },
 };
 
 function locationRow(options: PresentationOptions): MenuRow {

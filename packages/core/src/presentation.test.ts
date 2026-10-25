@@ -103,6 +103,7 @@ const FRENCH_CATALOGUE: Readonly<Record<string, string>> = {
   Error: "Erreur",
   "{event} in {duration}": "{event} dans {duration}",
   "{event} now": "{event} maintenant",
+  "{elapsed} / {remaining}": "{elapsed} / {remaining}",
 };
 const FRENCH: PresentationOptions = {
   ...OPTIONS,
@@ -163,6 +164,75 @@ describe("present: Elapsed time in the bar", () => {
   test('shows "0 min" in the first minute of the Phase', () => {
     expect(elapsedText(0)).toBe("0 min");
     expect(elapsedText(59 * SECOND)).toBe("0 min");
+  });
+});
+
+describe("present: Elapsed and remaining time in the bar", () => {
+  const BOTH: PresentationOptions = { ...OPTIONS, reading: "elapsed-and-remaining" };
+
+  test("shows the Elapsed time, then the Remaining time", () => {
+    expect(barText(7 * HOUR + 50 * MINUTE, BOTH)).toBe("6h 10m / 7h 50m");
+    expect(barText(42 * MINUTE, BOTH)).toBe("13h 18m / 42 min");
+  });
+
+  test("rounds each as it is rounded alone", () => {
+    expect(barText(3 * HOUR + 14 * MINUTE + 1, BOTH)).toBe("10h 45m / 3h 15m");
+  });
+
+  test("writes them the French way", () => {
+    expect(barText(7 * HOUR + 50 * MINUTE, { ...FRENCH, reading: "elapsed-and-remaining" })).toBe(
+      "6 h 10 / 7 h 50",
+    );
+  });
+
+  test("shows both with the duration only", () => {
+    expect(barText(7 * HOUR + 50 * MINUTE, { ...BOTH, barContent: "duration" })).toBe(
+      "6h 10m / 7h 50m",
+    );
+  });
+
+  test("draws the whole Sun arc with no part emphasised, alone or with the durations", () => {
+    const snapshot = phaseWithRemaining("day", 3.5 * HOUR);
+
+    expect(present(snapshot, BOTH).bar.arc?.emphasis).toBe("whole");
+    expect(present(snapshot, { ...BOTH, barContent: "arc" }).bar.arc?.emphasis).toBe("whole");
+  });
+
+  test("leaves out of the menu the duration the bar already shows", () => {
+    const night = { start: "2026-06-21T19:58:00Z", end: "2026-06-22T03:47:00Z" };
+    const snapshot = snapshotOf("night", night, "2026-06-21T21:00:00Z", 16 * HOUR + 11 * MINUTE);
+
+    expect(present(snapshot, BOTH).menu.rows).toEqual([
+      { label: "Sunset", value: "21:58" },
+      { label: "Sunrise", value: "tomorrow at 05:47" },
+      { label: "Night length", value: "7h 49m" },
+      { label: "Day length", value: "16h 11m" },
+      { label: "Manual location", value: "Paris" },
+    ]);
+  });
+
+  describe("in a Long Phase", () => {
+    // A Day of 30 hours, so that each duration crosses 24 hours at a different time.
+    const LONG_DAY = { start: "2026-06-20T00:00:00Z", end: "2026-06-21T06:00:00Z" };
+
+    function bothText(elapsed: number): string | null {
+      const snapshot = snapshotOf("day", LONG_DAY, Date.parse(LONG_DAY.start) + elapsed);
+      return present(snapshot, BOTH).bar.text;
+    }
+
+    test("shows both while neither exceeds 24 hours", () => {
+      expect(bothText(12 * HOUR)).toBe("12h 00m / 18h 00m");
+      expect(bothText(24 * HOUR + 59 * SECOND)).toBe("24h 00m / 6h 00m");
+    });
+
+    test("names the Long Phase alone while the Elapsed time exceeds 24 hours", () => {
+      expect(bothText(24 * HOUR + MINUTE)).toBe("Polar day");
+    });
+
+    test("names the Long Phase alone while the Remaining time exceeds 24 hours", () => {
+      expect(bothText(6 * HOUR - 1)).toBe("Polar day");
+      expect(bothText(6 * HOUR)).toBe("6h 00m / 24h 00m");
+    });
   });
 });
 

@@ -133,7 +133,7 @@ export default class VesperalExtension extends Extension {
     }
   }
 
-  /** Switches the bar to the next Reading, which the menu showed alongside it. */
+  /** Switches the bar to the next Reading, in the order of the preferences, round to the first. */
   #switchReading(): void {
     if (!this.#settings) return;
     const current = READINGS.indexOf(readReading(this.#settings));

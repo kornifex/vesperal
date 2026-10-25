@@ -108,12 +108,14 @@ function addReadingGroup(page: Adw.PreferencesPage, settings: Gio.Settings): () 
     {
       remaining: { title: _("Remaining time"), subtitle: "" },
       elapsed: { title: _("Elapsed time"), subtitle: "" },
+      "elapsed-and-remaining": { title: _("Elapsed and remaining time"), subtitle: "" },
     },
   );
   const followPhaseBounds = (): void => {
     const fromDawn = readPhaseBounds(settings) === "dawn-dusk";
     const remainingRow = rows.get("remaining");
     const elapsedRow = rows.get("elapsed");
+    const bothRow = rows.get("elapsed-and-remaining");
     if (remainingRow) {
       remainingRow.subtitle = fromDawn
         ? _("Until the next dawn or dusk")
@@ -123,6 +125,11 @@ function addReadingGroup(page: Adw.PreferencesPage, settings: Gio.Settings): () 
       elapsedRow.subtitle = fromDawn
         ? _("Since the last dawn or dusk")
         : _("Since the last sunrise or sunset");
+    }
+    if (bothRow) {
+      bothRow.subtitle = fromDawn
+        ? _("Since the last dawn or dusk, and until the next")
+        : _("Since the last sunrise or sunset, and until the next");
     }
   };
   followPhaseBounds();

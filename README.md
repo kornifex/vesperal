@@ -14,11 +14,11 @@ along the night.
 
 ## Features
 
-- **Remaining or elapsed time**: "3h 15m" until sunset, or "42 min" since sunrise. It updates on
-  the minute, in step with the GNOME clock.
+- **Remaining or elapsed time, or both**: "3h 15m" until sunset, "42 min" since sunrise, or
+  "42 min / 3h 15m" for both. It updates on the minute, in step with the GNOME clock.
 - **Sun arc**: the Sun by day and the Moon by night, placed at the progress of the day or night.
   The part of the arc that the displayed duration measures is drawn in full, so you can tell at
-  a glance which one you are reading.
+  a glance which one you are reading; with both, the whole arc is.
 - **Moon phase**: by night, the Moon shows its real phase, lit on the side you see it lit from
   your hemisphere. A new moon still shows as an outline.
 - **Day details** in the menu, in your local time: dawn, sunrise, sunset and dusk; the length of
@@ -73,7 +73,7 @@ gnome-extensions enable vesperal@kornifex.github.io
 | Action | Effect |
 |---|---|
 | Click the indicator | Open the menu with the day details |
-| Right-click the indicator | Switch between remaining and elapsed time |
+| Right-click the indicator | Switch to the next Reading: remaining time, elapsed time, both |
 | Menu → Preferences | Open the preferences |
 
 | By day, remaining time | By night, elapsed time |
@@ -81,7 +81,7 @@ gnome-extensions enable vesperal@kornifex.github.io
 | ![The Sun early on its arc, 8h 50m until sunset](docs/screenshots/top-bar.png) | ![The Moon at its first quarter early on its arc, 1h 17m since sunset](docs/screenshots/night.png) |
 
 The part of the arc drawn in full is the part the duration measures: the way ahead of the Sun
-for remaining time, the way behind the Moon for elapsed time.
+for remaining time, the way behind the Moon for elapsed time, the whole arc for both.
 
 ## Preferences
 
@@ -89,7 +89,7 @@ for remaining time, the way behind the Moon for elapsed time.
 
 | Page | Setting | Choices | Default |
 |---|---|---|---|
-| Display | Reading | Remaining time, elapsed time | Remaining time |
+| Display | Reading | Remaining time, elapsed time, elapsed and remaining time | Remaining time |
 | Display | Content | Sun arc and duration, Sun arc only, duration only | Sun arc and duration |
 | Display | Sun arc | Left or right of the duration, when both are shown | Left |
 | Display | Position | Next to the clock, left side or right side of the top bar | Next to the clock |
