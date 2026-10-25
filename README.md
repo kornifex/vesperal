@@ -129,7 +129,7 @@ GNOME Shell 49, 50 and 51.
 
 Versions are numbered by extensions.gnome.org.
 
-### Unreleased
+### Version 4 (25 October 2026)
 
 - ⏳ **Elapsed and remaining time at once**: a third Reading shows both in the top bar,
   "42 min / 3h 15m", with the whole Sun arc drawn in full. Right-click the indicator to go
