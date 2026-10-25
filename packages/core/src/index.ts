@@ -32,6 +32,8 @@ export {
   BAR_CONTENTS,
   type Bar,
   type BarContent,
+  CLOCK_FORMATS,
+  type ClockFormat,
   eventNames,
   type Localisation,
   type Menu,

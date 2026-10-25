@@ -11,7 +11,8 @@ import {
 import { MS_PER_DAY } from "./time.ts";
 import type { SolsticeOrEquinox, YearSnapshot } from "./year.ts";
 
-export interface YearPresentationOptions extends Localisation {
+/** The Year page shows dates but no times, so it needs no clock format. */
+export interface YearPresentationOptions extends Omit<Localisation, "clockFormat"> {
   readonly translatePlural: TranslatePlural;
 }
 

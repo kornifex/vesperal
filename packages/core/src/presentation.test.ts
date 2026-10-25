@@ -22,6 +22,7 @@ const OPTIONS: PresentationOptions = {
   barContent: "arc-and-duration",
   timeZone: "Europe/Paris",
   locale: "en-GB",
+  clockFormat: "24h",
   translate: (message) => message,
   location: { ...PARIS, source: "manual" },
 };
@@ -102,6 +103,7 @@ const FRENCH_CATALOGUE: Readonly<Record<string, string>> = {
   Error: "Erreur",
   "{event} in {duration}": "{event} dans {duration}",
   "{event} now": "{event} maintenant",
+  "{elapsed} / {remaining}": "{elapsed} / {remaining}",
 };
 const FRENCH: PresentationOptions = {
   ...OPTIONS,
@@ -162,6 +164,75 @@ describe("present: Elapsed time in the bar", () => {
   test('shows "0 min" in the first minute of the Phase', () => {
     expect(elapsedText(0)).toBe("0 min");
     expect(elapsedText(59 * SECOND)).toBe("0 min");
+  });
+});
+
+describe("present: Elapsed and remaining time in the bar", () => {
+  const BOTH: PresentationOptions = { ...OPTIONS, reading: "elapsed-and-remaining" };
+
+  test("shows the Elapsed time, then the Remaining time", () => {
+    expect(barText(7 * HOUR + 50 * MINUTE, BOTH)).toBe("6h 10m / 7h 50m");
+    expect(barText(42 * MINUTE, BOTH)).toBe("13h 18m / 42 min");
+  });
+
+  test("rounds each as it is rounded alone", () => {
+    expect(barText(3 * HOUR + 14 * MINUTE + 1, BOTH)).toBe("10h 45m / 3h 15m");
+  });
+
+  test("writes them the French way", () => {
+    expect(barText(7 * HOUR + 50 * MINUTE, { ...FRENCH, reading: "elapsed-and-remaining" })).toBe(
+      "6 h 10 / 7 h 50",
+    );
+  });
+
+  test("shows both with the duration only", () => {
+    expect(barText(7 * HOUR + 50 * MINUTE, { ...BOTH, barContent: "duration" })).toBe(
+      "6h 10m / 7h 50m",
+    );
+  });
+
+  test("draws the whole Sun arc with no part emphasised, alone or with the durations", () => {
+    const snapshot = phaseWithRemaining("day", 3.5 * HOUR);
+
+    expect(present(snapshot, BOTH).bar.arc?.emphasis).toBe("whole");
+    expect(present(snapshot, { ...BOTH, barContent: "arc" }).bar.arc?.emphasis).toBe("whole");
+  });
+
+  test("leaves out of the menu the duration the bar already shows", () => {
+    const night = { start: "2026-06-21T19:58:00Z", end: "2026-06-22T03:47:00Z" };
+    const snapshot = snapshotOf("night", night, "2026-06-21T21:00:00Z", 16 * HOUR + 11 * MINUTE);
+
+    expect(present(snapshot, BOTH).menu.rows).toEqual([
+      { label: "Sunset", value: "21:58" },
+      { label: "Sunrise", value: "tomorrow at 05:47" },
+      { label: "Night length", value: "7h 49m" },
+      { label: "Day length", value: "16h 11m" },
+      { label: "Manual location", value: "Paris" },
+    ]);
+  });
+
+  describe("in a Long Phase", () => {
+    // A Day of 30 hours, so that each duration crosses 24 hours at a different time.
+    const LONG_DAY = { start: "2026-06-20T00:00:00Z", end: "2026-06-21T06:00:00Z" };
+
+    function bothText(elapsed: number): string | null {
+      const snapshot = snapshotOf("day", LONG_DAY, Date.parse(LONG_DAY.start) + elapsed);
+      return present(snapshot, BOTH).bar.text;
+    }
+
+    test("shows both while neither exceeds 24 hours", () => {
+      expect(bothText(12 * HOUR)).toBe("12h 00m / 18h 00m");
+      expect(bothText(24 * HOUR + 59 * SECOND)).toBe("24h 00m / 6h 00m");
+    });
+
+    test("names the Long Phase alone while the Elapsed time exceeds 24 hours", () => {
+      expect(bothText(24 * HOUR + MINUTE)).toBe("Polar day");
+    });
+
+    test("names the Long Phase alone while the Remaining time exceeds 24 hours", () => {
+      expect(bothText(6 * HOUR - 1)).toBe("Polar day");
+      expect(bothText(6 * HOUR)).toBe("6h 00m / 24h 00m");
+    });
   });
 });
 
@@ -629,6 +700,75 @@ describe("present: Error", () => {
 
   test("speaks French", () => {
     expect(presentError(FRENCH.translate).bar.text).toBe("Erreur");
+  });
+});
+
+describe("present: 12-hour and 24-hour clock", () => {
+  // The Night of the Phase menu tests, read at 23:00 CEST, and a longer one around it.
+  const NIGHT = { start: "2026-06-21T19:58:00Z", end: "2026-06-22T03:47:00Z" };
+  const LONG_NIGHT = { start: "2026-06-18T19:58:00Z", end: "2026-06-24T03:47:00Z" };
+
+  // ICU versions differ on which space they put inside a time ("p. m.", "9:58 PM").
+  function civilTimes(
+    phase: { start: string; end: string },
+    instant: string,
+    options: Partial<PresentationOptions>,
+  ): string[] {
+    const snapshot = snapshotOf("night", phase, instant);
+    return present(snapshot, { ...OPTIONS, ...options })
+      .menu.rows.slice(0, 2)
+      .map(({ value }) => value.replace(/\s/g, " "));
+  }
+
+  test.each([
+    ["en-US", ["9:58 PM", "tomorrow at 5:47 AM"]],
+    ["en-GB", ["9:58 pm", "tomorrow at 5:47 am"]],
+    ["fr-FR", ["9:58 PM", "tomorrow at 5:47 AM"]],
+    ["es-ES", ["9:58 p. m.", "tomorrow at 5:47 a. m."]],
+  ])("in %s, shows 12-hour times when the desktop clock does", (locale, expected) => {
+    expect(civilTimes(NIGHT, "2026-06-21T21:00:00Z", { locale, clockFormat: "12h" })).toEqual(
+      expected,
+    );
+  });
+
+  test.each([
+    ["en-US", ["21:58", "tomorrow at 05:47"]],
+    ["en-GB", ["21:58", "tomorrow at 05:47"]],
+    ["fr-FR", ["21:58", "tomorrow at 05:47"]],
+    ["es-ES", ["21:58", "tomorrow at 5:47"]],
+  ])("in %s, shows 24-hour times when the desktop clock does", (locale, expected) => {
+    expect(civilTimes(NIGHT, "2026-06-21T21:00:00Z", { locale, clockFormat: "24h" })).toEqual(
+      expected,
+    );
+  });
+
+  test("keeps the date before a 12-hour time further away than tomorrow", () => {
+    expect(
+      civilTimes(LONG_NIGHT, "2026-06-21T12:00:00Z", { locale: "en-US", clockFormat: "12h" }),
+    ).toEqual(["Thu, Jun 18 at 9:58 PM", "Wed, Jun 24 at 5:47 AM"]);
+  });
+
+  test("marks yesterday's 12-hour time", () => {
+    expect(
+      civilTimes(NIGHT, "2026-06-21T23:00:00Z", { locale: "fr-FR", clockFormat: "12h" }),
+    ).toEqual(["yesterday at 9:58 PM", "5:47 AM"]);
+  });
+
+  test("leaves durations as they are", () => {
+    const snapshot = snapshotOf("night", NIGHT, "2026-06-21T21:00:00Z");
+    const view = present(snapshot, { ...OPTIONS, locale: "en-US", clockFormat: "12h" });
+
+    expect(view.bar.text).toBe("6h 47m");
+    expect(view.menu.rows).toContainEqual({ label: "Night length", value: "7h 49m" });
+  });
+
+  test("shows a notification's time in the same format", () => {
+    const sunset = { event: "sunset", instant: new Date("2026-06-21T19:58:00Z") } as const;
+    const options = { ...OPTIONS, locale: "fr-FR", clockFormat: "12h" } as const;
+
+    expect(presentNotification(sunset, new Date("2026-06-21T19:28:00Z"), options).body).toBe(
+      "9:58 PM · Paris",
+    );
   });
 });
 

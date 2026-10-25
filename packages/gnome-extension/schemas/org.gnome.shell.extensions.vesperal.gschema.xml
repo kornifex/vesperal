@@ -7,6 +7,7 @@
   <enum id="org.gnome.shell.extensions.vesperal.Reading">
     <value nick="remaining" value="0"/>
     <value nick="elapsed" value="1"/>
+    <value nick="elapsed-and-remaining" value="2"/>
   </enum>
   <enum id="org.gnome.shell.extensions.vesperal.Twilight">
     <value nick="civil" value="0"/>
@@ -50,7 +51,7 @@
     <key name="reading" enum="org.gnome.shell.extensions.vesperal.Reading">
       <default>'remaining'</default>
       <summary>Reading</summary>
-      <description>The duration shown in the top bar: the Remaining time until the next Solar event, or the Elapsed time since the last one.</description>
+      <description>The duration shown in the top bar: the Remaining time until the next Solar event, the Elapsed time since the last one, or both, the Elapsed time first.</description>
     </key>
     <key name="twilight" enum="org.gnome.shell.extensions.vesperal.Twilight">
       <default>'civil'</default>

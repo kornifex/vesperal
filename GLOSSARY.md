@@ -73,7 +73,7 @@ The duration of a Night, between its Phase bounds.
 ## Reading the clock
 
 **Reading**:
-The duration the clock displays, chosen by the user: either Remaining time (the default) or Elapsed time.
+What the clock displays, chosen by the user: the Remaining time (the default), the Elapsed time, or both, the Elapsed time first. When either of the two would exceed 24 hours, the Long Phase is named instead of both.
 _Avoid_: Display mode, view
 
 **Remaining time**:
@@ -97,7 +97,7 @@ How much of the Moon's disc is lit, and whether that part is growing (waxing, fr
 _Avoid_: Lunar phase, Moon age
 
 **Civil time**:
-Ordinary clock time in the user's time zone, used only to tell when Solar events happen.
+Ordinary clock time in the user's time zone, used only to tell when Solar events happen. It is shown as the desktop clock shows it, in 12-hour or 24-hour format.
 _Avoid_: Normal time, wall clock, real time
 
 ## The year

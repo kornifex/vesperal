@@ -95,8 +95,8 @@ export class SunArcIcon {
       cr.restore();
       cr.stroke();
     };
-    strokeArc(Math.PI, angle, arc.emphasis === "behind");
-    strokeArc(angle, 2 * Math.PI, arc.emphasis === "ahead");
+    strokeArc(Math.PI, angle, arc.emphasis !== "ahead");
+    strokeArc(angle, 2 * Math.PI, arc.emphasis !== "behind");
     setOpacity(1);
 
     const bodyX = centreX + radiusX * Math.cos(angle);

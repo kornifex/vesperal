@@ -14,7 +14,7 @@ import {
 } from "@vesperal/core";
 import { AutomaticLocation } from "./automaticLocation.ts";
 import { VesperalIndicator } from "./indicator.ts";
-import { civilTimeLocale } from "./locale.ts";
+import { civilTimeLocale, desktopClockFormat } from "./locale.ts";
 import { Notifier } from "./notifier.ts";
 import {
   readBarContent,
@@ -45,6 +45,9 @@ export default class VesperalExtension extends Extension {
   // changes and clock adjustments, so the extension needs no timer of its own.
   #wallClock: GnomeDesktop.WallClock | null = null;
   #wallClockChangedId = 0;
+  // The desktop's settings, for the format of its clock. The WallClock notifies when it
+  // changes, since the clock then reads differently, so they need no handler of their own.
+  #desktopSettings: Gio.Settings | null = null;
   // Kept while the extension is disabled, as it is when the screen is locked, so that unlocking
   // does not announce again the events already notified of. It is plain data, with nothing to
   // disconnect or destroy.
@@ -75,6 +78,7 @@ export default class VesperalExtension extends Extension {
       if (key !== "last-known-location") this.#refresh();
     });
     this.#followLocationMode();
+    this.#desktopSettings = new Gio.Settings({ schema_id: "org.gnome.desktop.interface" });
     this.#wallClock = new GnomeDesktop.WallClock();
     this.#wallClockChangedId = this.#wallClock.connect("notify::clock", () => this.#refresh());
 
@@ -84,6 +88,7 @@ export default class VesperalExtension extends Extension {
   override disable(): void {
     this.#wallClock?.disconnect(this.#wallClockChangedId);
     this.#wallClock = null;
+    this.#desktopSettings = null;
     this.#automaticLocation?.destroy();
     this.#automaticLocation = null;
     this.#settings?.disconnect(this.#locationModeChangedId);
@@ -128,7 +133,7 @@ export default class VesperalExtension extends Extension {
     }
   }
 
-  /** Switches the bar to the next Reading, which the menu showed alongside it. */
+  /** Switches the bar to the next Reading, in the order of the preferences, round to the first. */
   #switchReading(): void {
     if (!this.#settings) return;
     const current = READINGS.indexOf(readReading(this.#settings));
@@ -150,12 +155,13 @@ export default class VesperalExtension extends Extension {
   }
 
   #update(): void {
-    if (!this.#indicator || !this.#settings || !this.#wallClock) return;
+    if (!this.#indicator || !this.#settings || !this.#wallClock || !this.#desktopSettings) return;
 
     const now = new Date();
     const localisation: Localisation = {
       timeZone: this.#wallClock.timezone.get_identifier(),
       locale: civilTimeLocale(),
+      clockFormat: desktopClockFormat(this.#desktopSettings),
       translate: (message) => this.gettext(message),
     };
     // Only the Automatic location is remembered: the Manual location stays in its own key. It
