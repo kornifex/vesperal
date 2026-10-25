@@ -14,33 +14,33 @@ along the night.
 
 ## Features
 
-- **Remaining or elapsed time, or both**: "3h 15m" until sunset, "42 min" since sunrise, or
+- ⏳ **Remaining or elapsed time, or both**: "3h 15m" until sunset, "42 min" since sunrise, or
   "42 min / 3h 15m" for both. It updates on the minute, in step with the GNOME clock.
-- **Sun arc**: the Sun by day and the Moon by night, placed at the progress of the day or night.
+- 🌅 **Sun arc**: the Sun by day and the Moon by night, placed at the progress of the day or night.
   The part of the arc that the displayed duration measures is drawn in full, so you can tell at
   a glance which one you are reading; with both, the whole arc is.
-- **Moon phase**: by night, the Moon shows its real phase, lit on the side you see it lit from
+- 🌗 **Moon phase**: by night, the Moon shows its real phase, lit on the side you see it lit from
   your hemisphere. A new moon still shows as an outline.
-- **Day details** in the menu, in your local time: dawn, sunrise, sunset and dusk; the length of
+- 📋 **Day details** in the menu, in your local time: dawn, sunrise, sunset and dusk; the length of
   the day or night; the other duration; and the location in use.
-- **Day length trend**: next to the day length, whether days are getting longer or shorter, and
+- 📈 **Day length trend**: next to the day length, whether days are getting longer or shorter, and
   by how much: "10h 43m ↓3m", or in seconds near a solstice ("↑45s").
-- **The year at a glance**, in the preferences: the day length through the year as a chart, with
+- 📅 **The year at a glance**, in the preferences: the day length through the year as a chart, with
   today, the solstices and the equinoxes marked, and how far away the next ones are.
-- **Twilight of your choice** for dawn and dusk: civil, nautical or astronomical.
-- **Sunrise to sunset, or dawn to dusk**: count the day until it actually gets dark, if you
+- 🌆 **Twilight of your choice** for dawn and dusk: civil, nautical or astronomical.
+- 🌄 **Sunrise to sunset, or dawn to dusk**: count the day until it actually gets dark, if you
   prefer. With a deep twilight, summer nights may not get that dark for weeks, even at
   mid-latitudes: the top bar then says "No dark night".
-- **Anywhere on Earth**: polar days and polar nights are shown as such, with the date of the
+- 🌍 **Anywhere on Earth**: polar days and polar nights are shown as such, with the date of the
   next sunrise or sunset.
-- **Automatic or manual location**: follow the GNOME location services, or pick a city (searched
+- 📍 **Automatic or manual location**: follow the GNOME location services, or pick a city (searched
   offline) or any coordinates. If the location becomes unavailable, Vesperal keeps using the last
   known one.
-- **Notifications**, if you want them: a chosen number of minutes before dawn, sunrise, sunset or
+- 🔔 **Notifications**, if you want them: a chosen number of minutes before dawn, sunrise, sunset or
   dusk, such as "Sunset in 30 min". Each event is announced once, even across a suspend or a
   screen lock, and they follow Do Not Disturb like any other notification.
-- **Offline**: every computation runs on your computer, after the NOAA solar position algorithm.
-- **18 languages**: English and French, plus Catalan, Czech, Danish, Dutch, Finnish, German,
+- 📴 **Offline**: every computation runs on your computer, after the NOAA solar position algorithm.
+- 🌐 **18 languages**: English and French, plus Catalan, Czech, Danish, Dutch, Finnish, German,
   Greek, Hungarian, Italian, Norwegian Bokmål, Polish, Portuguese, Romanian, Spanish, Swedish
   and Ukrainian.
 
@@ -125,6 +125,53 @@ Year page uses the last known location.
 
 GNOME Shell 49, 50 and 51.
 
+## Changelog
+
+Versions are numbered by extensions.gnome.org.
+
+### Unreleased
+
+- ⏳ **Elapsed and remaining time at once**: a third Reading shows both in the top bar,
+  "42 min / 3h 15m", with the whole Sun arc drawn in full. Right-click the indicator to go
+  through the three.
+- 🕒 **12-hour or 24-hour times**: the times in the menu and in notifications now follow the format
+  of the GNOME clock (*Settings → System → Date & Time → Time Format*), rather than the habit of
+  the locale alone.
+
+### Version 3 (19 October 2026)
+
+- 🌗 **Moon phase**: by night, the Moon on the arc shows its real phase, as seen from your
+  hemisphere.
+- 🔔 **Notifications** ahead of dawn, sunrise, sunset or dusk, a chosen number of minutes before.
+- 🌄 **Sunrise to sunset, or dawn to dusk**: the day can be counted until it actually gets dark,
+  with "No dark night" when it does not for over 24 hours.
+- 📈 **Day length trend** next to the day length: "10h 43m ↓3m".
+- 📅 **Year page** in the preferences, charting the day length through the year with the solstices
+  and equinoxes.
+- 🧩 **Top bar content and position**: show the Sun arc, the duration or both, next to the clock or
+  at either side of the top bar.
+- ⚙️ **Preferences in pages**: Display, Location and notifications, and Year.
+- 🌐 **16 more languages**, machine-translated and awaiting review.
+- 🖥️ **GNOME Shell 49 and 51**, as well as 50.
+- 🎨 A new logo in black and white, and a smaller Sun and Moon on the arc.
+
+### Version 2 (17 October 2026)
+
+The first published version.
+
+- ⏳ The remaining or elapsed time until the next sunrise or sunset in the top bar, updated on the
+  minute.
+- 🌅 The Sun arc, with the Sun by day and the Moon by night, its measured part drawn in full, on
+  the side of the duration you choose.
+- 🖱️ A right-click on the indicator to switch between remaining and elapsed time.
+- 📋 The day details in the menu: dawn, sunrise, sunset and dusk, the length of the day or night,
+  the other duration and the location in use.
+- 🌆 Civil, nautical or astronomical twilight.
+- 🌍 Polar days and polar nights, named as such.
+- 📍 Automatic location from the GNOME location services, with the last known location as a
+  fallback, or a manual city (searched offline) or coordinates.
+- 🌐 English and French, on GNOME Shell 50.
+
 ## Translations
 
 Vesperal is translated with gettext. English is the source language. The French translation is
@@ -161,7 +208,7 @@ To try the extension without logging out, run a nested GNOME Shell session:
 dbus-run-session gnome-shell --devkit --wayland
 ```
 
-On Fedora, this needs the `mutter-devkit` package.
+On Fedora, this needs the `mutter-devkit` and `dbus-daemon` packages.
 
 ### Authorship and AI assistance
 
