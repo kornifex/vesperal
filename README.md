@@ -208,6 +208,33 @@ dbus-run-session gnome-shell --devkit --wayland
 
 On Fedora, this needs the `mutter-devkit` and `dbus-daemon` packages.
 
+That session shares dconf with your desktop: changing `clock-format`, `color-scheme` or
+Vesperal's own settings there changes them on your desktop too. To keep them apart, give the
+nested session its own config directory and set it up before the shell starts:
+
+```sh
+pnpm --filter @vesperal/gnome-extension install-extension
+export XDG_CONFIG_HOME="$(mktemp -d)"
+dbus-run-session sh -c '
+  dconf write /org/gnome/shell/enabled-extensions "[\"vesperal@kornifex.github.io\"]"
+  dconf write /org/gnome/shell/welcome-dialog-last-shown-version "\"999\""
+  echo "$DBUS_SESSION_BUS_ADDRESS" > "$XDG_CONFIG_HOME/bus"
+  exec gnome-shell --devkit --wayland
+'
+```
+
+To start from your current settings, dump them on your desktop with
+`dconf dump /org/gnome/shell/extensions/vesperal/ > vesperal.ini`, then add
+`dconf load /org/gnome/shell/extensions/vesperal/ < vesperal.ini` before `exec`. To change a
+setting from outside the nested session, point `gsettings` at its bus and at the installed
+schemas:
+
+```sh
+DBUS_SESSION_BUS_ADDRESS="$(cat "$XDG_CONFIG_HOME/bus")" \
+GSETTINGS_SCHEMA_DIR=~/.local/share/gnome-shell/extensions/vesperal@kornifex.github.io/schemas \
+gsettings set org.gnome.desktop.interface clock-format 12h
+```
+
 ### Authorship and AI assistance
 
 Vesperal is designed and directed by its author, Julien Seren-Rosso. What the extension does,
